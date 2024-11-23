@@ -119,69 +119,6 @@ def SaveFile(request):
     return JsonResponse(file_name,safe=False)
 
 
-
-# @api_view(['POST'])
-# @csrf_exempt
-# def logout_user(request):
-#     logout(request)
-#     return Response({'message': 'Successfully logged out!'}, status=status.HTTP_200_OK)
-
-# @api_view(['GET'])
-# @csrf_exempt
-# def check_login_status(request):
-#     if request.user.is_authenticated:
-#         return Response({'is_authenticated': True, 'username': request.user.username})
-#     else:
-#         return Response({'is_authenticated': False})
-
-# def user_profile(request):
-#     if request.user.is_authenticated:
-#         return JsonResponse({'username': request.user.username, 'email': request.user.email})
-#     else:
-#         return JsonResponse({'message': 'User is not logged in'}, status=401)
-
-
-# def login_user(request):
-#     if request.method == 'POST':
-#         try:
-#             data = json.loads(request.body)
-#             username = data.get('username')
-#             password = data.get('password')
-
-#             try:
-#                 user = User.objects.get(username=username)
-#                 if user.check_password(password):
-#                     login(request, user)
-#                     # Vráť údaje o používateľovi
-#                     return JsonResponse({
-#                         'status': 'success',
-#                         'username': user.username,
-#                         'email': user.email,
-#                         'is_authenticated': True
-#                     }, status=200)
-#                 else:
-#                     return JsonResponse({'status': 'error', 'message': 'Invalid password'}, status=400)
-#             except User.DoesNotExist:
-#                 return JsonResponse({'status': 'error', 'message': 'User does not exist'}, status=400)
-#         except json.JSONDecodeError:
-#             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
-#     else:
-#         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-# def current_user(request):
-#     if request.user.is_authenticated:
-#         return JsonResponse({
-#             'status': 'success',
-#             'username': request.user.username,
-#             'email': request.user.email
-#         })
-#     else:
-#         return JsonResponse({
-#             'status': 'error',
-#             'message': 'No user is currently logged in'
-#         }, status=401)
-
-
 import base64
 from django.core.files.base import ContentFile
 from rest_framework.response import Response
@@ -210,30 +147,168 @@ from rest_framework import status
 from .models import Test, Question
 from .serializers import TestSerializer, QuestionSerializer
 
+
+import jwt
+from django.contrib.auth import get_user_model
+from rest_framework.exceptions import AuthenticationFailed
+
+User = get_user_model()
+
 class TestListView(APIView):
     def post(self, request):
+        # Získaj token z hlavičky
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            # Dekóduj token
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        # Získaj používateľa z payload
+        user = User.objects.filter(id=payload['id']).first()
+
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+
         name = request.data.get('name')
-        test = Test.objects.create(name=name)
+        test = Test.objects.create(name=name, created_by=user)
+
         return Response({'id': test.id, 'name': test.name}, status=status.HTTP_201_CREATED)
+
         
     def get(self, request):
-        tests = Test.objects.all()  # Načítanie všetkých testov
-        serializer = TestSerializer(tests, many=True)  # Serializácia testov
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            # Dekóduj token
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        # Získaj používateľa na základe ID z tokenu
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+        # Filtrovanie testov podľa aktuálneho používateľa
+        tests = Test.objects.filter(created_by=user)
+        serializer = TestSerializer(tests, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+# class QuestionListView(APIView):
+#     def post(self, request, test_id):
+#         # Získaj token z cookies
+#         token = request.COOKIES.get('jwt')
+
+#         if not token:
+#             raise AuthenticationFailed('Unauthenticated!')
+
+#         try:
+#             # Dekóduj token
+#             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+#         except jwt.ExpiredSignatureError:
+#             raise AuthenticationFailed('Token has expired!')
+
+#         # Získaj používateľa z payload
+#         user = User.objects.filter(id=payload['id']).first()
+
+#         if not user:
+#             raise AuthenticationFailed('User not found!')
+
+#         print("Používateľ:", user)  # Debug
+#         print("Dáta:", request.data)  # Debug
+
+#         # Skontroluj, či test patrí prihlásenému používateľovi
+#         try:
+#             test = Test.objects.get(id=test_id, created_by=user)
+#         except Test.DoesNotExist:
+#             return Response({'error': 'Test not found or not authorized!'}, status=status.HTTP_404_NOT_FOUND)
+
+#         # Vytvor novú otázku
+#         text = request.data.get('text')
+#         answer = request.data.get('answer')
+#         question = Question.objects.create(test=test, text=text, answer=answer)
+
+#         return Response(
+#             {'id': question.id, 'text': question.text, 'answer': question.answer},
+#             status=status.HTTP_201_CREATED
+#         )
 class QuestionListView(APIView):
     def post(self, request, test_id):
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        user = User.objects.filter(id=payload['id']).first()
+
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        try:
+            test = Test.objects.get(id=test_id, created_by=user)
+        except Test.DoesNotExist:
+            return Response({'error': 'Test not found or not authorized!'}, status=status.HTTP_404_NOT_FOUND)
+
+        question_type = request.data.get('question_type', 'boolean')
         text = request.data.get('text')
-        answer = request.data.get('answer')
-        test = Test.objects.get(id=test_id)
-        question = Question.objects.create(test=test, text=text, answer=answer)
-        return Response({'id': question.id, 'text': question.text, 'answer': question.answer}, status=status.HTTP_201_CREATED)
+        options = request.data.get('options', '')  # CSV možnosti
+        correct_answer = request.data.get('correct_answer', None)
+
+        question = Question.objects.create(
+            test=test,
+            text=text,
+            question_type=question_type,
+            options=options,
+            correct_answer=correct_answer
+        )
+
+        return Response(
+            {'id': question.id, 'text': question.text, 'type': question.question_type},
+            status=status.HTTP_201_CREATED
+        )
+
 
 class TestDetailView(APIView):
     def get(self, request, id):
+        # Získaj JWT token z cookies
+        token = request.COOKIES.get('jwt')
+
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+
         try:
-            test = Test.objects.get(id=id)
-            serializer = TestSerializer(test)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Dekóduj token
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        # Získaj autentifikovaného používateľa
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        # Pokus o načítanie testu
+        try:
+            test = Test.objects.get(id=id, created_by=user)
         except Test.DoesNotExist:
-            return Response({'error': 'Test not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'error': 'Test not found or not authorized'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serializácia a návrat dát
+        serializer = TestSerializer(test)
+        return Response(serializer.data, status=status.HTTP_200_OK)

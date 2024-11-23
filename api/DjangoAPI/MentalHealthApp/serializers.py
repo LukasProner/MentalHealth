@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from MentalHealthApp.models import User, Question, Test
+from MentalHealthApp.models import User, Question, Test, TestSubmission
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,6 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password':{'write_only':True}
         }
-
     def create(self,validated_data):
         password = validated_data.pop('password',None)
         instance = self.Meta.model(**validated_data)
@@ -18,9 +17,15 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class QuestionSerializer(serializers.ModelSerializer):
+    options = serializers.SerializerMethodField()
     class Meta:
         model = Question
         fields = '__all__'
+    
+    def get_options(self, obj):
+        if isinstance(obj.options, str):
+            return [opt.strip() for opt in obj.options.split(',')]
+        return obj.options
 
 class TestSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
@@ -28,3 +33,8 @@ class TestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Test
         fields = '__all__'
+
+class TestSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestSubmission
+        fields = ['id', 'user', 'test', 'submitted_at']

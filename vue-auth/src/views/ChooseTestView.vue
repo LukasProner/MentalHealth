@@ -1,10 +1,17 @@
 <template>
   <div>
     <h1>Vyberte test</h1>
-    <ul>
-      <!-- Kliknutím na názov testu sa presmeruje na stránku s otázkami testu -->
+    <div v-if="loading">
+      <p>Načítavam testy...</p>
+    </div>
+
+    <div v-if="error">
+      <p>{{ error }}</p>
+    </div>
+
+    <ul v-else>
       <li v-for="test in tests" :key="test.id">
-        <router-link :to="{ name: 'testDetail', params: { id: test.id } }">
+        <router-link v-if="test.id" :to="{ name: 'testDetail', params: { id: test.id } }">
           {{ test.name }}
         </router-link>
       </li>
@@ -12,47 +19,71 @@
   </div>
 </template>
 
-<!-- <script>
-export default {
-  data() {
-    return {
-      tests: []
-    };
-  },
-  created() {
-    // Načítanie zoznamu testov pri vytvorení komponentu
-    fetch('http://localhost:8000/api/tests/')
-      .then(response => response.json())
-      .then(data => {
-        this.tests = data;
-      })
-      .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-      });
-  }
-};
-</script> -->
 <script>
 import { ref, onMounted } from 'vue';
 
 export default {
   setup() {
-    const tests = ref([]);
+    const tests = ref([]); 
+    const loading = ref(true); 
+    const error = ref(null); 
+    const auth = ref(false); 
 
-    onMounted(() => {
-      // Načítanie zoznamu testov pri vytvorení komponentu
-      fetch('http://localhost:8000/api/tests/')
-        .then(response => response.json())
-        .then(data => {
-          tests.value = data;
-        })
-        .catch(error => {
-          console.error('There was a problem with the fetch operation:', error);
+    // Funkcia na overenie autentifikácie
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/user/', {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Zahŕňa cookies pre autentifikáciu
         });
+
+        if (response.ok) {
+          auth.value = true;
+        } else {
+          auth.value = false;
+        }
+      } catch {
+        auth.value = false;
+      }
+    };
+
+    // Funkcia na načítanie testov
+    const fetchTests = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/tests/', {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Zahŕňa cookies pre autentifikáciu
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        tests.value = data; // Uloženie testov do premennej
+      } catch (err) {
+        error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
+        console.error('Error:', err);
+      } finally {
+        loading.value = false; // Ukončenie načítania
+      }
+    };
+
+    // Pri načítaní komponentu
+    onMounted(async () => {
+      await checkAuth(); // Overenie autentifikácie
+      if (auth.value) {
+        await fetchTests(); // Ak je používateľ prihlásený, načítaj testy
+      } else {
+        error.value = 'Nie ste prihlásený. Prihláste sa na prístup k testom.'; // Ak nie je prihlásený
+        loading.value = false;
+      }
     });
 
     return {
-      tests
+      tests,
+      loading,
+      error
     };
   }
 };

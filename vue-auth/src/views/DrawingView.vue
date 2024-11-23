@@ -11,29 +11,6 @@
   import { useStore } from "vuex";
   export default {
     setup() {
-      // const store = useStore();
-  
-      // onMounted(async () => {
-      //   try {
-      //     const response = await fetch('http://localhost:8000/api/user/', {
-      //       headers: {'Content-Type': 'application/json'},
-      //       credentials: 'include',
-      //     });
-  
-      //     if (response.ok) {
-      //       const content = await response.json();
-      //       if (content && content.name) {
-      //         await store.dispatch('setAuth', true);
-      //       } else {
-      //         await store.dispatch('setAuth', false);
-      //       }
-      //     } else {
-      //       await store.dispatch('setAuth', false);
-      //     }
-      //   } catch (e) {
-      //     await store.dispatch('setAuth', false);
-      //   }
-      // });cd 
       const store = useStore();
 
       const checkAuth = async () => {
