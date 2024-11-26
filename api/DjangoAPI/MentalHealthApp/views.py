@@ -202,44 +202,6 @@ class TestListView(APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# class QuestionListView(APIView):
-#     def post(self, request, test_id):
-#         # Získaj token z cookies
-#         token = request.COOKIES.get('jwt')
-
-#         if not token:
-#             raise AuthenticationFailed('Unauthenticated!')
-
-#         try:
-#             # Dekóduj token
-#             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-#         except jwt.ExpiredSignatureError:
-#             raise AuthenticationFailed('Token has expired!')
-
-#         # Získaj používateľa z payload
-#         user = User.objects.filter(id=payload['id']).first()
-
-#         if not user:
-#             raise AuthenticationFailed('User not found!')
-
-#         print("Používateľ:", user)  # Debug
-#         print("Dáta:", request.data)  # Debug
-
-#         # Skontroluj, či test patrí prihlásenému používateľovi
-#         try:
-#             test = Test.objects.get(id=test_id, created_by=user)
-#         except Test.DoesNotExist:
-#             return Response({'error': 'Test not found or not authorized!'}, status=status.HTTP_404_NOT_FOUND)
-
-#         # Vytvor novú otázku
-#         text = request.data.get('text')
-#         answer = request.data.get('answer')
-#         question = Question.objects.create(test=test, text=text, answer=answer)
-
-#         return Response(
-#             {'id': question.id, 'text': question.text, 'answer': question.answer},
-#             status=status.HTTP_201_CREATED
-#         )
 class QuestionListView(APIView):
     def post(self, request, test_id):
         token = request.COOKIES.get('jwt')
@@ -312,3 +274,99 @@ class TestDetailView(APIView):
         # Serializácia a návrat dát
         serializer = TestSerializer(test)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import TestSubmission, Question, QuestionAnswer
+from django.shortcuts import get_object_or_404
+
+# class SubmitTestView(APIView):
+#     def post(self, request, test_id):
+#         user = request.user
+#         try:
+#             test = Test.objects.get(id=id, created_by=user)
+#         except Test.DoesNotExist:
+#             return Response(
+#                 {'error': 'Test not found or not authorized'}, 
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+#         submission = TestSubmission.objects.create(user=user, test=test)
+
+#         answers = request.data.get('answers', [])
+#         for answer_data in answers:
+#             question_id = answer_data.get('question_id')
+#             answer_text = answer_data.get('answer')
+
+#             # Skontrolujeme existenciu otázky
+#             question = get_object_or_404(Question, id=question_id, test=test)
+
+#             QuestionAnswer.objects.create(
+#                 submission=submission,
+#                 question=question,
+#                 answer=answer_text
+#             )
+
+#         return Response({"message": "Test submission saved successfully"}, status=status.HTTP_201_CREATED)
+
+class SubmitTestView(APIView):
+    def post(self, request, test_id):
+        # Testový kód, ktorý zadal používateľ
+        test_code = request.data.get('test_code')
+        if not test_code:
+            return Response(
+                {'error': 'Test code is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Získame test podľa ID a testového kódu
+            test = Test.objects.get(id=test_id, test_code=test_code)
+        except Test.DoesNotExist:
+            return Response(
+                {'error': 'Test not found or invalid code'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Vytvorenie testového odoslania
+        submission = TestSubmission.objects.create(test_code=test_code, test=test)
+
+        # Spracovanie odpovedí
+        answers = request.data.get('answers', [])
+        for answer_data in answers:
+            question_id = answer_data.get('question_id')
+            answer_text = answer_data.get('answer')
+
+            # Skontrolujeme existenciu otázky
+            question = get_object_or_404(Question, id=question_id, test=test)
+
+            # Uložíme odpoveď na otázku
+            QuestionAnswer.objects.create(
+                submission=submission,
+                question=question,
+                answer=answer_text
+            )
+
+        return Response({"message": "Test submission saved successfully"}, status=status.HTTP_201_CREATED)
+
+
+class TestResponsesView(APIView):
+    def get(self, request, test_id):
+        test = get_object_or_404(Test, id=test_id)
+        submissions = TestSubmission.objects.filter(test=test).prefetch_related('answers') # prefetch aby sa minimalizoval počet dotazov do databázy
+
+        response_data = []
+        for submission in submissions:
+            answers = submission.answers.all()
+            response_data.append({
+                "user": submission.user.email,
+                "submitted_at": submission.submitted_at,
+                "answers": [
+                    {"question": answer.question.text, "answer": answer.answer}
+                    for answer in answers
+                ]
+            })
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+

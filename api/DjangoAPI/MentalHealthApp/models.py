@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.db.models import JSONField
+from django.utils.crypto import get_random_string
 
 class User(AbstractBaseUser):
     name = models.CharField(max_length=255)
@@ -14,10 +15,25 @@ class User(AbstractBaseUser):
 class ImageModel(models.Model):
     image = models.ImageField(upload_to='images/')
 
+# class Test(models.Model):
+#     name = models.CharField(max_length=255)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(User, related_name='tests', on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return self.name
+
 class Test(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, related_name='tests', on_delete=models.CASCADE)
+    test_code = models.CharField(max_length=10, unique=True, blank=True)  # Unikátny kód
+
+    def save(self, *args, **kwargs):
+        # Automaticky generovať test_code, ak ešte neexistuje
+        if not self.test_code:
+            self.test_code = get_random_string(10)  # 10 náhodných znakov
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -46,9 +62,19 @@ class Question(models.Model):
         
 
 class TestSubmission(models.Model):
-    user = models.ForeignKey(User, related_name='submissions', on_delete=models.CASCADE)  # Používateľ, ktorý vyplnil test
+    # Namiesto ForeignKey na User použijeme testový kód
+    test_code = models.CharField(max_length=255, unique=True)  # Testový kód pre identifikáciu účastníka
     test = models.ForeignKey(Test, related_name='submissions', on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.test.name}"
+        return f"Test: {self.test.name} - Code: {self.test_code}"
+
+    
+class QuestionAnswer(models.Model):
+    submission = models.ForeignKey(TestSubmission, related_name='answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
+    answer = models.TextField()  # Textová odpoveď alebo iný formát podľa typu otázky
+
+    def __str__(self):
+        return f"{self.submission.user.email} - {self.question.text}: {self.answer}"

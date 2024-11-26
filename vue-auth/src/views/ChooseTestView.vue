@@ -21,31 +21,14 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
   setup() {
-    const tests = ref([]); 
-    const loading = ref(true); 
-    const error = ref(null); 
-    const auth = ref(false); 
-
-    // Funkcia na overenie autentifikácie
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('http://localhost:8000/api/user/', {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Zahŕňa cookies pre autentifikáciu
-        });
-
-        if (response.ok) {
-          auth.value = true;
-        } else {
-          auth.value = false;
-        }
-      } catch {
-        auth.value = false;
-      }
-    };
+    const tests = ref([]);
+    const loading = ref(true);
+    const error = ref(null);
+    const store = useStore();
 
     // Funkcia na načítanie testov
     const fetchTests = async () => {
@@ -71,8 +54,8 @@ export default {
 
     // Pri načítaní komponentu
     onMounted(async () => {
-      await checkAuth(); // Overenie autentifikácie
-      if (auth.value) {
+      await store.dispatch('checkAuth'); // Overenie autentifikácie cez Vuex store
+      if (store.getters.isAuthenticated) {
         await fetchTests(); // Ak je používateľ prihlásený, načítaj testy
       } else {
         error.value = 'Nie ste prihlásený. Prihláste sa na prístup k testom.'; // Ak nie je prihlásený
@@ -83,8 +66,8 @@ export default {
     return {
       tests,
       loading,
-      error
+      error,
     };
-  }
+  },
 };
 </script>
