@@ -1,19 +1,26 @@
 <template>
-  <div>
-    <p v-if="loading">Loading...</p>
-    <p v-else>{{ message }}</p>
-  </div>
+  <HeroComp />
+  <ContentComp></ContentComp>
+  <FooterComp></FooterComp>
 </template>
 
 <script lang="ts">
 import { onMounted, ref } from 'vue';
 import { useStore } from "vuex";
+import HeroComp from "@/components/HeroComp.vue";
+import ContentComp from '@/components/ContentComp.vue';
+import FooterComp from '@/components/FooterComp.vue';
 
 export default {
   name: "HomeView",
+  components: {
+    HeroComp, 
+    ContentComp,
+    FooterComp
+  },
   setup() {
     const message = ref('You are not logged in!');
-    const loading = ref(true); // Nová premená pre stav načítavania
+    const loading = ref(true); 
     const store = useStore();
 
     onMounted(async () => {

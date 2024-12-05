@@ -159,7 +159,6 @@ export default {
     const checkAuth = async () => {
       loading.value = true;
       try {
-        // Zavoláme akciu 'checkAuth' z Vuex store
         await store.dispatch('checkAuth');
       } catch (err) {
         error.value = 'Chyba pri overovaní prihlásenia.';
@@ -168,7 +167,6 @@ export default {
       }
     };
 
-    // Metóda na vytvorenie testu
     const createTest = () => {
       if (!store.getters.isAuthenticated) {
         error.value = 'Nie ste prihlásený. Prihláste sa, aby ste mohli vytvoriť test.';

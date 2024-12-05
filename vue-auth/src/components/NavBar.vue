@@ -1,41 +1,27 @@
 <template>
-  <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-      <router-link to="/" class="navbar-brand">Home</router-link>
-
-      <div>
-        <ul class="navbar-nav me-auto mb-2 mb-md-0" v-if="!auth">
-        <!-- <ul class="navbar-nav me-auto mb-2 mb-md-0"> -->
-          <li class="nav-item">
-            <router-link to="/login" class="nav-link">Login</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/register" class="nav-link">Register</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/draw" class="nav-link" >Draw</router-link>
-          </li>
-        </ul>
-
-        <ul class="navbar-nav me-auto mb-2 mb-md-0" v-if="auth">
-          <li class="nav-item">
-            <!-- <a href="#" class="nav-link" @click="logout">Logout</a> -->
-            <router-link to="/login" class="nav-link" @click="logout">Logout</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/draw" class="nav-link" >Draw</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/tests" class="nav-link" >Create test</router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/choosetest" class="nav-link" >All tests</router-link>
-          </li>
-        </ul>
-      </div>
+  <header>
+    <router-link to="/" class="logo">
+      <h1>PsyToolsApp.com</h1>
+    </router-link>
+    <div class="hamburger" id="hamburger-icon">
+      &#9776;
     </div>
-  </nav>
+    <nav class="navigation">
+      <router-link to="/tests" >Vytvoriť test</router-link>
+      <router-link to="/contact" >Kontakt</router-link>
+      <router-link to="/documentation" >Dokumentácia</router-link>
+      <router-link to="/choosetest" >Moje testy</router-link>
+      <router-link to="/choosetest" >Zoznam testov</router-link>
+      
+      <router-link v-if="!auth" to="/login" class="btn">Prihlásiť</router-link>
+      <router-link v-if="!auth" to="/register" class="btn register">Register</router-link>
+    
+      <router-link v-if="auth" to="/login" class="btn" @click="logout">Logout</router-link>
+    </nav>
+  </header>
 </template>
+
+
 
 <script lang="ts">
 import {computed,ref} from 'vue';
@@ -87,3 +73,125 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+header {
+    background-color: var(--color-white);
+    padding: 10px 20px;
+    text-align: center;
+    display: flex;
+    align-items: center; /* Vertikálne zarovnanie */
+    justify-content: space-between;
+}
+
+header .logo {
+  text-decoration: none;
+}
+
+header .logo h1 {
+    margin: 0;
+    font-size: 2rem;
+    padding-left: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    
+}
+
+.hamburger {
+    display: none;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+@media (max-width: 1107px) {
+    header {
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+    .hamburger {
+        display: block;
+        font-size: 2rem;
+        cursor: pointer;
+    }
+}
+.navigation {
+    display: flex;
+    text-align: center;
+}
+
+.navigation a {
+    padding: 8px;
+    margin: 5px;
+    text-decoration: none;
+    color: var(--color-h1);
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    border-radius: 10px;
+}
+
+.navigation a:hover {
+    background-color: var(--color-lightblue);
+}
+
+.navigation .btn {
+    text-decoration: none;
+    color: var(--color-h2);
+    background-color: var(--color-login);
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s;
+    border: 1px solid var(--color-h1);
+    
+}
+
+.navigation .btn:hover {
+    background-color: var(--color-lightblue);
+}
+
+.navigation .register {
+    background-color: var(--color-h2);
+    color: var(--color-white);
+}
+
+.navigation .register:hover {
+    background-color: var(--color-login);
+    color: var(--color-h2);
+}
+
+@media (max-width: 1107px) {
+    .navigation {
+        display: none;
+        width: 100%;
+    }
+
+    .hamburger.active + .navigation {
+        display: flex;
+        flex-direction: column;
+        width: 230px;
+        background-color: var(--color-white);
+        position: absolute;
+        top: 40px;
+        right: 0;
+        z-index: 100;
+    }
+
+    .navigation a {
+        padding: 10px;
+        color: var(--color-h1);
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .navigation a:hover {
+        background-color: var(--color-lightblue);
+    }
+
+    .navigation a.btn {
+        font-weight: bold;
+        display: block;
+    }
+}
+
+
+</style>

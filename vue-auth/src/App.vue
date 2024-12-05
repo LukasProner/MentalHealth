@@ -8,6 +8,7 @@
 
 <script>
 import NavBar from "@/components/NavBar";
+import 'normalize.css';
 
 export default {
   components: {NavBar}
@@ -15,38 +16,31 @@ export default {
 </script>
 
 <style>
-.form-signin {
-  width: 100%;
-  max-width: 330px;
-  padding: 15px;
-  margin: auto;
+:root {
+    --color-h2: rgba(0, 0, 0, 0.90);
+    --h1-size: 3rem;
+    --h2-size: 2rem;
+    --color-h1: #757575;
+    --color-lightblue: #E0DEFF;
+    --color-white: #FFF;
+    --color-login: #E3E3E3;
+    --color-black: #000;
+    --color-button-hover: #6870D5;
 }
 
-.form-signin .checkbox {
-  font-weight: 400;
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-white);
 }
 
-.form-signin .form-control {
-  position: relative;
-  box-sizing: border-box;
-  height: auto;
-  padding: 10px;
-  font-size: 16px;
+h1 {
+    font-size: var(--h1-size);
+    color: var(--color-h1);
 }
 
-.form-signin .form-control:focus {
-  z-index: 2;
-}
-
-.form-signin input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.form-signin input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+h2 {
+    font-size: var(--h2-size);
 }
 </style>
