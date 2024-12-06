@@ -156,47 +156,35 @@ User = get_user_model()
 
 class TestListView(APIView):
     def post(self, request):
-        # Získaj token z hlavičky
         token = request.COOKIES.get('jwt')
-
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
-
         try:
-            # Dekóduj token
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')
 
-        # Získaj používateľa z payload
         user = User.objects.filter(id=payload['id']).first()
-
         if not user:
             raise AuthenticationFailed('User not found!')
-
 
         name = request.data.get('name')
         test = Test.objects.create(name=name, created_by=user)
 
         return Response({'id': test.id, 'name': test.name}, status=status.HTTP_201_CREATED)
 
-        
     def get(self, request):
         token = request.COOKIES.get('jwt')
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
-
         try:
-            # Dekóduj token
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')
 
-        # Získaj používateľa na základe ID z tokenu
         user = User.objects.filter(id=payload['id']).first()
         if not user:
             raise AuthenticationFailed('User not found!')
-        # Filtrovanie testov podľa aktuálneho používateľa
         tests = Test.objects.filter(created_by=user)
         serializer = TestSerializer(tests, many=True)
 
@@ -205,20 +193,15 @@ class TestListView(APIView):
 class QuestionListView(APIView):
     def post(self, request, test_id):
         token = request.COOKIES.get('jwt')
-
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
-
         try:
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')
-
         user = User.objects.filter(id=payload['id']).first()
-
         if not user:
             raise AuthenticationFailed('User not found!')
-
         try:
             test = Test.objects.get(id=test_id, created_by=user)
         except Test.DoesNotExist:
@@ -245,24 +228,16 @@ class QuestionListView(APIView):
 
 class TestDetailView(APIView):
     def get(self, request, id):
-        # Získaj JWT token z cookies
         token = request.COOKIES.get('jwt')
-
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
-
         try:
-            # Dekóduj token
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')
-
-        # Získaj autentifikovaného používateľa
         user = User.objects.filter(id=payload['id']).first()
         if not user:
             raise AuthenticationFailed('User not found!')
-
-        # Pokus o načítanie testu
         try:
             test = Test.objects.get(id=id, created_by=user)
         except Test.DoesNotExist:
@@ -271,7 +246,6 @@ class TestDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Serializácia a návrat dát
         serializer = TestSerializer(test)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -281,37 +255,8 @@ from rest_framework import status
 from .models import TestSubmission, Question, QuestionAnswer
 from django.shortcuts import get_object_or_404
 
-# class SubmitTestView(APIView):
-#     def post(self, request, test_id):
-#         user = request.user
-#         try:
-#             test = Test.objects.get(id=id, created_by=user)
-#         except Test.DoesNotExist:
-#             return Response(
-#                 {'error': 'Test not found or not authorized'}, 
-#                 status=status.HTTP_404_NOT_FOUND
-#             )
-#         submission = TestSubmission.objects.create(user=user, test=test)
-
-#         answers = request.data.get('answers', [])
-#         for answer_data in answers:
-#             question_id = answer_data.get('question_id')
-#             answer_text = answer_data.get('answer')
-
-#             # Skontrolujeme existenciu otázky
-#             question = get_object_or_404(Question, id=question_id, test=test)
-
-#             QuestionAnswer.objects.create(
-#                 submission=submission,
-#                 question=question,
-#                 answer=answer_text
-#             )
-
-#         return Response({"message": "Test submission saved successfully"}, status=status.HTTP_201_CREATED)
-
 class SubmitTestView(APIView):
     def post(self, request, test_id):
-        # Testový kód, ktorý zadal používateľ
         test_code = request.data.get('test_code')
         if not test_code:
             return Response(
@@ -320,7 +265,6 @@ class SubmitTestView(APIView):
             )
 
         try:
-            # Získame test podľa ID a testového kódu
             test = Test.objects.get(id=test_id, test_code=test_code)
         except Test.DoesNotExist:
             return Response(
@@ -328,10 +272,8 @@ class SubmitTestView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Vytvorenie testového odoslania
         submission = TestSubmission.objects.create(test_code=test_code, test=test)
 
-        # Spracovanie odpovedí
         answers = request.data.get('answers', [])
         for answer_data in answers:
             question_id = answer_data.get('question_id')

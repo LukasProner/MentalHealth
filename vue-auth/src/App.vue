@@ -24,6 +24,7 @@ export default {
     --color-lightblue: #E0DEFF;
     --color-white: #FFF;
     --color-login: #E3E3E3;
+    --color-lightGray:#e0e0e0;
     --color-black: #000;
     --color-button-hover: #6870D5;
 }
