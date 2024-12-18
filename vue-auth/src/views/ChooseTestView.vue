@@ -26,7 +26,7 @@
             {{ test.name }}
             <p>Vytvorený {{ getDate(test.created_at) }}</p>
           </router-link>
-          <!-- <button class="delete-btn" @click.stop="deleteTest(test.id)">×</button> -->
+          <button class="delete-btn" @click.stop="deleteTest(test.id)">×</button>
         </div>
       </div>
     </div>
@@ -74,6 +74,24 @@ export default {
       const year = date.getFullYear(); // Získanie roka
       return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`; // Formátovanie dátumu
     }
+    const deleteTest = async (testId) => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Zahŕňa cookies pre autentifikáciu
+        });
+
+        if (!response.ok) {
+          throw new Error(`Chyba pri odstraňovaní testu. Status: ${response.status}`);
+        }
+
+        // Odstránime test z lokálneho zoznamu
+        tests.value = tests.value.filter(test => test.id !== testId);
+      } catch (err) {
+        console.error('Error:', err);
+      }
+    };
 
     onMounted(async () => {
       await store.dispatch('checkAuth'); 
@@ -90,6 +108,7 @@ export default {
       loading,
       error,
       getDate,
+      deleteTest,
     };
   },
 };
@@ -119,6 +138,7 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
 }
 .test-card:hover{
   transform: scale(1.05);
@@ -154,9 +174,26 @@ export default {
   text-decoration: none;
 }
 .test-name p {
-  margin-bottom: auto; /* Toto spôsobí, že p bude vždy na spodku */
+  margin-bottom: auto; 
   padding: 5px;
   font-weight:100;
   font-size: 80%;
+}
+.delete-btn {
+  position: absolute; 
+  top: 10px; 
+  right: 10px; 
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #f44336;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: color 0.2s;
+}
+
+.delete-btn:hover {
+  color: #d32f2f;
 }
 </style>

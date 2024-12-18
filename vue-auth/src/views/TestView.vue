@@ -17,7 +17,27 @@
 
     <!-- Formulár pre pridávanie otázok k testu -->
     <div v-if="testId && !loading && !error">
-      <h2>Pridať otázky k testu: {{ testName }}</h2>
+      <h2>
+        <span v-if="!isEditing" @dblclick="enableEditing">{{ testName }}</span>
+        <input
+          v-else
+          v-model="editedName"
+          @blur="saveTestName"
+          @keydown.enter="saveTestName"
+        />
+      </h2>
+      
+      <!-- Zoznam pridanych otázok -->
+      <div v-if="questions.length > 0">
+        <h3>Otázky:</h3>
+        <ul>
+          <li v-for="(question, index) in questions" :key="question.id">
+            <p>{{ question.text }}</p>
+            <button @click="deleteQuestion(question.id, index)">Odstrániť</button>
+          </li>
+        </ul>
+      </div>
+
       <input v-model="questionText" placeholder="Zadaj otázku" />
       <select v-model="questionType">
         <option value="boolean">Áno/Nie</option>
@@ -52,6 +72,8 @@ export default {
 
     // Reaktívne premenné
     const testName = ref('');
+    const editedName = ref('');
+    const isEditing = ref(false);
     const testId = ref(null);
     const questionText = ref('');
     const questionType = ref('boolean');
@@ -59,6 +81,7 @@ export default {
     const newOption = ref('');
     const loading = ref(false);
     const error = ref(null);
+    const questions = ref([]); // Premenná pre uloženie otázok
 
     // Overenie prihlásenia
     const checkAuth = async () => {
@@ -88,12 +111,49 @@ export default {
         body: JSON.stringify(newTest),
         credentials: 'include',
       })
-      .then(response => response.json())
-      .then(data => {
-        testId.value = data.id;
-        testName.value = newTest.name;  // Uchováme názov testu
+        .then((response) => response.json())
+        .then((data) => {
+          testId.value = data.id;
+          testName.value = newTest.name;
+          editedName.value = newTest.name;
+        })
+        .catch(console.error);
+    };
+
+    // Povoliť režim úprav
+    const enableEditing = () => {
+      isEditing.value = true;
+      editedName.value = testName.value;
+    };
+
+    // Uložiť upravený názov testu
+    const saveTestName = () => {
+      if (editedName.value.trim() === testName.value) {
+        isEditing.value = false;
+        return;
+      }
+
+      fetch(`http://localhost:8000/api/tests/${testId.value}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editedName.value }),
+        credentials: 'include',
       })
-      .catch(console.error);
+        .then((response) => {
+          if (response.ok) {
+            testName.value = editedName.value;
+          } else {
+            throw new Error('Nepodarilo sa uložiť názov testu.');
+          }
+        })
+        .catch((err) => {
+          error.value = err.message;
+        })
+        .finally(() => {
+          isEditing.value = false;
+        });
     };
 
     // Pridanie možnosti pre otázku typu "choice"
@@ -121,6 +181,8 @@ export default {
         question_type: questionType.value,
         options: options.value.join(','), // Možnosti sú spojené do CSV reťazca
       };
+
+      // Poslanie otázky na backend
       fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
         method: 'POST',
         headers: {
@@ -129,13 +191,34 @@ export default {
         body: JSON.stringify(newQuestion),
         credentials: 'include',
       })
-      .then(response => response.json())
-      .then(() => {
-        questionText.value = '';
-        questionType.value = 'boolean';
-        options.value = [];
+        .then((response) => response.json())
+        .then((data) => {
+          questions.value.push(data); // Pridanie otázky do zoznamu
+          questionText.value = ''; // Resetovanie textu otázky
+          questionType.value = 'boolean'; // Resetovanie typu otázky
+          options.value = []; // Resetovanie možností
+        })
+        .catch(console.error);
+    };
+
+    // Odstránenie otázky
+    const deleteQuestion = (questionId, index) => {
+      fetch(`http://localhost:8000/api/questions/${questionId}/`, {
+        method: 'DELETE',
+        credentials: 'include',
       })
-      .catch(console.error);
+        .then((response) => {
+          if (response.ok) {
+            // Odstrániť otázku z lokálneho zoznamu
+            console.log("no co je toto")
+            questions.value.splice(index, 1);
+          } else {
+            throw new Error('Nepodarilo sa odstrániť otázku.');
+          }
+        })
+        .catch((err) => {
+          error.value = err.message;
+        });
     };
 
     // Načítanie komponentu
@@ -145,6 +228,8 @@ export default {
 
     return {
       testName,
+      editedName,
+      isEditing,
       testId,
       questionText,
       questionType,
@@ -152,11 +237,15 @@ export default {
       newOption,
       loading,
       error,
+      questions, // Zoznam otázok
       createTest,
+      enableEditing,
+      saveTestName,
       addOption,
       removeOption,
       addQuestion,
+      deleteQuestion, // Funkcia na odstránenie otázky
     };
-  }
+  },
 };
 </script>

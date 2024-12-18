@@ -1,0 +1,15 @@
+Frontend :
+    pri zlom prihlaseni vypisať chybu
+    hamburger
+    pridať vypis nejaky pekny použivatela
+    zobrazenie testov
+    
+Backend:
+    pridať vseobecne testy
+    pridať moznosť pridavania testov
+    pridať testy
+    pridať import z dakade prejdť si este hlasovku
+    zobrazenie odpovedí 
+        -Chcel by som asi pridať zaheslovanie odpovedi a pri otvorení testu ich zobraziť po teste
+
+    

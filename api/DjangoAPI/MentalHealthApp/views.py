@@ -150,7 +150,7 @@ from .serializers import TestSerializer, QuestionSerializer
 
 import jwt
 from django.contrib.auth import get_user_model
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, NotFound
 
 User = get_user_model()
 
@@ -224,6 +224,49 @@ class QuestionListView(APIView):
             {'id': question.id, 'text': question.text, 'type': question.question_type},
             status=status.HTTP_201_CREATED
         )
+    def put(self, request, question_id):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        question = Question.objects.filter(id=question_id, test__created_by=user).first()
+        if not question:
+            raise NotFound('Question not found!')
+
+        # Aktualizuj otázku na základe dát z požiadavky
+        question.text = request.data.get('text', question.text)
+        question.question_type = request.data.get('question_type', question.question_type)
+        question.save()
+
+        return Response(QuestionSerializer(question).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, question_id):
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        question = Question.objects.filter(id=question_id).first()
+        if not question:
+            raise NotFound('Question not found!')
+
+        question.delete()
+        return Response({"message": "Question deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class TestDetailView(APIView):
@@ -248,6 +291,45 @@ class TestDetailView(APIView):
 
         serializer = TestSerializer(test)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    def delete(self, request, id):
+        try:
+            test = Test.objects.get(id=id) 
+            test.delete() 
+            return Response({"message": "Test bol úspešne odstránený."}, status=status.HTTP_204_NO_CONTENT)
+        except Test.DoesNotExist:
+            return Response({"error": "Test s daným ID neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, id):
+        # Token validation
+        token = request.COOKIES.get('jwt')
+        if not token:
+            raise AuthenticationFailed('Unauthenticated!')
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
+        
+        user = User.objects.filter(id=payload['id']).first()
+        if not user:
+            raise AuthenticationFailed('User not found!')
+
+        try:
+            test = Test.objects.get(id=id, created_by=user)
+        except Test.DoesNotExist:
+            return Response(
+                {'error': 'Test not found or not authorized'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        test_name = request.data.get('name')
+        if test_name:
+            test.name = test_name
+            test.save()
+
+        return Response(
+            {'id': test.id, 'name': test.name},
+            status=status.HTTP_200_OK
+        )
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
