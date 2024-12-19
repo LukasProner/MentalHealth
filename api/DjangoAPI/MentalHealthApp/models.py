@@ -15,13 +15,6 @@ class User(AbstractBaseUser):
 class ImageModel(models.Model):
     image = models.ImageField(upload_to='images/')
 
-# class Test(models.Model):
-#     name = models.CharField(max_length=255)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(User, related_name='tests', on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return self.name
 
 class Test(models.Model):
     name = models.CharField(max_length=255)

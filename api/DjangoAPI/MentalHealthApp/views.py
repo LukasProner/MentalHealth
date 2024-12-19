@@ -145,7 +145,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Test, Question
-from .serializers import TestSerializer, QuestionSerializer
+from .serializers import TestSerializer, QuestionSerializer,  TestSubmissionSerializer
 
 
 import jwt
@@ -392,5 +392,31 @@ class TestResponsesView(APIView):
             })
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+class TestSubmissionDetailView(APIView):
+    def get(self, request, test_code):
+        try:
+            submission = TestSubmission.objects.get(test_code=test_code)
+            serializer = TestSubmissionSerializer(submission)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TestSubmission.DoesNotExist:
+            return Response({'error': 'Test submission not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+class PublicTestView(APIView):
+    def post(self, request, test_id, *args, **kwargs):
+        print(f"Received request for test ID: {test_id}")
+        test_code = request.data.get("test_code")
+        try:
+            test = Test.objects.get(id=test_id, test_code=test_code)
+            return Response({
+                "id": test.id,
+                "name": test.name,
+                "questions": [
+                    {"id": q.id, "text": q.text, "question_type": q.question_type, "options": q.options}
+                    for q in test.questions.all()
+                ]
+            })
+        except Test.DoesNotExist:
+            return Response({"error": "Invalid test code"}, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -6,6 +6,8 @@ import DrawingView from '@/views/DrawingView.vue'
 import TestView from '@/views/TestView.vue'
 import ChooseTestView from '@/views/ChooseTestView.vue'
 import TestDetailView from '@/views/TestDetailView.vue';
+import TestAnswers from '@/views/TestAnswers.vue'
+import PublicTestView from '@/views/PublicTestView.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
@@ -18,6 +20,14 @@ const routes: Array<RouteRecordRaw> = [
         name: 'testDetail',
         component: TestDetailView // Podstránka pre konkrétny test
       },
+      {
+        path: '/test/:id/:code',
+        component: TestAnswers,
+      },
+      {
+        path: '/tests/:id/public',
+        component: PublicTestView,
+      }
    
 
 ]

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from MentalHealthApp.models import User, Question, Test, TestSubmission
+from MentalHealthApp.models import User, Question, Test, TestSubmission, QuestionAnswer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,3 +38,13 @@ class TestSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestSubmission
         fields = ['id', 'user', 'test', 'submitted_at']
+
+
+
+class QuestionAnswerSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text')  # Zahrnutie textu otázky
+    question_type = serializers.CharField(source='question.question_type')  # Typ otázky
+
+    class Meta:
+        model = QuestionAnswer
+        fields = ['question_text', 'question_type', 'answer']
