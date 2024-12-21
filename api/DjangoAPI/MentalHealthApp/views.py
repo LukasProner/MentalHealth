@@ -361,10 +361,8 @@ class SubmitTestView(APIView):
             question_id = answer_data.get('question_id')
             answer_text = answer_data.get('answer')
 
-            # Skontrolujeme existenciu otázky
             question = get_object_or_404(Question, id=question_id, test=test)
 
-            # Uložíme odpoveď na otázku
             QuestionAnswer.objects.create(
                 submission=submission,
                 question=question,
@@ -377,16 +375,20 @@ class SubmitTestView(APIView):
 class TestResponsesView(APIView):
     def get(self, request, test_id):
         test = get_object_or_404(Test, id=test_id)
-        submissions = TestSubmission.objects.filter(test=test).prefetch_related('answers') # prefetch aby sa minimalizoval počet dotazov do databázy
-
+        submissions = TestSubmission.objects.filter(test=test).prefetch_related('answers')  # prefetch pre minimalizáciu dotazov
+        #mojimi slovami - django ma akusi funkciu ktorou najde nie len ze table ale aj stlpec v nom ktory je nejako spojeny s danou dabulkou
+        #slovami gpt - Django používa relácie medzi modelmi (napríklad ForeignKey), ktoré definujú vzťah medzi dvoma tabuľkami. Keď v kóde použiješ prefetch_related alebo select_related, Django vykoná optimalizované dotazy na získanie údajov z viacerých tabuliek, ktoré sú navzájom prepojené.
         response_data = []
         for submission in submissions:
             answers = submission.answers.all()
             response_data.append({
-                "user": submission.user.email,
                 "submitted_at": submission.submitted_at,
                 "answers": [
-                    {"question": answer.question.text, "answer": answer.answer}
+                    {
+                        "question": answer.question.text, 
+                        "answer": answer.answer, 
+                        "answer_id": answer.id  # Používame iný kľúč pre identifikátor
+                    }
                     for answer in answers
                 ]
             })

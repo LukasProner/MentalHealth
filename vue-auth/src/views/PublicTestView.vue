@@ -40,8 +40,8 @@ import { useRoute } from 'vue-router';
 
 export default {
   setup() {
-    const route = useRoute(); // Získanie prístupu k route
-    const testId = route.params.id; // Dynamický parameter `id` z URL
+    const route = useRoute(); 
+    const testId = route.params.id; 
 
     const test = ref(null);
     const testCode = ref('');

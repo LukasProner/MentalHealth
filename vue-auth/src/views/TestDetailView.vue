@@ -2,13 +2,8 @@
 <template>
   <div v-if="test">
     <h1>{{ test.name }}</h1>
-    <!-- Pole pre testový kód -->
-    <div>
-      <label for="test_code">Testový kód:</label>
-      <input v-model="testCode" id="test_code" type="text" required />
-    </div>
-    
-    <form @submit.prevent="submitAnswers">
+    <button @click="goToResponses" >Odpovede</button>
+    <form>
       <div v-for="question in test.questions" :key="question.id">
         <p>{{ question.text }}</p>
         <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
@@ -26,7 +21,6 @@
           </label>
         </div>
       </div>
-      <button type="submit">Submit</button>
     </form>
   </div>
   <div v-else-if="loading">
@@ -40,12 +34,13 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 export default {
   setup() {
     const store = useStore(); // používame Vuex store
     const route = useRoute(); // používame Vue Router
+    const router = useRouter();
 
     const answers = ref({});
     const test = ref(null);
@@ -53,7 +48,6 @@ export default {
     const error = ref('');
     const loading = ref(true);
 
-    // Funkcia na načítanie testu
     const fetchTest = async (testId) => {
       try {
         const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
@@ -74,38 +68,6 @@ export default {
       }
     };
 
-    // Funkcia na odoslanie odpovedí
-    const submitAnswers = async () => {
-      try {
-        console.log('Odosielam odpovede:', answers.value);
-        console.log('Testový kód:', testCode.value);
-
-        const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/submit/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            test_code: testCode.value, // Pridáme testový kód
-            answers: Object.entries(answers.value).map(([question_id, answer]) => ({
-              question_id,
-              answer,
-            }))
-          }),
-        });
-
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          throw new Error(`Failed to submit test. Server response: ${errorMessage}`);
-        }
-
-        alert('Test submitted successfully!');
-      } catch (error) {
-        console.error(error);
-        alert('An error occurred.');
-      }
-    };
-
     // Načítanie testu
     const init = async () => {
       await store.dispatch('checkAuth');
@@ -119,7 +81,6 @@ export default {
     };
     init();
 
-    // Funkcia na inicializáciu
     onMounted(async () => {
       await store.dispatch('checkAuth');
       if (store.getters.isAuthenticated) {
@@ -131,13 +92,17 @@ export default {
       }
     });
 
+    const goToResponses = () =>{
+      router.push(`${route.params.id}/responses`)
+    }
+
     return {
       answers,
       test,
       error,
       loading,
-      submitAnswers,
       testCode, // Pridávame testový kód
+      goToResponses,
     };
   },
 };

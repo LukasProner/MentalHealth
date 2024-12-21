@@ -11,5 +11,7 @@ Backend:
     pridať import z dakade prejdť si este hlasovku
     zobrazenie odpovedí 
         -Chcel by som asi pridať zaheslovanie odpovedi a pri otvorení testu ich zobraziť po teste
-
+    pridať dalsie sposoby odpovedí 
+        - vcetne kreslenia a snimania obrazovky
+    prida+t samovzhodnocovanie
     

@@ -48,15 +48,13 @@ class Question(models.Model):
     correct_answer = models.TextField(blank=True, null=True)  # Správna odpoveď (voliteľná)
     
     def save(self, *args, **kwargs):
-        # Ak options je reťazec, rozdel ho na zoznam
         if self.question_type == 'choice' and isinstance(self.options, str):
             self.options = [opt.strip() for opt in self.options.split(',')]
         super().save(*args, **kwargs)
         
 
 class TestSubmission(models.Model):
-    # Namiesto ForeignKey na User použijeme testový kód
-    test_code = models.CharField(max_length=255, unique=True)  # Testový kód pre identifikáciu účastníka
+    test_code = models.CharField(max_length=255, unique=True)  
     test = models.ForeignKey(Test, related_name='submissions', on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
@@ -67,7 +65,7 @@ class TestSubmission(models.Model):
 class QuestionAnswer(models.Model):
     submission = models.ForeignKey(TestSubmission, related_name='answers', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
-    answer = models.TextField()  # Textová odpoveď alebo iný formát podľa typu otázky
+    answer = models.TextField()  
 
     def __str__(self):
         return f"{self.submission.user.email} - {self.question.text}: {self.answer}"

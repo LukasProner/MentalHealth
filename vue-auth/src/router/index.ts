@@ -8,6 +8,7 @@ import ChooseTestView from '@/views/ChooseTestView.vue'
 import TestDetailView from '@/views/TestDetailView.vue';
 import TestAnswers from '@/views/TestAnswers.vue'
 import PublicTestView from '@/views/PublicTestView.vue'
+import ResponsesView from '@/views/ResponsesView.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
@@ -15,21 +16,10 @@ const routes: Array<RouteRecordRaw> = [
     {path: '/draw', component: DrawingView},
     {path: '/tests', component: TestView },
     {path: '/choosetest', component: ChooseTestView},
-    {
-        path: '/tests/:id',
-        name: 'testDetail',
-        component: TestDetailView // Podstránka pre konkrétny test
-      },
-      {
-        path: '/test/:id/:code',
-        component: TestAnswers,
-      },
-      {
-        path: '/tests/:id/public',
-        component: PublicTestView,
-      }
-   
-
+    {path: '/tests/:id',name: 'testDetail',component: TestDetailView},
+    {path: '/test/:id/:code',component: TestAnswers,},
+    {path: '/tests/:id/public',component: PublicTestView,},
+    {path: '/tests/:id/responses',component: ResponsesView,},
 ]
 // umožňuje používať moderné URL bez hash (#)
 const router = createRouter({
