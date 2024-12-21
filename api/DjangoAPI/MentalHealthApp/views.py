@@ -123,7 +123,7 @@ import base64
 from django.core.files.base import ContentFile
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import ImageModel
+from .models import ImageModel, Scale
 
 class UploadImageView(APIView):
     def post(self, request, *args, **kwargs):
@@ -145,7 +145,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Test, Question
-from .serializers import TestSerializer, QuestionSerializer,  TestSubmissionSerializer
+from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
 
 
 import jwt
@@ -210,14 +210,12 @@ class QuestionListView(APIView):
         question_type = request.data.get('question_type', 'boolean')
         text = request.data.get('text')
         options = request.data.get('options', '')  # CSV možnosti
-        correct_answer = request.data.get('correct_answer', None)
 
         question = Question.objects.create(
             test=test,
             text=text,
             question_type=question_type,
             options=options,
-            correct_answer=correct_answer
         )
 
         return Response(
@@ -421,4 +419,76 @@ class PublicTestView(APIView):
         except Test.DoesNotExist:
             return Response({"error": "Invalid test code"}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ScaleView(APIView):
+    def post(self, request, test_id):
+        # Overenie existencie testu
+        try:
+            test = Test.objects.get(pk=test_id)
+        except Test.DoesNotExist:
+            return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Spracovanie údajov
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {"error": "Údaje musia byť vo forme zoznamu."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Vytváranie škál
+        for scale_data in data:
+            scale_data['test'] = test.id  # Pridanie ID testu do dát
+        serializer = ScaleSerializer(data=data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class EvaluateTestView(APIView):
+    def post(self, request, test_id):
+        try:
+            # Loguj celý request
+            print("Request data:", request.data)
+            test = Test.objects.get(pk=test_id)
+            scales = Scale.objects.filter(test=test)
+
+            # Získaj odpovede
+            user_answers = request.data.get('answers', [])
+            print("User answers:", user_answers)
+            total_score = 0
+            
+            # Iterácia cez odpovede
+            for answer in user_answers:
+                if not isinstance(answer, dict):
+                    print(f"Invalid answer format: {answer}")
+                    continue
+                question_id = answer.get('question_id')
+                answer_data = answer.get('answer', {})
+                if not isinstance(answer_data, dict):
+                    print(f"Invalid answer data format for question {question_id}: {answer_data}")
+                    continue
+                if answer_data.get('hasValue'):
+                    value = answer_data.get('value', 0)
+                    print(f"Question {question_id} has value: {value}")
+                    total_score += value
+            print(f"Total score: {total_score}")
+            for scale in scales:
+                if scale.min_points <= total_score <= scale.max_points:
+                    response = scale.response
+                    break
+
+            if response:
+                return Response({"total_points": total_score, "response": response}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "No matching scale found for the total points."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Vráť výsledok
+            return Response({"total_score": total_score}, status=status.HTTP_200_OK)
+        except Test.DoesNotExist:
+            return Response({"error": "Test not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

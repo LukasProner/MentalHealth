@@ -41,3 +41,42 @@ class PublicTests(TestCase):
     def test_non_existent_test_code(self):
         response = self.client.post('/api/tests/999/public/', {'test_code': 'G12345'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+from django.test import TestCase
+from .models import User, Test
+from rest_framework import status
+from rest_framework.test import APIClient
+
+class LoginTest(TestCase):
+
+    def setUp(self):
+        # Vytvorenie používateľa
+        self.user = User.objects.create(email="test@example.com", name="Test User")
+        self.user.set_password("securepassword123")  # Nastavenie hesla
+        self.user.save()  # Uloženie používateľa do databázy
+        self.client = APIClient()
+
+    def test_login_success(self):
+        # Otestovanie úspešného prihlásenia
+        response = self.client.post('/api/login/', {'email': 'test@example.com', 'password': 'securepassword123'}, format='json')
+        
+        # Overenie správneho status kódu a prihlásenia
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('jwt', response.data)  # Overenie prítomnosti tokenu v odpovedi, ak používate JWT
+
+    def test_login_invalid_credentials(self):
+        # Pokus o prihlásenie s neplatnými údajmi
+        response = self.client.post('/api/login/', {'email': 'test@example.com', 'password': 'wrongpassword'}, format='json')
+        
+        # Overenie, že odpoveď obsahuje chybu
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Invalid credentials')  # Očakávaný chybový message
+
+    def test_login_user_not_found(self):
+        # Pokus o prihlásenie s neexistujúcim e-mailom
+        response = self.client.post('/api/login/', {'email': 'nonexistent@example.com', 'password': 'anyPassword'}, format='json')
+        
+        # Overenie, že odpoveď obsahuje chybu
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'User not found')  # Očakávaný chybový message
+

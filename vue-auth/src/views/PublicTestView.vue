@@ -16,7 +16,7 @@
             <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
             <div v-if="question.question_type === 'choice'">
               <label v-for="option in question.options" :key="option">
-                <input type="radio" :value="option" v-model="answers[question.id]" /> {{ option }}
+                <input type="radio" :value="option" v-model="answers[question.id]" /> {{ option.text }}
               </label>
             </div>
             <div v-if="question.question_type === 'boolean'">
@@ -28,14 +28,14 @@
               </label>
             </div>
           </div>
-          <button type="submit">Odoslať odpovede</button>
+          <button @click="evaluateTest" type="submit">Odoslať odpovede</button>
         </form>
       </div>
     </div>
   </template>
   
   <script>
-  import { ref } from 'vue';
+  import { ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 
 export default {
@@ -92,6 +92,35 @@ export default {
         alert('Nastala chyba pri odosielaní odpovedí.');
       }
     };
+    const evaluateTest = async () => {
+      try {
+          console.log(answers)
+          const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/evaluate/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  test_code: testCode.value, // Pridáme testový kód
+                  answers: Object.entries(answers.value).map(([question_id, answer]) => ({
+                      question_id,
+                      answer,
+                  }))
+              }),
+              credentials: 'include',
+          });
+
+          if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.error || 'Chyba pri vyhodnocovaní');
+          }
+
+          const data = await response.json();
+          console.log('Výsledok testu:', data);
+          // Zobraz odpoveď používateľovi
+          alert(`Dosiahnuté body: ${data.total_points}\nOdpoveď: ${data.response}`);
+      } catch (err) {
+          console.error('Chyba pri vyhodnocovaní:', err.message || err);
+      }
+    };
 
     return {
       test,
@@ -100,6 +129,7 @@ export default {
       answers,
       verifyCode,
       submitAnswers,
+      evaluateTest,
     };
   },
 };

@@ -26,6 +26,7 @@
           @keydown.enter="saveTestName"
         />
       </h2>
+      <h3>Kód testu : {{testCode}}</h3>
       
       <!-- Zoznam pridanych otázok -->
       <div v-if="questions.length > 0">
@@ -45,19 +46,51 @@
         <option value="text">Textová odpoveď</option>
       </select>
 
-      <!-- Pre otázky typu "choice" pridávanie možností -->
       <div v-if="questionType === 'choice'">
         <h3>Pridať možnosti</h3>
-        <input v-model="newOption" placeholder="Zadaj možnosť" />
-        <button @click="addOption">Pridať možnosť</button>
-        <ul>
-          <li v-for="(option, index) in options" :key="index">
-            {{ option }} <button @click="removeOption(index)">Odstrániť</button>
-          </li>
-        </ul>
+        <div v-for="(option, index) in options" :key="index" class="option-item">
+          <input v-model="option.text" placeholder="Zadaj možnosť" />
+          <label>
+            <input type="checkbox" v-model="option.hasValue" />
+            Pridať hodnotenie
+          </label>
+          <input 
+            v-if="option.hasValue" 
+            type="number" 
+            v-model.number="option.value" 
+            placeholder="Hodnota" 
+          />
+          <button @click="removeOption(index)">Odstrániť</button>
+        </div>
+        <button @click="addOption">Pridať novú možnosť</button>
       </div>
-
       <button @click="addQuestion">Pridať otázku</button>
+    </div>
+    
+    <!-- Sekcia pre škalovanie testu -->
+    <div v-if="testId && !loading && !error">
+      <h3>Škalovanie výsledkov</h3>
+      <div v-for="(scale, index) in scales" :key="index" class="scale-item">
+        <input 
+          type="number" 
+          v-model.number="scale.min" 
+          placeholder="Minimálne body" 
+        />
+        <input 
+          type="number" 
+          v-model.number="scale.max" 
+          placeholder="Maximálne body" 
+        />
+        <input 
+          v-model="scale.response" 
+          placeholder="Odpoveď (napr. Výborný výkon)" 
+        />
+        <button @click="removeScale(index)">Odstrániť</button>
+      </div>
+      <button @click="addScale">Pridať nové škálovanie</button>
+
+      <!-- Uložiť škálovanie -->
+      <button @click="saveScales">Uložiť škálovanie</button>
     </div>
   </div>
 </template>
@@ -81,7 +114,9 @@ export default {
     const newOption = ref('');
     const loading = ref(false);
     const error = ref(null);
-    const questions = ref([]); // Premenná pre uloženie otázok
+    const questions = ref([]); 
+    const scales = ref([]);
+    const testCode = ref([]);
 
     // Overenie prihlásenia
     const checkAuth = async () => {
@@ -116,8 +151,22 @@ export default {
           testId.value = data.id;
           testName.value = newTest.name;
           editedName.value = newTest.name;
-        })
-        .catch(console.error);
+          return fetch(`http://localhost:8000/api/tests/${data.id}/`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+      })
+      .then((response) => response.json())
+      .then((testDetails) => {
+        // Tu môžete spracovať detaily testu vrátane kódu
+        console.log('Test details:', testDetails);
+        testCode.value = testDetails.test_code; // Príklad - ak je vrátený "code"
+        console.log('Test code', testCode)
+      })
+      .catch(console.error);
     };
 
     // Povoliť režim úprav
@@ -156,50 +205,39 @@ export default {
         });
     };
 
-    // Pridanie možnosti pre otázku typu "choice"
-    const addOption = () => {
-      if (newOption.value.trim()) {
-        options.value.push(newOption.value.trim());
-        newOption.value = '';
-      }
+  const addOption = () => {
+    options.value.push({ text: '', hasValue: false, value: null }); // Predvolene nemá hodnotenie
+  };
+
+
+  const removeOption = (index) => {
+    options.value.splice(index, 1);
+  };
+
+  const addQuestion = () => {
+    const newQuestion = {
+      text: questionText.value,
+      question_type: questionType.value,
+      options: options.value, // Posiela sa JSON pole
     };
 
-    // Odstránenie možnosti
-    const removeOption = (index) => {
-      options.value.splice(index, 1);
-    };
-
-    // Pridanie otázky
-    const addQuestion = () => {
-      if (!store.getters.isAuthenticated) {
-        error.value = 'Nie ste prihlásený. Prihláste sa, aby ste mohli pridávať otázky.';
-        return;
-      }
-
-      const newQuestion = {
-        text: questionText.value,
-        question_type: questionType.value,
-        options: options.value.join(','), // Možnosti sú spojené do CSV reťazca
-      };
-
-      // Poslanie otázky na backend
-      fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newQuestion),
-        credentials: 'include',
+    fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuestion),
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        questions.value.push(data);
+        questionText.value = '';
+        questionType.value = 'boolean';
+        options.value = [];
       })
-        .then((response) => response.json())
-        .then((data) => {
-          questions.value.push(data); // Pridanie otázky do zoznamu
-          questionText.value = ''; // Resetovanie textu otázky
-          questionType.value = 'boolean'; // Resetovanie typu otázky
-          options.value = []; // Resetovanie možností
-        })
-        .catch(console.error);
-    };
+      .catch(console.error);
+};
 
     // Odstránenie otázky
     const deleteQuestion = (questionId, index) => {
@@ -220,6 +258,50 @@ export default {
           error.value = err.message;
         });
     };
+    // Pridanie nového škálovania
+    const addScale = () => {
+      scales.value.push({ min: 0, max: 0, response: '' });
+    };
+
+    // Odstránenie škálovania
+    const removeScale = (index) => {
+      scales.value.splice(index, 1);
+    };
+
+    const saveScales = () => {
+      // Upraviť formát scales na to, čo očakáva backend
+      const formattedScales = scales.value.map((scale) => ({
+          min_points: scale.min,
+          max_points: scale.max,
+          response: scale.response,
+      }));
+
+      fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formattedScales),
+        credentials: 'include',
+      })
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((err) => {
+                    console.error('Backendová chyba (plná odpoveď):', err);
+                    throw new Error(
+                        err.detail || JSON.stringify(err) || 'Neznáma chyba'
+                    );
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log('Scales uložené:', data);
+        })
+        .catch((err) => {
+            console.error('Chyba pri ukladaní:', err.message || err);
+        });
+      };
 
     // Načítanie komponentu
     onMounted(() => {
@@ -245,6 +327,11 @@ export default {
       removeOption,
       addQuestion,
       deleteQuestion, // Funkcia na odstránenie otázky
+      scales,
+      addScale,
+      removeScale,
+      saveScales,
+      testCode,
     };
   },
 };

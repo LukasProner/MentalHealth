@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from MentalHealthApp.models import User, Question, Test, TestSubmission, QuestionAnswer
+from MentalHealthApp.models import Scale, User, Question, Test, TestSubmission, QuestionAnswer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,12 @@ class QuestionSerializer(serializers.ModelSerializer):
         if isinstance(obj.options, str):
             return [opt.strip() for opt in obj.options.split(',')]
         return obj.options
-
+    def validate_options(self, value):
+        if self.instance and self.instance.question_type == 'choice':
+            for option in value:
+                if 'text' not in option or 'value' not in option:
+                    raise serializers.ValidationError("Každá možnosť musí mať 'text' a 'value'.")
+        return value
 class TestSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
 
@@ -48,3 +53,16 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionAnswer
         fields = ['question_text', 'question_type', 'answer']
+
+class ScaleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Scale
+        fields = ['id', 'test', 'min_points', 'max_points', 'response']
+
+    def validate(self, data):
+        # Validácia rozpätí bodov na strane API
+        if data['min_points'] >= data['max_points']:
+            raise serializers.ValidationError(
+                "Minimálne body musia byť menšie ako maximálne body."
+            )
+        return data

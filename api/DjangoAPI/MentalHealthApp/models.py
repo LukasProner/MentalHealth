@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.db.models import JSONField
 from django.utils.crypto import get_random_string
+from pydantic import ValidationError
 
 class User(AbstractBaseUser):
     name = models.CharField(max_length=255)
@@ -44,12 +45,11 @@ class Question(models.Model):
         choices=QUESTION_TYPES,
         default='boolean'
     )
-    options = JSONField(blank=True, null=True)  # CSV pre možnosti, ak je question_type "choice"
-    correct_answer = models.TextField(blank=True, null=True)  # Správna odpoveď (voliteľná)
+    options = JSONField(blank=True, null=True)  
     
     def save(self, *args, **kwargs):
         if self.question_type == 'choice' and isinstance(self.options, str):
-            self.options = [opt.strip() for opt in self.options.split(',')]
+            self.options = [{'text': opt.strip(), 'value': 0} for opt in self.options.split(',')]
         super().save(*args, **kwargs)
         
 
@@ -69,3 +69,26 @@ class QuestionAnswer(models.Model):
 
     def __str__(self):
         return f"{self.submission.user.email} - {self.question.text}: {self.answer}"
+
+class Scale(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="scales")
+    min_points = models.PositiveIntegerField()
+    max_points = models.PositiveIntegerField()
+    response = models.TextField()
+
+    def clean(self):
+        # Validácia rozpätí bodov
+        if self.min_points >= self.max_points:
+            raise ValidationError("Minimálne body musia byť menšie ako maximálne body.")
+
+        # Overenie, že rozsahy bodov sa neprekrývajú pre tento test
+        overlapping_scales = Scale.objects.filter(
+            test=self.test,
+            max_points__gte=self.min_points,
+            min_points__lte=self.max_points,
+        ).exclude(pk=self.pk)
+        if overlapping_scales.exists():
+            raise ValidationError("Rozpätia bodov sa prekrývajú s existujúcim škálovaním.")
+
+    def __str__(self):
+        return f"{self.min_points} - {self.max_points}: {self.response}"
