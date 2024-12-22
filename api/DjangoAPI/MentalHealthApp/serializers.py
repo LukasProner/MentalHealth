@@ -57,7 +57,7 @@ class QuestionAnswerSerializer(serializers.ModelSerializer):
 class ScaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scale
-        fields = ['id', 'test', 'min_points', 'max_points', 'response']
+        fields = '__all__'
 
     def validate(self, data):
         # Validácia rozpätí bodov na strane API

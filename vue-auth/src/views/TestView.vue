@@ -95,6 +95,10 @@
           v-model="scale.response" 
           placeholder="Odpoveď (napr. Výborný výkon)" 
         />
+        <input 
+          v-model="scale.category" 
+          placeholder="Vyber kategoriu" 
+        />
         <button @click="removeScale(index)">Odstrániť</button>
       </div>
       <button @click="addScale">Pridať nové škálovanie</button>
@@ -284,7 +288,6 @@ export default {
         });
 
         if (!response.ok) {
-          // Ak odpoveď nie je úspešná (napr. 4xx alebo 5xx)
           throw new Error(`Chyba pri aktualizácii: ${response.statusText}`);
         }
 
@@ -312,6 +315,7 @@ export default {
           min_points: scale.min,
           max_points: scale.max,
           response: scale.response,
+          category: scale.category,
       }));
 
       fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {

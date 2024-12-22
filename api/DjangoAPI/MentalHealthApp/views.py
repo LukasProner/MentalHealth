@@ -501,6 +501,8 @@ class EvaluateTestView(APIView):
             responses = []
             for category, score in category_scores.items():
                 matching_scales = scales.filter(category=category)
+                print("matching_scales", matching_scales ," category ", category)
+
                 for scale in matching_scales:
                     if scale.min_points <= score <= scale.max_points:
                         responses.append({
@@ -509,6 +511,8 @@ class EvaluateTestView(APIView):
                             "response": scale.response
                         })
                         break
+                    else:
+                        print("category2", category)
 
             # Ak neexistuje žiadna odpoveď pre danú kategóriu
             if not responses:
