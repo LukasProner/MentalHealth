@@ -34,6 +34,16 @@
         <ul>
           <li v-for="(question, index) in questions" :key="question.id">
             <p>{{ question.text }}</p>
+            <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
+
+            <!-- Textové pole na zadanie kategórie -->
+            <div v-if="question.showCategoryInput">
+              <input 
+                v-model="question.newCategory" 
+                placeholder="Zadajte novú kategóriu" 
+                @blur="saveCategory(index)"
+              />
+            </div>
             <button @click="deleteQuestion(question.id, index)">Odstrániť</button>
           </li>
         </ul>
@@ -117,6 +127,7 @@ export default {
     const questions = ref([]); 
     const scales = ref([]);
     const testCode = ref([]);
+    const questionCategory= ref('');
 
     // Overenie prihlásenia
     const checkAuth = async () => {
@@ -218,7 +229,8 @@ export default {
     const newQuestion = {
       text: questionText.value,
       question_type: questionType.value,
-      options: options.value, // Posiela sa JSON pole
+      options: options.value, 
+      category: questionCategory.value || 'Nezaradená'
     };
 
     fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
@@ -235,6 +247,7 @@ export default {
         questionText.value = '';
         questionType.value = 'boolean';
         options.value = [];
+        questionCategory.value = ''; 
       })
       .catch(console.error);
 };
@@ -257,6 +270,31 @@ export default {
         .catch((err) => {
           error.value = err.message;
         });
+    };
+
+    const updateQuestion = async (questionId, updatedData) => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`, {
+          method: 'PUT', 
+          headers: {
+            'Content-Type': 'application/json', // Označenie, že telo požiadavky je JSON
+          },
+          credentials: 'include', // Zabezpečenie, že cookies (napr. JWT) budú odoslané
+          body: JSON.stringify(updatedData), // Serializácia dát na JSON
+        });
+
+        if (!response.ok) {
+          // Ak odpoveď nie je úspešná (napr. 4xx alebo 5xx)
+          throw new Error(`Chyba pri aktualizácii: ${response.statusText}`);
+        }
+
+        const responseData = await response.json(); // Parsovanie odpovede na JSON
+        console.log('Otázka bola aktualizovaná:', responseData);
+        return responseData;
+      } catch (error) {
+        console.error('Chyba pri aktualizácii otázky:', error);
+        throw error; // Re-throw, ak potrebuješ chybu ošetriť vyššie
+      }
     };
     // Pridanie nového škálovania
     const addScale = () => {
@@ -303,6 +341,36 @@ export default {
         });
       };
 
+
+    const toggleCategoryInput = (index) => {
+      const question = questions.value[index];
+      question.showCategoryInput = !question.showCategoryInput;
+    };
+    const saveCategory = (index) => {
+      const question = questions.value[index];
+      console.log('savujem categoriu')
+      if (question.newCategory) {
+        console.log('savujem categoriu2')
+
+        question.category = question.newCategory;
+        console.log(question.category)
+        question.newCategory = ''; // Resetovať textové pole
+      }
+      question.showCategoryInput = false; // Skryť input po uložení
+      updateQuestion(question.id, { 
+        category: question.category, // Aktualizovaná kategória
+        text: question.text, // Nezabudni na text otázky (ak je povinný)
+        question_type: question.question_type // Ak je potrebný aj typ otázky
+      })
+      .then(response => {
+        console.log('Kategória bola úspešne aktualizovaná:', response);
+      })
+      .catch(error => {
+        console.error('Chyba pri aktualizácii kategórie:', error);
+      });
+      
+    };
+
     // Načítanie komponentu
     onMounted(() => {
       checkAuth();
@@ -332,6 +400,9 @@ export default {
       removeScale,
       saveScales,
       testCode,
+      toggleCategoryInput,
+      saveCategory,
+      updateQuestion,
     };
   },
 };

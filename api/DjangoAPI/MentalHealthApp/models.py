@@ -46,6 +46,7 @@ class Question(models.Model):
         default='boolean'
     )
     options = JSONField(blank=True, null=True)  
+    category = models.CharField(max_length=100, blank=True, null=True, default='Nezaradená')
     
     def save(self, *args, **kwargs):
         if self.question_type == 'choice' and isinstance(self.options, str):
@@ -66,6 +67,12 @@ class QuestionAnswer(models.Model):
     submission = models.ForeignKey(TestSubmission, related_name='answers', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
     answer = models.TextField()  
+    category = models.CharField(max_length=100, blank=True, null=True, default='Nezaradená')
+
+    def save(self, *args, **kwargs):
+        # Automaticky nastav kategóriu podľa otázky bez kontroly
+        self.category = self.question.category
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.submission.user.email} - {self.question.text}: {self.answer}"
@@ -75,6 +82,7 @@ class Scale(models.Model):
     min_points = models.PositiveIntegerField()
     max_points = models.PositiveIntegerField()
     response = models.TextField()
+    category = models.CharField(max_length=100, default='Nezaradená')
 
     def clean(self):
         # Validácia rozpätí bodov

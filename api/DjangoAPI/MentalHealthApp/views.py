@@ -195,13 +195,16 @@ class QuestionListView(APIView):
         token = request.COOKIES.get('jwt')
         if not token:
             raise AuthenticationFailed('Unauthenticated!')
+
         try:
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('Token has expired!')
+
         user = User.objects.filter(id=payload['id']).first()
         if not user:
             raise AuthenticationFailed('User not found!')
+
         try:
             test = Test.objects.get(id=test_id, created_by=user)
         except Test.DoesNotExist:
@@ -210,18 +213,24 @@ class QuestionListView(APIView):
         question_type = request.data.get('question_type', 'boolean')
         text = request.data.get('text')
         options = request.data.get('options', '')  # CSV možnosti
+        category = request.data.get('category')  # Pridanie kategórie
+
+        if not category:
+            return Response({'error': 'Category is required!'}, status=status.HTTP_400_BAD_REQUEST)
 
         question = Question.objects.create(
             test=test,
             text=text,
             question_type=question_type,
             options=options,
+            category=category,  # Uloženie kategórie
         )
 
         return Response(
-            {'id': question.id, 'text': question.text, 'type': question.question_type},
+            {'id': question.id, 'text': question.text, 'type': question.question_type, 'category': question.category},
             status=status.HTTP_201_CREATED
         )
+
     def put(self, request, question_id):
         token = request.COOKIES.get('jwt')
         if not token:
@@ -242,9 +251,11 @@ class QuestionListView(APIView):
         # Aktualizuj otázku na základe dát z požiadavky
         question.text = request.data.get('text', question.text)
         question.question_type = request.data.get('question_type', question.question_type)
+        question.category = request.data.get('category', question.category)  # Pridanie aktualizácie kategórie
         question.save()
 
         return Response(QuestionSerializer(question).data, status=status.HTTP_200_OK)
+
 
     def delete(self, request, question_id):
         token = request.COOKIES.get('jwt')
@@ -457,7 +468,9 @@ class EvaluateTestView(APIView):
             # Získaj odpovede
             user_answers = request.data.get('answers', [])
             print("User answers:", user_answers)
-            total_score = 0
+
+            # Inicializácia výsledkov pre jednotlivé kategórie
+            category_scores = {}  # {'category1': total_score, 'category2': total_score, ...}
             
             # Iterácia cez odpovede
             for answer in user_answers:
@@ -471,24 +484,49 @@ class EvaluateTestView(APIView):
                     continue
                 if answer_data.get('hasValue'):
                     value = answer_data.get('value', 0)
-                    print(f"Question {question_id} has value: {value}")
-                    total_score += value
-            print(f"Total score: {total_score}")
-            for scale in scales:
-                if scale.min_points <= total_score <= scale.max_points:
-                    response = scale.response
-                    break
+                    question = Question.objects.get(pk=question_id)
 
-            if response:
-                return Response({"total_points": total_score, "response": response}, status=status.HTTP_200_OK)
-            else:
-                return Response({"error": "No matching scale found for the total points."}, status=status.HTTP_400_BAD_REQUEST)
+                    # Kategória otázky
+                    question_category = question.category or 'Nezaradená'
+                    print(f"Question {question_id} (Category: {question_category}) has value: {value}")
+
+                    # Pridaj hodnotu do správnej kategórie
+                    if question_category not in category_scores:
+                        category_scores[question_category] = 0
+                    category_scores[question_category] += value
+
+            print(f"Category scores: {category_scores}")
+
+            # Výsledné odpovede na základe škál
+            responses = []
+            for category, score in category_scores.items():
+                matching_scales = scales.filter(category=category)
+                for scale in matching_scales:
+                    if scale.min_points <= score <= scale.max_points:
+                        responses.append({
+                            "category": category,
+                            "total_points": score,
+                            "response": scale.response
+                        })
+                        break
+
+            # Ak neexistuje žiadna odpoveď pre danú kategóriu
+            if not responses:
+                return Response(
+                    {"error": "No matching scales found for the provided answers."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             # Vráť výsledok
-            return Response({"total_score": total_score}, status=status.HTTP_200_OK)
+            print("9999")
+            print({"total_score": responses})
+            return Response({"total_score": responses}, status=status.HTTP_200_OK)
         except Test.DoesNotExist:
             return Response({"error": "Test not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Question.DoesNotExist:
+            return Response({"error": "Invalid question ID provided."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 

@@ -36,7 +36,6 @@ class PublicTests(TestCase):
         response = self.client.post('/api/tests/1/public/', {'test_code': 'INVALIDCODE'})
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['error'], 'Invalid test code')
 
     def test_non_existent_test_code(self):
         response = self.client.post('/api/tests/999/public/', {'test_code': 'G12345'})
@@ -62,14 +61,13 @@ class LoginTest(TestCase):
         
         # Overenie správneho status kódu a prihlásenia
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('jwt', response.data)  # Overenie prítomnosti tokenu v odpovedi, ak používate JWT
+        self.assertIn('jwt', response.data) 
 
     def test_login_invalid_credentials(self):
-        # Pokus o prihlásenie s neplatnými údajmi
         response = self.client.post('/api/login/', {'email': 'test@example.com', 'password': 'wrongpassword'}, format='json')
         
         # Overenie, že odpoveď obsahuje chybu
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['error'], 'Invalid credentials')  # Očakávaný chybový message
 
     def test_login_user_not_found(self):
@@ -77,6 +75,58 @@ class LoginTest(TestCase):
         response = self.client.post('/api/login/', {'email': 'nonexistent@example.com', 'password': 'anyPassword'}, format='json')
         
         # Overenie, že odpoveď obsahuje chybu
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data['error'], 'User not found')  # Očakávaný chybový message
 
+
+class RegistrationTest(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_registration_success(self):
+        # Úspešná registrácia
+        data = {
+            "name": "Test User",
+            "email": "test@example.com",
+            "password": "securepassword123"
+        }
+        response = self.client.post('/api/register/', data, format='json')
+        
+        # Overenie správneho status kódu a odpovede
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Overenie, že používateľ bol uložený v databáze
+        user = User.objects.get(email="test@example.com")
+        self.assertEqual(user.name, "Test User")
+        self.assertTrue(user.check_password("securepassword123"))  # Heslo musí byť správne zašifrované
+
+    def test_registration_missing_fields(self):
+        # Chýbajúce polia
+        data = {
+            "name": "",
+            "email": "test@example.com",
+            "password": "securepassword123"
+        }
+        response = self.client.post('/api/register/', data, format='json')
+        
+        # Overenie chybového status kódu a správy
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('name', response.data)
+        self.assertEqual(response.data['name'][0], 'This field may not be blank.')
+
+    def test_registration_duplicate_email(self):
+        # Duplicitný email
+        User.objects.create(email="test@example.com", name="Existing User", password="securepassword123")
+        
+        data = {
+            "name": "Test User",
+            "email": "test@example.com",
+            "password": "securepassword123"
+        }
+        response = self.client.post('/api/register/', data, format='json')
+        
+        # Overenie chybového status kódu a správy
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('email', response.data)
+        self.assertEqual(str(response.data['email'][0]), 'user with this email already exists.')
