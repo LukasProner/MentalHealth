@@ -276,6 +276,20 @@ class QuestionListView(APIView):
 
         question.delete()
         return Response({"message": "Question deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    
+    def get(self, request, question_id):
+        try:
+            question = Question.objects.get(id=question_id)
+        except Question.DoesNotExist:
+            raise NotFound('Question not found')
+        return Response({
+            "id": question.id,
+            "text": question.text,
+            "test_id": question.test_id,
+            "options": question.options,
+            "question_type": question.question_type,
+            "category": question.category,
+        }, status=status.HTTP_200_OK)
 
 
 class TestDetailView(APIView):

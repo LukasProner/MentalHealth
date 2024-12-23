@@ -20,3 +20,6 @@ Backend:
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
+
+
+    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
