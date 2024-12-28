@@ -9,7 +9,6 @@ from django.contrib.auth import login, authenticate,logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
-
 from MentalHealthApp.models import User
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
@@ -18,6 +17,23 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import AuthenticationFailed
 import json
 import jwt,datetime
+from rest_framework.response import Response
+from rest_framework import status
+from .models import TestSubmission, Question, QuestionAnswer
+from django.shortcuts import get_object_or_404
+import base64
+from django.core.files.base import ContentFile
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import ImageModel, Scale
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Test, Question
+from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
+import jwt
+from django.contrib.auth import get_user_model
+from rest_framework.exceptions import AuthenticationFailed, NotFound
 
 class RegisterView(APIView):
     def post(self,request):
@@ -119,12 +135,6 @@ def SaveFile(request):
     return JsonResponse(file_name,safe=False)
 
 
-import base64
-from django.core.files.base import ContentFile
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import ImageModel, Scale
-
 class UploadImageView(APIView):
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -140,17 +150,6 @@ class UploadImageView(APIView):
             return Response({"message": "Obrázok bol uložený."})
         return Response({"error": "Žiadny obrázok nebol odoslaný."}, status=400)
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Test, Question
-from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
-
-
-import jwt
-from django.contrib.auth import get_user_model
-from rest_framework.exceptions import AuthenticationFailed, NotFound
 
 User = get_user_model()
 
@@ -294,26 +293,47 @@ class QuestionListView(APIView):
 
 class TestDetailView(APIView):
     def get(self, request, id):
-        token = request.COOKIES.get('jwt')
-        if not token:
-            raise AuthenticationFailed('Unauthenticated!')
         try:
-            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Token has expired!')
-        user = User.objects.filter(id=payload['id']).first()
-        if not user:
-            raise AuthenticationFailed('User not found!')
-        try:
-            test = Test.objects.get(id=id, created_by=user)
+            # Načítaj test podľa ID
+            test = Test.objects.get(id=id)
         except Test.DoesNotExist:
             return Response(
-                {'error': 'Test not found or not authorized'}, 
+                {'error': 'Test not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
-
+        
+        # Ak je test vytvorený adminom, je prístupný všetkým
+        if test.created_by.is_admin:
+            serializer = TestSerializer(test)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Ak nie je vytvorený adminom, overíme, či je používateľ autentifikovaný
+        token = request.COOKIES.get('jwt')
+        if not token:
+            return Response(
+                {'error': 'Unauthorized access'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        try:
+            payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+            user_id = payload['id']
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {'error': 'Token has expired'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Overíme, či je autentifikovaný používateľ autorom testu
+        if test.created_by.id != user_id:
+            return Response(
+                {'error': 'Not authorized to view this test'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Ak je používateľ autorom testu, vrátime dáta
         serializer = TestSerializer(test)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     def delete(self, request, id):
         try:
             test = Test.objects.get(id=id) 
@@ -354,11 +374,6 @@ class TestDetailView(APIView):
             status=status.HTTP_200_OK
         )
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import TestSubmission, Question, QuestionAnswer
-from django.shortcuts import get_object_or_404
 
 class SubmitTestView(APIView):
     def post(self, request, test_id):
@@ -547,4 +562,39 @@ class EvaluateTestView(APIView):
             print(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
 
+class TestListAdmin(APIView):
+    def get(self, request, *args, **kwargs):
+        # Skontroluj, či používateľ poskytol JWT token
+        token = request.COOKIES.get('jwt')
+        user = None
+        is_admin = False
+
+        if token:
+            try:
+                payload = jwt.decode(token, 'secret', algorithms=['HS256'])
+                user_id = payload.get('id')  # Predpokladá sa, že ID je v token payload
+                user = User.objects.filter(id=user_id).first()
+                if user:
+                    is_admin = user.is_admin
+            except jwt.ExpiredSignatureError:
+                pass  # Token vypršal, pokračujeme ako neprihlásený používateľ
+            except jwt.DecodeError:
+                pass  # Neplatný token, pokračujeme ako neprihlásený používateľ
+
+        # Logika pre načítanie testov
+        if is_admin:
+            # Admin vidí všetky testy
+            tests = Test.objects.all().values('id', 'name', 'created_by__name')
+        else:
+            # Neprihlásení aj neadmini vidia len testy vytvorené adminmi
+            tests = Test.objects.filter(created_by__is_admin=True).values('id', 'name')
+
+        return Response({"tests": list(tests)}, status=200)
+
+
+        

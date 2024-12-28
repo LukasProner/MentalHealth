@@ -409,6 +409,7 @@ class TestEvaluationOfAnswears(TestCase):
                
 
     def test_evaluate_test_successfully(self):
+        print("----test_evaluate_test_successfully")
         self.questions_data = [
             {
                 "text": "another question",
@@ -486,6 +487,7 @@ class TestEvaluationOfAnswears(TestCase):
 
 
     def test_evaluate_divv_categories(self):
+        print("test_evaluate_divv_categories")
         self.questions_data = [
             {
                 "text": "another question",
@@ -613,7 +615,109 @@ class TestEvaluationOfAnswears(TestCase):
         # Overenie výstupu
         evaluation_data = response.data
         self.assertIn("total_score", evaluation_data)
-        self.assertEqual(evaluation_data["total_score"], [{'category': '1', 'total_points': 5, 'response': 'Low'}, {'category': '2', 'total_points': 5, 'response': 'Low'}]) 
+        self.assertEqual(evaluation_data["total_score"], [{'category': '1', 'total_points': 11, 'response': 'Medium'}, {'category': '2', 'total_points': 5, 'response': 'Low'}]) 
 
     
-    
+    def test_evaluate_smth_that_didnt_work(self):
+        print("***********")
+        self.questions_data = [
+            {
+                "text": "1Q",
+                "question_type": "choice",
+                "options": [
+                    {
+                        "text": "1A",
+                        "value": 5,
+                        "hasValue": True
+                    },
+                    {
+                        "text": "12A",
+                        "value": 5,
+                        "hasValue": True
+                    },
+                ],
+                "category": "1"
+            },
+            {
+                "text": "2Q",
+                "question_type": "choice",
+                "options": [
+                    {
+                        "text": "2A",
+                        "value": 5,
+                        "hasValue": True
+                    },
+                ],
+                "category": "2"
+            },
+            {
+                "text": "3Q",
+                "question_type": "choice",
+                "options": [
+                    {
+                        "text": "3A",
+                        "value": 5,
+                        "hasValue": True
+                    },
+                ],
+                "category": "2"
+            },
+            {"text": "Is the sky blue?", "question_type": "boolean", "options": "", "category": "1"},
+            {"text": "What is 2 + 2?", "question_type": "boolean", "options": "", "category": "1"},
+        ]
+        self.question_ids = []
+        for question in self.questions_data:
+            response = self.client.post(f'/api/tests/{self.test_id}/questions/', question, format='json')
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            self.assertEqual(response.data['text'], question['text'])
+            self.question_ids.append(response.data['id'])
+        
+        answers = [
+            {'question_id': self.question_ids[0], 'answer': {'text': '1A', 'value': 5, 'hasValue': True}},
+            {'question_id': self.question_ids[1], 'answer': {'text': '2A', 'value': 5, 'hasValue': True}},
+            {'question_id': self.question_ids[2], 'answer': {'text': '3A', 'value': 5, 'hasValue': True}},
+            {'question_id': self.question_ids[3], 'answer': {'text': 'Yes'}},
+            {'question_id': self.question_ids[4], 'answer': {'text': 'No'}},
+
+        ]
+        self.scales_data = [
+            {"min_points": 0, "max_points": 5, "response": "Low", "category": "1"},
+            {"min_points": 0, "max_points": 15, "response": "Medium", "category": "2"},
+        ]
+        response = self.client.post(
+            f'/api/tests/{self.test_id}/scales/',
+            self.scales_data,
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(
+            f'/api/tests/{self.test_id}/submit/',
+            {
+                'test_code': self.test_code,
+                'answers': answers
+            },
+            format='json'
+        )
+        print("Test Response Data:", response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response = self.client.post(
+            f'/api/tests/{self.test_id}/evaluate/',
+            {
+                "test_code": self.test_code,  # Testovací kód
+                "answers": answers,
+            },
+            format='json'
+        )
+        print('respone in evaluation', response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Overenie výstupu
+        evaluation_data = response.data
+        self.assertIn("total_score", evaluation_data)
+        self.assertEqual(evaluation_data["total_score"], [{'category': '1', 'total_points': 5, 'response': 'Low'}, {'category': '2', 'total_points': 10, 'response': 'Medium'}]) 
+
+

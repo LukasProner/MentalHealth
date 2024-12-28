@@ -11,7 +11,7 @@
       <router-link to="/contact" >Kontakt</router-link>
       <router-link to="/documentation" >Dokumentácia</router-link>
       <router-link to="/choosetest" >Moje testy</router-link>
-      <router-link to="/choosetest" >Zoznam testov</router-link>
+      <router-link to="/default" >Zoznam testov</router-link>
       
       <router-link v-if="!auth" to="/login" class="btn">Prihlásiť</router-link>
       <router-link v-if="!auth" to="/register" class="btn register">Register</router-link>

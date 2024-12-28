@@ -9,6 +9,7 @@ import TestDetailView from '@/views/TestDetailView.vue';
 import TestAnswers from '@/views/TestAnswers.vue'
 import PublicTestView from '@/views/PublicTestView.vue'
 import ResponsesView from '@/views/ResponsesView.vue'
+import DefaultTestsView from '@/views/DefaultTestsView.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
@@ -20,6 +21,7 @@ const routes: Array<RouteRecordRaw> = [
     {path: '/test/:id/:code',component: TestAnswers,},
     {path: '/tests/:id/public',component: PublicTestView,},
     {path: '/tests/:id/responses',component: ResponsesView,},
+    {path: '/default', component: DefaultTestsView},
 ]
 // umožňuje používať moderné URL bez hash (#)
 const router = createRouter({

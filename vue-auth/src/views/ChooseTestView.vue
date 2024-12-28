@@ -16,7 +16,7 @@
         <span class="add-icon">+</span>
       </router-link>
 
-      <div class="test-card" v-for="test in tests" :key="test.id">
+      <div class="test-card" v-for="test in sortedTests(tests)" :key="test.id">
         <div class="test-header">
           <router-link
             v-if="test.id"
@@ -102,6 +102,9 @@ export default {
         loading.value = false;
       }
     });
+    const sortedTests = (tests) => {
+      return [...tests].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    };
 
     return {
       tests,
@@ -109,6 +112,7 @@ export default {
       error,
       getDate,
       deleteTest,
+      sortedTests,
     };
   },
 };

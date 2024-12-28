@@ -9,17 +9,21 @@ Backend:
     pridať moznosť pridavania testov
     pridať testy
     pridať import z dakade prejdť si este hlasovku
-    zobrazenie odpovedí 
+    .zobrazenie odpovedí 
         -Chcel by som asi pridať zaheslovanie odpovedi a pri otvorení testu ich zobraziť po teste
     pridať dalsie sposoby odpovedí 
         - vcetne kreslenia a snimania obrazovky
-    prida+t samovzhodnocovanie
+    .prida+t samovzhodnocovanie
     otazky pri vytvarani testu nie len upravovať ale aj premiestnovať
     pridať zobrazovanie kodu tvorcovi pri dokončiť test - pridať uložiť test 
     pridať zdielanie
+    zoradiť odpovede podla casu vytvorenia
+    .skontrolovať poradie otazok a testov
+    odosielanie mailom
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
+
 
 
     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

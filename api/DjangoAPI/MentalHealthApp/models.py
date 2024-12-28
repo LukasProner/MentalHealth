@@ -6,12 +6,26 @@ from pydantic import ValidationError
 
 class User(AbstractBaseUser):
     name = models.CharField(max_length=255)
-    email = models.CharField(max_length=255,unique=True )  # Povinné
-    password = models.CharField(max_length=255)  # Django už zahŕňa šifrovanie hesiel
+    email = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
     username = None
-   
-    USERNAME_FIELD = 'email' 
+
+    is_admin = models.BooleanField(default=False)  # Označenie administrátora
+    is_staff = models.BooleanField(default=False)  # Pre prístup do Django admin rozhrania
+
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
+
+    def has_perm(self, perm, obj=None):
+        if self.is_admin:
+            return True  # Administrátor má všetky oprávnenia
+        return False 
+    
+    def has_module_perms(self, app_label):
+        if self.is_admin:
+            return True  # Administrátor má prístup k všetkým modulom
+        return False 
+    
 
 class ImageModel(models.Model):
     image = models.ImageField(upload_to='images/')
