@@ -461,14 +461,22 @@ class PublicTestView(APIView):
 
 
 class ScaleView(APIView):
-    def post(self, request, test_id):
-        # Overenie existencie testu
+    def get(self, request, test_id):
         try:
             test = Test.objects.get(pk=test_id)
         except Test.DoesNotExist:
             return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Spracovanie údajov
+        scales = Scale.objects.filter(test=test)
+        serializer = ScaleSerializer(scales, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, test_id):
+        try:
+            test = Test.objects.get(pk=test_id)
+        except Test.DoesNotExist:
+            return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+
         data = request.data
         if not isinstance(data, list):
             return Response(
@@ -476,7 +484,6 @@ class ScaleView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Vytváranie škál
         for scale_data in data:
             scale_data['test'] = test.id  # Pridanie ID testu do dát
         serializer = ScaleSerializer(data=data, many=True)

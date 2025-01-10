@@ -316,8 +316,41 @@ export default {
             console.error('Chyba pri ukladaní otázky:', err);
           });
       }
+      console.log(data)
+      const scale_response = await fetch(`http://localhost:8000/api/tests/${test.id}/scales/`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP chyba! Status: ${response.status}`);
+      }
+      const temp_scales = await scale_response.json();
+      console.log('Scales from selected test:', temp_scales);
 
-      isTestOpen.value = false; // Zavrie zoznam testov po výbere
+      await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(temp_scales),
+        credentials: 'include',
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Chyba pri ukladaní škál: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((savedScales) => {
+          console.log('Uložené škály:', savedScales);
+        })
+        .catch((err) => {
+          console.error('Chyba pri ukladaní škál:', err);
+        });
+
+      
+      isTestOpen.value = false; 
     } catch (err) {
       error.value = 'Chyba pri načítavaní otázok z vybraného testu.';
       console.error('Error:', err);

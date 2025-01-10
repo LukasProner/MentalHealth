@@ -17,13 +17,14 @@ Backend:
     otazky pri vytvarani testu nie len upravovať ale aj premiestnovať
     pridať zobrazovanie kodu tvorcovi pri dokončiť test - pridať uložiť test 
     pridať zdielanie
-    zoradiť odpovede podla casu vytvorenia
+    .zoradiť odpovede podla casu vytvorenia
     .skontrolovať poradie otazok a testov
     odosielanie mailom
+    pridať možnosť otestovať sa pre neprihlasenych
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
 
 
 
-    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
+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
