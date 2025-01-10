@@ -75,6 +75,15 @@
         <button @click="addOption">Pridať novú možnosť</button>
       </div>
       <button @click="addQuestion">Pridať otázku</button>
+      <button @click="chooseDefaultTest">
+        {{ isTestOpen ? "Zavrieť" : "Pridať test"}}
+      </button>
+      <div v-if="isTestOpen">
+        <h2>Vyber test</h2>
+        <li v-for="test in defaultTests" :key="test.id" @click="selectTest(test)">
+          {{ test.name }}
+        </li>
+      </div>
     </div>
     
     <!-- Sekcia pre škalovanie testu -->
@@ -132,6 +141,8 @@ export default {
     const scales = ref([]);
     const testCode = ref([]);
     const questionCategory= ref('');
+    const defaultTests = ref([]);
+    const isTestOpen = ref(false);
 
     // Overenie prihlásenia
     const checkAuth = async () => {
@@ -229,6 +240,91 @@ export default {
     options.value.splice(index, 1);
   };
 
+  const chooseDefaultTest = () =>{
+    isTestOpen.value = !isTestOpen.value
+    return null
+  }
+
+  const fetchDefaultTests = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/tests/default/`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', 
+      });
+      console.log('response',response)
+
+      if (!response.ok) {
+        throw new Error(`HTTP chyba! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('data',data)
+      defaultTests.value = data.tests;
+    } catch (err) {
+      error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
+      console.error('Error:', err);
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const selectTest = async (test) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/tests/${test.id}/`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP chyba! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Questions from selected test:', data.questions);
+      questions.value.push(...data.questions.sort((a, b) => a.id - b.id));
+
+      // Iterácia cez otázky a ich uloženie k aktuálnemu testu
+      for (const question of data.questions) {
+        const newQuestion = {
+          text: question.text,
+          question_type: question.question_type,
+          options: question.options || [],
+          category: question.category || 'Nezaradená',
+        };
+
+        // Voláme API na pridanie otázky
+        await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newQuestion),
+          credentials: 'include',
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Chyba pri ukladaní otázky: ${response.status}`);
+            }
+            return response.json();
+          })
+          // .then((savedQuestion) => {
+          //   questions.value.push(savedQuestion);
+          // })
+          .catch((err) => {
+            console.error('Chyba pri ukladaní otázky:', err);
+          });
+      }
+
+      isTestOpen.value = false; // Zavrie zoznam testov po výbere
+    } catch (err) {
+      error.value = 'Chyba pri načítavaní otázok z vybraného testu.';
+      console.error('Error:', err);
+    }
+  };
+
+    
   const addQuestion = () => {
     const newQuestion = {
       text: questionText.value,
@@ -254,27 +350,27 @@ export default {
         questionCategory.value = ''; 
       })
       .catch(console.error);
-};
+  };
 
     // Odstránenie otázky
-    const deleteQuestion = (questionId, index) => {
-      fetch(`http://localhost:8000/api/questions/${questionId}/`, {
-        method: 'DELETE',
-        credentials: 'include',
+  const deleteQuestion = (questionId, index) => {
+    fetch(`http://localhost:8000/api/questions/${questionId}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
+      .then((response) => {
+        if (response.ok) {
+          // Odstrániť otázku z lokálneho zoznamu
+          console.log("no co je toto")
+          questions.value.splice(index, 1);
+        } else {
+          throw new Error('Nepodarilo sa odstrániť otázku.');
+        }
       })
-        .then((response) => {
-          if (response.ok) {
-            // Odstrániť otázku z lokálneho zoznamu
-            console.log("no co je toto")
-            questions.value.splice(index, 1);
-          } else {
-            throw new Error('Nepodarilo sa odstrániť otázku.');
-          }
-        })
-        .catch((err) => {
-          error.value = err.message;
-        });
-    };
+      .catch((err) => {
+        error.value = err.message;
+      });
+  };
 
     const updateQuestion = async (questionId, updatedData) => {
       try {
@@ -299,18 +395,16 @@ export default {
         throw error; // Re-throw, ak potrebuješ chybu ošetriť vyššie
       }
     };
-    // Pridanie nového škálovania
+
     const addScale = () => {
       scales.value.push({ min: 0, max: 0, response: '' });
     };
 
-    // Odstránenie škálovania
     const removeScale = (index) => {
       scales.value.splice(index, 1);
     };
 
     const saveScales = () => {
-      // Upraviť formát scales na to, čo očakáva backend
       const formattedScales = scales.value.map((scale) => ({
           min_points: scale.min,
           max_points: scale.max,
@@ -378,6 +472,7 @@ export default {
     // Načítanie komponentu
     onMounted(() => {
       checkAuth();
+      fetchDefaultTests();
     });
 
     return {
@@ -407,6 +502,10 @@ export default {
       toggleCategoryInput,
       saveCategory,
       updateQuestion,
+      chooseDefaultTest,
+      isTestOpen,
+      defaultTests,
+      selectTest
     };
   },
 };

@@ -36,11 +36,9 @@
           }
   
           const data = await response.json();
-          console.log('data',data)
           tests.value = data.tests; // Uloženie testov do premennej
         } catch (err) {
           error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
-          console.error('Error:', err);
         } finally {
           loading.value = false; // Ukončenie načítavania
         }
