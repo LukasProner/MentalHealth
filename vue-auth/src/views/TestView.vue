@@ -114,6 +114,7 @@
 
       <!-- Uložiť škálovanie -->
       <button @click="saveScales">Uložiť škálovanie</button>
+      <Import :testId="testId" @import-complete="handleImportComplete" />
     </div>
   </div>
 </template>
@@ -121,8 +122,12 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
+import Import from '../components/Import.vue';
 
 export default {
+  components: {
+    Import,
+  },
   setup() {
     const store = useStore();
 
@@ -472,7 +477,6 @@ export default {
         });
       };
 
-
     const toggleCategoryInput = (index) => {
       const question = questions.value[index];
       question.showCategoryInput = !question.showCategoryInput;
@@ -500,6 +504,10 @@ export default {
         console.error('Chyba pri aktualizácii kategórie:', error);
       });
       
+    };
+    const handleImportComplete = (data) => {
+        console.log("Import bol úspešne dokončený!");
+        questions.value.push(...data)
     };
 
     // Načítanie komponentu
@@ -538,7 +546,8 @@ export default {
       chooseDefaultTest,
       isTestOpen,
       defaultTests,
-      selectTest
+      selectTest,
+      handleImportComplete
     };
   },
 };
