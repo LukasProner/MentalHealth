@@ -28,7 +28,6 @@
       </h2>
       <h3>Kód testu : {{testCode}}</h3>
       
-      <!-- Zoznam pridanych otázok -->
       <div v-if="questions.length > 0">
         <h3>Otázky:</h3>
         <ul>
@@ -36,7 +35,6 @@
             <p>{{ question.text }}</p>
             <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
 
-            <!-- Textové pole na zadanie kategórie -->
             <div v-if="question.showCategoryInput">
               <input 
                 v-model="question.newCategory" 
@@ -113,7 +111,7 @@
       <button @click="addScale">Pridať nové škálovanie</button>
 
       <!-- Uložiť škálovanie -->
-      <button @click="saveScales">Uložiť škálovanie</button>
+      <button @click="actualizeScales">Uložiť škálovanie</button>
       <Import :testId="testId" @import-complete="handleImportComplete" />
     </div>
   </div>
@@ -476,6 +474,25 @@ export default {
             console.error('Chyba pri ukladaní:', err.message || err);
         });
       };
+    const actualizeScales = async () => {
+      try {
+          const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
+              method: 'DELETE',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+          });
+
+          if (!response.ok) {
+              const error = await response.json();
+              console.error('Chyba pri odstránení škál:', error);
+              throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
+          }
+          saveScales();
+      } catch (error) {
+          console.error('Chyba pri aktualizácii škál:', error.message || error);
+      }
+    };
 
     const toggleCategoryInput = (index) => {
       const question = questions.value[index];
@@ -505,9 +522,28 @@ export default {
       });
       
     };
-    const handleImportComplete = (data) => {
+    const handleImportComplete = async (data,scalesData) => {
         console.log("Import bol úspešne dokončený!");
-        questions.value.push(...data)
+        for (const question of data) {
+            try {
+                questions.value.push(question);
+            } catch (error) {
+                console.error("Chyba pri pridávaní otázky:", error);
+            }
+        }
+        for (const scale of scalesData) {
+            try {
+              scales.value.push({
+                min: scale.min_points,
+                max: scale.max_points,
+                response: scale.response,
+                category: scale.category
+            });
+              // scales.value.push({ scale.min_points, scale.max_points, scale.response, scale.category });
+            } catch (error) {
+                console.error("Chyba pri pridávaní scale:", error);
+            }
+        }
     };
 
     // Načítanie komponentu
@@ -547,7 +583,8 @@ export default {
       isTestOpen,
       defaultTests,
       selectTest,
-      handleImportComplete
+      handleImportComplete,
+      actualizeScales
     };
   },
 };

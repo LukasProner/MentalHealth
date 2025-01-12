@@ -21,9 +21,13 @@ export default {
     },
     setup(props, { emit }){
         const file = ref(null);
+        const scales = [];
 
         const handleFileImport = (event) =>{
             file.value = event.target.files[0];
+        };
+        const isHeader = (row) => {
+            return row[0] === "min_points";
         };
 
         const importData = async (testId) => {
@@ -36,41 +40,82 @@ export default {
             const rows = fileContent.split("\n").map(row => row.split(","));
 
             const [header, ...dataRows] = rows;
-            console.log('Test ID:',props.testId)
+            // console.log('Test ID:',props.testId)
+            // console.log('Header:', header);
+            // console.log('Data rows:', dataRows);
+            const formattedData = [];
             for (const row of dataRows) {
-                if (row.length < 2) continue; // Skontroluj, či riadok obsahuje dostatok údajov
-
-                const newQuestion = {
-                    text: row[0], // Prvý stĺpec je text otázky
-                    question_type: row[1], // Druhý stĺpec je typ otázky
-                    options: row[2] ? row[2].split(";") : [], // Tretí stĺpec obsahuje možnosti (oddelené bodkočiarkou)
-                    category: row[3] || "Nezaradená", // Štvrtý stĺpec je kategória
-                };
-
-                try {
-                    const response = await fetch(`http://localhost:8000/api/tests/${props.testId}/questions/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(newQuestion),
-                        credentials: "include",
+                if (row.length < 2 || isHeader(row)) continue;
+                if (isNaN(row[0])) {
+                    const rawOptions = row[2] ? row[2].split(";") : [];
+                    const options = rawOptions.map(option => {
+                        const [text, value] = option.split("-");
+                        // console.log('text:',text,'value:',value)
+                        return {
+                            text: text.trim(),
+                            value: value ? value.trim() : null,
+                            hasValue: !!value,
+                        };
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`Chyba pri ukladaní otázky: ${response.status}`);
-                    }
+                    const newQuestion = {
+                        text: row[0], 
+                        question_type: row[1], 
+                        options: options, 
+                        category: row[3] || "Nezaradená",
+                    };
+                    try {
+                        // console.log("Posielam otázku:", newQuestion);
+                        const response = await fetch(`http://localhost:8000/api/tests/${props.testId}/questions/`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(newQuestion),
+                            credentials: "include",
+                        });
 
-                    const savedQuestion = await response.json();
-                    console.log("Otázka uložená:", savedQuestion);
-                } catch (error) {
-                    console.error("Chyba pri spracovaní otázky:", error);
+                        if (!response.ok) {
+                            throw new Error(`Chyba pri ukladaní otázky: ${response.status}`);
+                        }
+
+                        const savedQuestion = await response.json();
+                        formattedData.push(savedQuestion);
+                        // console.log("Otázka uložená:", savedQuestion);
+                    } catch (error) {
+                        console.error("Chyba pri spracovaní otázky:", error);
+                    }
+                }else {
+                    scales.push({
+                        min_points: parseFloat(row[0]) || 0,
+                        max_points: parseFloat(row[1]) || 0,
+                        response: row[2],
+                        category: row[3] || "Nezaradená",
+                    });
                 }
             }
-
+            if(scales.length != 0){
+                try {
+                    fetch(`http://localhost:8000/api/tests/${props.testId}/scales/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(scales),
+                        credentials: 'include',
+                    });
+                } catch (error) {
+                    console.error('Chyba pri ukladaní škál:', error);
+                }
+            }
+            console.log("Scales", scales);
 
             alert("Import dokončený!");
-            emit('import-complete', dataRows);
+            // console.log("Škály:", scales);
+            // console.log('Data rows:', dataRows);    
+            emit('import-complete', formattedData,scales);
+            scales.length = 0;
+        
         };
 
         return{

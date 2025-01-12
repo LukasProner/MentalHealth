@@ -22,6 +22,7 @@
         </div>
       </div>
     </form>
+    <ExportData :testId="test.id" />
   </div>
   <div v-else-if="loading">
     <p>Loading test data...</p>
@@ -35,8 +36,12 @@
 import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
+import ExportData from '@/components/Export.vue';
 
 export default {
+  components: {
+    ExportData,
+  },
   setup() {
     const store = useStore(); // používame Vuex store
     const route = useRoute(); // používame Vue Router

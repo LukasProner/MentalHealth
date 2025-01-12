@@ -492,6 +492,16 @@ class ScaleView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def delete(self, request, test_id):
+        try:
+            test = Test.objects.get(pk=test_id)
+        except Test.DoesNotExist:
+            return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+
+        scales = Scale.objects.filter(test=test)
+        scales.delete()
+        return Response({"message": "Všetky škály boli odstránené."}, status=status.HTTP_204_NO_CONTENT)
+    
 
 class EvaluateTestView(APIView):
     def post(self, request, test_id):

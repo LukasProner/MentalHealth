@@ -21,13 +21,13 @@ Backend:
     .skontrolovať poradie otazok a testov
     odosielanie mailom
     pridať možnosť otestovať sa pre neprihlasenych
-    opraviť ukladanie škál - ked pridam aby sa nevytváraly zbytočné kopie ktoré to cele mozu skaziť
+    .opraviť ukladanie škál - ked pridam aby sa nevytváraly zbytočné kopie ktoré to cele mozu skaziť
     pridať kopirovanie odpovedi z predhadzajucej otázky
 
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
-    pridať zobrazenie škál pri pridavani testov - abo vlastne asi nie lebo nie je povolene meniť škalovanie ale to asi netreba ked budu rozne kategorie no neviem
+    .pridať zobrazenie škál pri pridavani testov - abo vlastne asi nie lebo nie je povolene meniť škalovanie ale to asi netreba ked budu rozne kategorie no neviem
 
 
 
