@@ -37,23 +37,23 @@ export default {
             }
 
             const fileContent = await file.value.text(); 
-            const rows = fileContent.split("\n").map(row => row.split(","));
+            const rows = fileContent.split("\n").map(row => row.split(";"));
 
             const [header, ...dataRows] = rows;
             // console.log('Test ID:',props.testId)
-            // console.log('Header:', header);
+            console.log('Header:', header);
             // console.log('Data rows:', dataRows);
             const formattedData = [];
             for (const row of dataRows) {
                 if (row.length < 2 || isHeader(row)) continue;
                 if (isNaN(row[0])) {
-                    const rawOptions = row[2] ? row[2].split(";") : [];
+                    const rawOptions = row[2] ? row[2].split(",") : [];
                     const options = rawOptions.map(option => {
                         const [text, value] = option.split("-");
                         // console.log('text:',text,'value:',value)
                         return {
                             text: text.trim(),
-                            value: value ? value.trim() : null,
+                            value: value ? parseInt(value.trim(),10) : null,
                             hasValue: !!value,
                         };
                     });
@@ -62,10 +62,10 @@ export default {
                         text: row[0], 
                         question_type: row[1], 
                         options: options, 
-                        category: row[3] || "Nezaradená",
+                        category: row[3] && row[3].trim() ? row[3].trim() : "Nezaradená"
                     };
                     try {
-                        // console.log("Posielam otázku:", newQuestion);
+                        console.log("Posielam otázku:", newQuestion);
                         const response = await fetch(`http://localhost:8000/api/tests/${props.testId}/questions/`, {
                             method: "POST",
                             headers: {
@@ -81,7 +81,7 @@ export default {
 
                         const savedQuestion = await response.json();
                         formattedData.push(savedQuestion);
-                        // console.log("Otázka uložená:", savedQuestion);
+                        console.log("Otázka uložená:", savedQuestion);
                     } catch (error) {
                         console.error("Chyba pri spracovaní otázky:", error);
                     }

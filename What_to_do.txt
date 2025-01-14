@@ -8,7 +8,7 @@ Backend:
     pridať vseobecne testy
     .pridať moznosť pridavania testov
     pridať testy
-    1.pridať import z dakade prejdť si este hlasovku
+    .1.pridať import z dakade prejdť si este hlasovku
     .zobrazenie odpovedí 
         -Chcel by som asi pridať zaheslovanie odpovedi a pri otvorení testu ich zobraziť po teste
    2. pridať dalsie sposoby odpovedí 
@@ -28,7 +28,13 @@ Backend:
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
     .pridať zobrazenie škál pri pridavani testov - abo vlastne asi nie lebo nie je povolene meniť škalovanie ale to asi netreba ked budu rozne kategorie no neviem
-
+    pri tvorbe otázok treba ukatať možnosti odpvoedí
+    prida´t moznost znazornit/ ukazať alebo naopak neukazať odpovede ucastníkovi
+    znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
+    pridať povinne a nepovinne otázky
+    pridať odpovede pre obyc cloveka ktorý sa chce otestovať
+    skontrolovať pridavanie viacerých kategorii pre otázku teda aby boli aj jasne viditelne 
+    pri zadavani kodu trimnut to
 
 
 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

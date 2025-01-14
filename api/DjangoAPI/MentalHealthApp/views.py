@@ -530,11 +530,19 @@ class EvaluateTestView(APIView):
                     continue
                 if answer_data.get('hasValue'):
                     value = answer_data.get('value', 0)
+                    if isinstance(value, str):
+                        if value == 'null':
+                            value = 0
+                        else:
+                            try:
+                                value = int(value)
+                            except ValueError:
+                                value = 0
                     question = Question.objects.get(pk=question_id)
 
                     # Kategória otázky
-                    question_category = question.category or 'Nezaradená'
-                    print(f"Question {question_id} (Category: {question_category}) has value: {value}")
+                    question_category = (question.category or 'Nezaradená').strip()
+                    print(f"\n(Category: {question_category}) has value: {value}")
 
                     # Pridaj hodnotu do správnej kategórie
                     if question_category not in category_scores:
