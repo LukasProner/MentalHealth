@@ -27,11 +27,13 @@
                 <input type="radio" value="No" v-model="answers[question.id]" /> No
               </label>
             </div>
+            <div v-if="question.question_type ==='drawing'">
+              <button @click.prevent="goDraw(question.id)"></button>
+            </div>
           </div>
           <button @click="evaluateTest" type="submit">Odoslať odpovede</button>
         </form>
         
-        <!-- Zobrazenie odpovedí po vyhodnotení -->
         <div v-if="evaluationResult">
           <h2>Výsledok testu</h2>
           <div v-for="result in evaluationResult" :key="result.category">
@@ -40,7 +42,6 @@
             <p><strong>Odpoveď:</strong> {{ result.response }}</p>
           </div>
   
-          <!-- Zobrazenie odpovedí používateľa -->
           <h3>Vaše odpovede:</h3>
           <ul>
             <li v-for="(answer, question_id) in answers" :key="question_id">
@@ -53,7 +54,8 @@
   </template>
   
   <script>
-  import { ref, toRaw } from 'vue';
+  import router from '@/router';
+import { ref, toRaw } from 'vue';
   import { useRoute } from 'vue-router';
   
   export default {
@@ -147,6 +149,10 @@
             console.error('Chyba pri vyhodnocovaní:', err.message || err);
         }
       };
+      const goDraw = (question_id) => {
+        console.log(question_id);
+        router.push({ path: '/draw', query: { question_id: question_id } });
+      };
   
       return {
         test,
@@ -158,6 +164,7 @@
         evaluateTest,
         evaluationResult, // Vrátim aj stav pre výsledky
         sortedQuestions,
+        goDraw,
       };
     },
   };

@@ -51,6 +51,7 @@ class Question(models.Model):
         ('boolean', 'Yes/No'),
         ('choice', 'Multiple Choice'),
         ('text', 'Text Response'),
+        ('drawing','Drawing')
     ]
     test = models.ForeignKey(Test, related_name='questions', on_delete=models.CASCADE)
     text = models.CharField(max_length=255)
@@ -114,3 +115,7 @@ class Scale(models.Model):
 
     def __str__(self):
         return f"{self.min_points} - {self.max_points}: {self.response}"
+    
+class Drawing(models.Model):
+    question = models.ForeignKey(Question, related_name = 'drawing_answears', on_delete=models.CASCADE)
+    image = models.TextField()

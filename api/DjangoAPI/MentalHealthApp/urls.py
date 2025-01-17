@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import EvaluateTestView, RegisterView, LoginView, ScaleView, TestListAdmin, UserView, LogoutView, UploadImageView,  TestListView, QuestionListView, TestDetailView, SubmitTestView,TestSubmissionDetailView, TestResponsesView, PublicTestView
+from .views import EvaluateTestView, RegisterView, LoginView, ScaleView, TestListAdmin, UserView, LogoutView, UploadImageView,  TestListView, UloadDrawingView,QuestionListView, TestDetailView, SubmitTestView,TestSubmissionDetailView, TestResponsesView, PublicTestView
 urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('login/', LoginView.as_view()),
@@ -19,6 +19,7 @@ urlpatterns = [
     path('tests/<int:test_id>/scales/', ScaleView.as_view(), name='test-scales'),
     path('tests/<int:test_id>/evaluate/', EvaluateTestView.as_view(), name='evaluate_test'),
     path('tests/default/', TestListAdmin.as_view(), name='list-tests'),
+    path('save_drawing/',UloadDrawingView.as_view(), name='save_drawing')
 ]
 
 

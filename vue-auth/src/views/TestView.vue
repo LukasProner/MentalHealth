@@ -33,7 +33,6 @@
         <ul>
           <li v-for="(question, index) in questions" :key="question.id">
             <p>{{ question.text }}</p>
-            <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
 
             <div v-if="question.showCategoryInput">
               <input 
@@ -42,6 +41,12 @@
                 @blur="saveCategory(index)"
               />
             </div>
+            <div v-else>
+              <p v-if="question.category">Aktuálna kategória: {{ question.category }}</p>
+            </div>
+
+            <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
+
             <button @click="deleteQuestion(question.id, index)">Odstrániť</button>
           </li>
         </ul>
@@ -52,6 +57,7 @@
         <option value="boolean">Áno/Nie</option>
         <option value="choice">Viac možností</option>
         <option value="text">Textová odpoveď</option>
+        <option value="drawing">Kreslenie</option>
       </select>
 
       <div v-if="questionType === 'choice'">
@@ -500,9 +506,7 @@ export default {
     };
     const saveCategory = (index) => {
       const question = questions.value[index];
-      console.log('savujem categoriu')
       if (question.newCategory) {
-        console.log('savujem categoriu2')
 
         question.category = question.newCategory;
         console.log(question.category)

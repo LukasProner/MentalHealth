@@ -29,7 +29,7 @@ from .models import ImageModel, Scale
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Test, Question
+from .models import Test, Question, Drawing
 from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
 import jwt
 from django.contrib.auth import get_user_model
@@ -621,5 +621,18 @@ class TestListAdmin(APIView):
 
         return Response({"tests": list(tests)}, status=200)
 
+class UloadDrawingView(APIView):
+    def post(self,request):
+        question_id = request.data.get('question_id')
+        image_data = request.data.get('image')
 
-        
+        if not question_id or not image_data:
+            return Response({'error':'Invalid data'}, status = 400)
+
+        try:
+            question = Question.objects.get(id = question_id)
+        except Question.DoesNotExist:
+            return Response({'error':'Question not found'}, status = 404)
+        print(question, image_data)
+        Drawing.objects.create(question = question, image = image_data)
+        return Response({'message':'Drawing saved successfully'})
