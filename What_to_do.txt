@@ -35,6 +35,8 @@ ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t
     pridať odpovede pre obyc cloveka ktorý sa chce otestovať
     skontrolovať pridavanie viacerých kategorii pre otázku teda aby boli aj jasne viditelne 
     pri zadavani kodu trimnut to
+    zoradit odpovede
+    refresh v odpovediach a vo vzyualiyacii
 
 
 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

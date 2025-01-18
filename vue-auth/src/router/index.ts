@@ -12,11 +12,12 @@ import ResponsesView from '@/views/ResponsesView.vue'
 import DefaultTestsView from '@/views/DefaultTestsView.vue'
 import TestResponsesView from '@/views/TestResponsesView.vue'
 import VisualizeDrawing from '@/views/VisualizeDrawing.vue'
+import DrawingViewWithRecording from '@/views/DrawingViewWithRecording.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
     {path: '/register', component: RegisterView},
-    {path: '/draw', component: DrawingView},
+    {path: '/draw', component: DrawingViewWithRecording},
     {path: '/tests', component: TestView },
     {path: '/choosetest', component: ChooseTestView},
     {path: '/tests/:id',name: 'testDetail',component: TestDetailView},

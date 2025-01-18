@@ -38,6 +38,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
+from .models import RecordedVideo
 
 class RegisterView(APIView):
     def post(self,request):
@@ -647,3 +648,27 @@ class UloadDrawingView(APIView):
         else:
             return JsonResponse({'error': 'Obrázok nenájdený'}, status=404)
      
+
+class SaveVideoView(APIView):
+    def post(self, request, *args, **kwargs):
+        video_file = request.FILES.get('video')  # Získanie súboru z požiadavky
+        question_id = request.POST.get('question_id')
+        print("question_id", question_id)
+        print("video_file", video_file)
+
+        if not video_file or not question_id:
+            return JsonResponse({'error': 'Invalid data'}, status=400)
+
+        # Uloženie videa do databázy
+        recorded_video = RecordedVideo.objects.create(
+            question_id=question_id,
+            video_file=video_file
+        )
+
+        return JsonResponse({'message': 'Video saved successfully', 'id': recorded_video.id})
+    
+    def get(self, request, video_id):
+        print("video_id", video_id)
+        video = get_object_or_404(RecordedVideo, question_id=video_id)
+        print("video", video)
+        return JsonResponse({'video_url': video.video_file.url})
