@@ -19,7 +19,8 @@ urlpatterns = [
     path('tests/<int:test_id>/scales/', ScaleView.as_view(), name='test-scales'),
     path('tests/<int:test_id>/evaluate/', EvaluateTestView.as_view(), name='evaluate_test'),
     path('tests/default/', TestListAdmin.as_view(), name='list-tests'),
-    path('save_drawing/',UloadDrawingView.as_view(), name='save_drawing')
+    path('save_drawing/',UloadDrawingView.as_view(), name='save_drawing'),
+    path('save_drawing/<int:questionId>/',UloadDrawingView.as_view(), name='save_drawing')
 ]
 
 

@@ -74,6 +74,8 @@ export default {
           console.error('Error:', error);
         });
     },
+
+    
     // Začiatok kreslenia
     startDrawing(event) {
       this.drawing = true;

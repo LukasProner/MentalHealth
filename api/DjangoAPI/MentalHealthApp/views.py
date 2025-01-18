@@ -34,6 +34,10 @@ from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  T
 import jwt
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed, NotFound
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+import jwt
 
 class RegisterView(APIView):
     def post(self,request):
@@ -222,7 +226,7 @@ class QuestionListView(APIView):
             text=text,
             question_type=question_type,
             options=options,
-            category=category,  # Uloženie kategórie
+            category=category,  
         )
 
         return Response(
@@ -422,10 +426,11 @@ class TestResponsesView(APIView):
             response_data.append({
                 "submitted_at": submission.submitted_at,
                 "answers": [
-                    {
+                    {   
+                        "question_id": answer.question.id,
                         "question": answer.question.text, 
                         "answer": answer.answer, 
-                        "answer_id": answer.id  # Používame iný kľúč pre identifikátor
+                        "answer_id": answer.id  
                     }
                     for answer in answers
                 ]
@@ -587,10 +592,6 @@ class EvaluateTestView(APIView):
             print(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
-import jwt
 
 class TestListAdmin(APIView):
     def get(self, request, *args, **kwargs):
@@ -636,3 +637,13 @@ class UloadDrawingView(APIView):
         print(question, image_data)
         Drawing.objects.create(question = question, image = image_data)
         return Response({'message':'Drawing saved successfully'})
+    def get(self, request, questionId):
+        drawings = Drawing.objects.filter(question_id=questionId)
+        if drawings.exists():
+            # Vyberieme prvý obrázok z výsledku, ak existuje viacero
+            drawing = drawings.first()
+            print("++++++++++++++++++++++",drawing.image)
+            return JsonResponse({'drawing': drawing.image})
+        else:
+            return JsonResponse({'error': 'Obrázok nenájdený'}, status=404)
+     

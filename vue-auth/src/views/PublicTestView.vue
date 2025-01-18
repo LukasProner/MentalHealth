@@ -55,7 +55,7 @@
   
   <script>
   import router from '@/router';
-import { ref, toRaw } from 'vue';
+import { onMounted, ref, toRaw, watch } from 'vue';
   import { useRoute } from 'vue-router';
   
   export default {
@@ -110,7 +110,7 @@ import { ref, toRaw } from 'vue';
           if (!response.ok) {
             throw new Error('Failed to submit answers');
           }
-  
+          localStorage.removeItem('answers');
           alert('Odpovede boli úspešne odoslané!');
         } catch (err) {
           console.error(err);
@@ -141,7 +141,7 @@ import { ref, toRaw } from 'vue';
   
             const data = await response.json();
             console.log('Výsledok testu:', data);
-            evaluationResult.value = data.total_score; // Uložíme výsledok vyhodnotenia
+            evaluationResult.value = data.total_score; 
   
             // Zobraz odpoveď používateľovi
             alert(`Dosiahnuté body: ${data.total_score[0].total_points}\nOdpoveď: ${data.total_score[0].response}`);
@@ -151,9 +151,27 @@ import { ref, toRaw } from 'vue';
       };
       const goDraw = (question_id) => {
         console.log(question_id);
+        saveAnswersToLocalStorage();
         router.push({ path: '/draw', query: { question_id: question_id } });
       };
-  
+      const saveAnswersToLocalStorage = () => {
+        localStorage.setItem('answers', JSON.stringify(answers.value));
+        console.log('Answers saved to local storage:', answers.value);
+      };
+      const loadAnswersFromLocalStorage = () => {
+        const savedAnswers = localStorage.getItem('answers');
+          if (savedAnswers) {
+            answers.value = JSON.parse(savedAnswers);
+          }
+      };
+      onMounted(() => {
+        loadAnswersFromLocalStorage();
+      });
+
+      watch(answers, () => {
+        saveAnswersToLocalStorage();
+      });
+
       return {
         test,
         testCode,
