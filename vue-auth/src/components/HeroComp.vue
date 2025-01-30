@@ -4,7 +4,7 @@
         <h2>existujúcimi testami</h2>
         <h2>Vytvorte testy so</h2>
         <h2>širokou variabilitou možností</h2>
-        <ButtonComp text="Začnite tvorbu testov" />
+        <ButtonComp text="Začať tvorbu testov" type="submit" fontSize="1.5rem" />
     </div>
 </template>
 
@@ -14,7 +14,7 @@ import ButtonComp from './ButtonComp.vue'; // Import tlačidla
 export default {
   name: "HeroComp", // Definuj názov komponentu
   components: {
-    ButtonComp // Zaregistruj Button komponentu
+    ButtonComp 
   }
 };
 </script>

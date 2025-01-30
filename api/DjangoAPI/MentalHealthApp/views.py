@@ -231,7 +231,7 @@ class QuestionListView(APIView):
         )
 
         return Response(
-            {'id': question.id, 'text': question.text, 'type': question.question_type, 'category': question.category},
+            {'id': question.id, 'text': question.text, 'type': question.question_type, 'category': question.category, 'options': question.options},
             status=status.HTTP_201_CREATED
         )
 
@@ -256,6 +256,7 @@ class QuestionListView(APIView):
         question.text = request.data.get('text', question.text)
         question.question_type = request.data.get('question_type', question.question_type)
         question.category = request.data.get('category', question.category)  # Pridanie aktualizácie kategórie
+        question.options = request.data.get('options', question.options)
         question.save()
 
         return Response(QuestionSerializer(question).data, status=status.HTTP_200_OK)

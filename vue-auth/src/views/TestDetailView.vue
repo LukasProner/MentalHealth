@@ -1,4 +1,4 @@
-
+<!-- 
 <template>
   <div v-if="test">
     <h1>{{ test.name }}</h1>
@@ -133,5 +133,123 @@ export default {
       sortedQuestions
     };
   },
+};
+</script> -->
+
+<template>
+  <ul>
+    <li v-for="(question) in questions" :key="question.id">
+    
+      <!-- Ak sa otázka neupravuje, zobraz normálny text -->
+      <div v-if="!isEditingQuestion(question)">
+        <p><strong>Otázka:</strong> {{ question.text }}</p>
+        <p><strong>Typ otázky:</strong> {{ question.type }}</p>
+
+        <ul v-if="question.options.length > 0">
+          <li v-for="(option, optIndex) in question.options" :key="optIndex">
+            <p>{{ option.text }} <span v-if="option.hasValue">(Hodnota: {{ option.value }})</span></p>
+          </li>
+        </ul>
+
+        <button @click="enableEditing(question)">Upraviť otázku</button>
+        <button @click="deleteQuestion(question.id)">Odstrániť</button>
+      </div>
+
+      <!-- Formulár na úpravu otázky -->
+      <div v-else>
+        <input v-model="question.text" placeholder="Zadajte novú otázku" />
+
+        <select v-model="question.type">
+          <option value="boolean">Áno/Nie</option>
+          <option value="choice">Viac možností</option>
+          <option value="text">Textová odpoveď</option>
+          <option value="drawing">Kreslenie</option>
+        </select>
+
+        <!-- Ak je otázka typu "choice", zobraz možnosti -->
+        <div v-if="question.type === 'choice'">
+          <h3>Možnosti odpovedí</h3>
+          <div v-for="(option, optIndex) in question.options" :key="optIndex">
+            <input v-model="option.text" placeholder="Upravte možnosť" />
+            <label>
+              <input type="checkbox" v-model="option.hasValue" />
+              Pridať hodnotenie
+            </label>
+            <input v-if="option.hasValue" type="number" v-model.number="option.value" placeholder="Hodnota" />
+            <button @click="removeOption(question, optIndex)">Odstrániť</button>
+          </div>
+          <button @click="addOption(question)">Pridať možnosť</button>
+        </div>
+
+        <!-- Pre ostatné typy otázok -->
+        <div v-else>
+          <!-- Môžeš pridať ďalšiu logiku pre iné typy otázok -->
+          <button @click="disableEditing(question)">Uložiť</button>
+        </div>
+      </div>
+    </li>
+  </ul>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      questions: [
+        {
+          id: 1,
+          text: "Je obloha modrá?",
+          type: "boolean",
+          options: [],
+        },
+        {
+          id: 2,
+          text: "Aké je hlavné mesto Slovenska?",
+          type: "choice",
+          options: [
+            { text: "Bratislava", hasValue: false, value: 0 },
+            { text: "Košice", hasValue: false, value: 0 },
+          ],
+        }
+      ],
+      // Pre ukladanie dočasného stavu úpravy otázky, nie je to súčasť databázy
+      editingQuestion: null
+    };
+  },
+  methods: {
+    // Funkcia na povolenie úpravy otázky
+    enableEditing(question) {
+      this.editingQuestion = question; // Nastavíme otázku, ktorú upravujeme
+    },
+
+    // Funkcia na uloženie zmien a zrušenie úpravy
+    disableEditing(question) {
+      // Ak nie je typ otázky "choice", odstránime možnosti
+      if (question.type !== "choice") {
+        question.options = [];
+      }
+      this.editingQuestion = null; // Ukončíme úpravy
+    },
+
+    // Pridanie novej možnosti k otázke
+    addOption(question) {
+      question.options.push({ text: "", hasValue: false, value: 0 });
+    },
+
+    // Odstránenie možnosti zo zoznamu odpovedí
+    removeOption(question, optIndex) {
+      question.options.splice(optIndex, 1);
+    },
+
+    // Odstránenie otázky
+    deleteQuestion(id) {
+      this.questions = this.questions.filter(q => q.id !== id);
+    },
+
+    // Funkcia na zistenie, či je otázka v režime úpravy
+    isEditingQuestion(question) {
+      return this.editingQuestion === question;
+    }
+  }
 };
 </script>

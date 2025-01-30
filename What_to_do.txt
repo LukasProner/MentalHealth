@@ -37,6 +37,8 @@ ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t
     pri zadavani kodu trimnut to
     zoradit odpovede
     refresh v odpovediach a vo vzyualiyacii
+    pridat prelink po dokončen=i kreslenia bez nutnosti zadavania kodu  
+    
 
 
 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

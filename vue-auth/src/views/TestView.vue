@@ -1,24 +1,23 @@
 <template>
   <div>
     <!-- Načítavanie a chybové hlásenia -->
-    <div v-if="loading">
+    <div v-if="loading" class="loading">
       <p>Načítavam údaje...</p>
     </div>
-    <div v-if="error">
+    <div v-if="error" class="error">
       <p>{{ error }}</p>
     </div>
 
-    <!-- Formulár pre vytvorenie testu -->
-    <div v-if="!testId && !loading && !error">
+    <div v-if="!testId && !loading && !error" class="create-test">
       <h1>Vytvoriť test</h1>
       <input v-model="testName" placeholder="Názov testu" />
-      <button @click="createTest">Vytvoriť test</button>
+      <ButtonComp text="Vytvoriť test" fontSize="1rem" @click="createTest" />
     </div>
 
-    <!-- Formulár pre pridávanie otázok k testu -->
-    <div v-if="testId && !loading && !error">
-      <h2>
-        <span v-if="!isEditing" @dblclick="enableEditing">{{ testName }}</span>
+<!-- som prihlaseny -->
+    <div v-if="testId && !loading && !error" class="test">
+      <h2 class="test-name" @click="enableEditing">
+        <span v-if="!isEditing" >{{ testName }}</span>
         <input
           v-else
           v-model="editedName"
@@ -26,68 +25,138 @@
           @keydown.enter="saveTestName"
         />
       </h2>
-      <h3>Kód testu : {{testCode}}</h3>
+      <h3 class="test-code">Kód testu : {{testCode}}</h3>
       
       <div v-if="questions.length > 0">
-        <h3>Otázky:</h3>
+       
         <ul>
           <li v-for="(question, index) in questions" :key="question.id">
-            <p>{{ question.text }}</p>
+            <div v-if="!isEditingQuestion(question)">
+              <p>{{ question.text }}</p>
+              <ul v-if="question.options && question.options.length > 0">
+                <li v-for="(option, index) in question.options" :key="index">
+                  <p>{{ option.text }}</p>
+                  <p v-if="option.hasValue">Hodnota: {{ option.value }}</p>
+                </li>
+              </ul>
+              <div v-if="question.showCategoryInput">
+                <p >Aktuálna kategória: {{ question.category }}</p>
+                <input 
+                  v-model="question.newCategory" 
+                  placeholder="Zadajte novú kategóriu" 
+                  @blur="saveCategory(index)"
+                />
+              </div>
 
-            <div v-if="question.showCategoryInput">
-              <input 
-                v-model="question.newCategory" 
-                placeholder="Zadajte novú kategóriu" 
-                @blur="saveCategory(index)"
-              />
+              <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
+              <button @click="enableEditingQuestion(question)">Upraviť otázku</button>
+              <button @click="deleteQuestion(question.id, index)">Odstrániť</button>
             </div>
+            <!-- Formulár na úpravu otázky -->
             <div v-else>
-              <p v-if="question.category">Aktuálna kategória: {{ question.category }}</p>
+              <input v-model="question.text" placeholder="Zadajte novú otázku" />
+
+              <select v-model="question.type">
+                <option value="boolean">Áno/Nie</option>
+                <option value="choice">Viac možností</option>
+                <option value="text">Textová odpoveď</option>
+                <option value="drawing">Kreslenie</option>
+              </select>
+
+              <!-- Ak je otázka typu "choice", zobraz možnosti -->
+              <div v-if="question.type === 'choice'">
+                <h3>Možnosti odpovedí</h3>
+                <div v-for="(option, optIndex) in question.options" :key="optIndex">
+                  <input v-model="option.text" placeholder="Upravte možnosť" />
+                  <label>
+                    <input type="checkbox" v-model="option.hasValue" />
+                    Pridať hodnotenie
+                  </label>
+                  <input v-if="option.hasValue" type="number" v-model.number="option.value" placeholder="Hodnota" />
+                  <button @click="removeOption(question, optIndex)">Odstrániť</button>
+                </div>
+                <button @click="addOptionUpdate(question)">Pridať možnosť</button>
+              </div>
+              <button @click="disableEditingQuestion(question)">Uložiť</button>
+
+              <!-- <div v-else>
+                <button @click="disableEditingQuestion(question)">Uložiť</button>
+              </div> -->
             </div>
-
-            <button @click="toggleCategoryInput(index)">Pridať kategóriu</button>
-
-            <button @click="deleteQuestion(question.id, index)">Odstrániť</button>
           </li>
         </ul>
       </div>
+      
+      <!-- pridávanie nových otázok -->
 
-      <input v-model="questionText" placeholder="Zadaj otázku" />
-      <select v-model="questionType">
+      <div class="question-form">
+      <input
+        v-model="questionText"
+        placeholder="Zadaj otázku"
+        class="input-field question-input"
+      />
+      <select v-model="questionType" class="input-field select-field">
         <option value="boolean">Áno/Nie</option>
         <option value="choice">Viac možností</option>
         <option value="text">Textová odpoveď</option>
         <option value="drawing">Kreslenie</option>
       </select>
 
-      <div v-if="questionType === 'choice'">
+      <div v-if="questionType === 'choice'" class="options-section">
         <h3>Pridať možnosti</h3>
-        <div v-for="(option, index) in options" :key="index" class="option-item">
-          <input v-model="option.text" placeholder="Zadaj možnosť" />
-          <label>
-            <input type="checkbox" v-model="option.hasValue" />
+        <div
+          v-for="(option, index) in options"
+          :key="index"
+          class="option-item"
+        >
+          <input
+            v-model="option.text"
+            placeholder="Zadaj možnosť"
+            class="input-field option-input"
+          />
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              v-model="option.hasValue"
+              class="checkbox-input"
+            />
             Pridať hodnotenie
           </label>
-          <input 
-            v-if="option.hasValue" 
-            type="number" 
-            v-model.number="option.value" 
-            placeholder="Hodnota" 
+          <input
+            v-if="option.hasValue" type="number" v-model.number="option.value" placeholder="Hodnota" class="input-field value-input"
           />
-          <button @click="removeOption(index)">Odstrániť</button>
+          <button @click="removeOption(index)" class="button remove-button">
+            Odstrániť
+          </button>
         </div>
-        <button @click="addOption">Pridať novú možnosť</button>
+        <button @click="addOption" class="button add-option-button">
+          Pridať novú možnosť
+        </button>
       </div>
-      <button @click="addQuestion">Pridať otázku</button>
-      <button @click="chooseDefaultTest">
-        {{ isTestOpen ? "Zavrieť" : "Pridať test"}}
-      </button>
-      <div v-if="isTestOpen">
+
+      <div class="buttons-container">
+        <button @click="addQuestion" class="button primary-button">
+          Pridať otázku
+        </button>
+        <button @click="chooseDefaultTest" class="button secondary-button">
+          {{ isTestOpen ? "Zavrieť" : "Pridať test" }}
+        </button>
+      </div>
+
+      <div v-if="isTestOpen" class="test-selection">
         <h2>Vyber test</h2>
-        <li v-for="test in defaultTests" :key="test.id" @click="selectTest(test)">
-          {{ test.name }}
-        </li>
+        <ul class="test-list">
+          <li
+            v-for="test in defaultTests"
+            :key="test.id"
+            @click="selectTest(test)"
+            class="test-item"
+          >
+            {{ test.name }}
+          </li>
+        </ul>
       </div>
+    </div>
     </div>
     
     <!-- Sekcia pre škalovanie testu -->
@@ -127,10 +196,12 @@
 import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import Import from '../components/Import.vue';
+import ButtonComp from '../components/ButtonComp.vue';
 
 export default {
   components: {
     Import,
+    ButtonComp
   },
   setup() {
     const store = useStore();
@@ -152,6 +223,7 @@ export default {
     const questionCategory= ref('');
     const defaultTests = ref([]);
     const isTestOpen = ref(false);
+    const editingQuestion = ref(null);
 
     // Overenie prihlásenia
     const checkAuth = async () => {
@@ -209,6 +281,39 @@ export default {
       isEditing.value = true;
       editedName.value = testName.value;
     };
+    const enableEditingQuestion = (question) => {
+      editingQuestion.value = question; // Nastavíme otázku, ktorú upravujeme
+    };
+    const isEditingQuestion = (question) => {
+      return editingQuestion.value === question;
+    };
+    const disableEditingQuestion =async(question) => {
+      // Ak nie je typ otázky "choice", odstránime možnosti
+      console.log('disableEditingQuestion',question)
+      console.log('disableType',question.type)
+      if (question.type !== "choice") {
+        question.options = [];
+      }
+      try {
+        // Príprava dát na aktualizáciu
+        const updatedData = {
+          text: question.text,
+          question_type: question.type,
+          options: question.options,
+          category: question.category,
+        };
+
+        // Volanie funkcie na aktualizáciu otázky na serveri
+        const updatedQuestion = await updateQuestion(question.id, updatedData);
+
+        // Po úspešnej aktualizácii môžeme nastaviť otázku ako neaktívnu pre editáciu
+        editingQuestion.value = null; // Ukončíme úpravy
+        console.log('Otázka bola aktualizovaná:', updatedQuestion);
+      } catch (error) {
+        console.error('Chyba pri aktualizácii otázky:', error);
+      }
+      editingQuestion.value = null; // Ukončíme úpravy
+    };
 
     // Uložiť upravený názov testu
     const saveTestName = () => {
@@ -243,7 +348,9 @@ export default {
   const addOption = () => {
     options.value.push({ text: '', hasValue: false, value: null }); // Predvolene nemá hodnotenie
   };
-
+  const addOptionUpdate = (question)=> {
+    question.options.push({ text: "", hasValue: false, value: null });
+  };
 
   const removeOption = (index) => {
     options.value.splice(index, 1);
@@ -385,6 +492,7 @@ export default {
     })
       .then((response) => response.json())
       .then((data) => {
+        console.log('Response data:', data); 
         questions.value.push(data);
         questionText.value = '';
         questionType.value = 'boolean';
@@ -415,6 +523,7 @@ export default {
   };
 
     const updateQuestion = async (questionId, updatedData) => {
+      console.log('Aktualizujem otázku:', questionId, updatedData);
       try {
         const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`, {
           method: 'PUT', 
@@ -430,7 +539,7 @@ export default {
         }
 
         const responseData = await response.json(); // Parsovanie odpovede na JSON
-        console.log('Otázka bola aktualizovaná:', responseData);
+        // console.log('Otázka bola aktualizovaná:', responseData);
         return responseData;
       } catch (error) {
         console.error('Chyba pri aktualizácii otázky:', error);
@@ -588,8 +697,134 @@ export default {
       defaultTests,
       selectTest,
       handleImportComplete,
-      actualizeScales
+      actualizeScales,
+      enableEditingQuestion,
+      editingQuestion,
+      disableEditingQuestion,
+      isEditingQuestion,
+      addOptionUpdate,
     };
   },
 };
 </script>
+
+<style scoped>
+h3 {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.create-test {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.create-test input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 16px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.create-test input:focus {
+  border-color: var(--color-lightblue);
+}
+
+.create-test button {
+  background-color: var(--color-lightblue);
+  color: var(--color-h1);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.test{
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  max-width: 800px;
+  margin: auto;
+  text-align: center;
+}
+
+.test-name {
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+}
+
+.test-name span {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+
+.test-name input {
+  font-size: 1.8rem;
+  padding: 10px;
+  width: 100%;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.test-name input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  padding: 20px;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 20px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.error p{
+  margin: 0;
+}
+
+
+
+</style>
