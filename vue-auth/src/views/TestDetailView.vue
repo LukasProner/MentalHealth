@@ -1,17 +1,26 @@
-<!-- 
+
 <template>
-  <div v-if="test">
+  <div v-if="test" class = "test-detail">
+    <div class="routing">
+      <ButtonComp text="Odpovede" fontSize="1rem" @click="goToResponses" />
+      <ButtonComp text="Otazky" fontSize="1rem" @click="redirectToQuestions" />
+    </div>
+    <hr class="line" />
     <h1>{{ test.name }}</h1>
-    <button @click="goToResponses" >Odpovede</button>
-    <form>
-      <div v-for="question in sortedQuestions(test.questions)" :key="question.id">
+
+
+    <form class="form-container">
+      <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
         <p>{{ question.text }}</p>
+        <!-- Textová odpoveď -->
         <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
+
         <div v-if="question.question_type === 'choice'">
           <label v-for="option in question.options" :key="option">
-            <input type="radio" :value="option" v-model="answers[question.id]" /> {{ option }}
+            <input type="radio" :value="option" v-model="answers[question.id]" /> {{option.text}}
           </label>
         </div>
+
         <div v-if="question.question_type === 'boolean'">
           <label>
             <input type="radio" value="Yes" v-model="answers[question.id]" /> Yes
@@ -22,7 +31,10 @@
         </div>
       </div>
     </form>
-    <ExportData :testId="test.id" />
+    <ExportData :testId="test.id" class="export"/>
+    {{ test.test_code }}
+    <SendDataComp :testId="test.id" :testCode="test.test_code" class="export"/>
+
   </div>
   <div v-else-if="loading">
     <p>Loading test data...</p>
@@ -37,10 +49,14 @@ import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import ExportData from '@/components/Export.vue';
+import ButtonComp from '@/components/ButtonComp.vue';
+import SendDataComp from '@/components/SendDataComp.vue';
 
 export default {
   components: {
     ExportData,
+    ButtonComp,
+    SendDataComp
   },
   setup() {
     const store = useStore(); // používame Vuex store
@@ -120,8 +136,11 @@ export default {
 
 
     const goToResponses = () =>{
-      router.push(`${route.params.id}/responses`)
+      router.push(`/tests/${route.params.id}/responses`)
     }
+    const redirectToQuestions = () => {
+      router.push(`/tests/${route.params.id}/`);
+    };
 
     return {
       answers,
@@ -130,126 +149,78 @@ export default {
       loading,
       testCode, // Pridávame testový kód
       goToResponses,
-      sortedQuestions
+      sortedQuestions,
+      redirectToQuestions
     };
   },
-};
-</script> -->
-
-<template>
-  <ul>
-    <li v-for="(question) in questions" :key="question.id">
-    
-      <!-- Ak sa otázka neupravuje, zobraz normálny text -->
-      <div v-if="!isEditingQuestion(question)">
-        <p><strong>Otázka:</strong> {{ question.text }}</p>
-        <p><strong>Typ otázky:</strong> {{ question.type }}</p>
-
-        <ul v-if="question.options.length > 0">
-          <li v-for="(option, optIndex) in question.options" :key="optIndex">
-            <p>{{ option.text }} <span v-if="option.hasValue">(Hodnota: {{ option.value }})</span></p>
-          </li>
-        </ul>
-
-        <button @click="enableEditing(question)">Upraviť otázku</button>
-        <button @click="deleteQuestion(question.id)">Odstrániť</button>
-      </div>
-
-      <!-- Formulár na úpravu otázky -->
-      <div v-else>
-        <input v-model="question.text" placeholder="Zadajte novú otázku" />
-
-        <select v-model="question.type">
-          <option value="boolean">Áno/Nie</option>
-          <option value="choice">Viac možností</option>
-          <option value="text">Textová odpoveď</option>
-          <option value="drawing">Kreslenie</option>
-        </select>
-
-        <!-- Ak je otázka typu "choice", zobraz možnosti -->
-        <div v-if="question.type === 'choice'">
-          <h3>Možnosti odpovedí</h3>
-          <div v-for="(option, optIndex) in question.options" :key="optIndex">
-            <input v-model="option.text" placeholder="Upravte možnosť" />
-            <label>
-              <input type="checkbox" v-model="option.hasValue" />
-              Pridať hodnotenie
-            </label>
-            <input v-if="option.hasValue" type="number" v-model.number="option.value" placeholder="Hodnota" />
-            <button @click="removeOption(question, optIndex)">Odstrániť</button>
-          </div>
-          <button @click="addOption(question)">Pridať možnosť</button>
-        </div>
-
-        <!-- Pre ostatné typy otázok -->
-        <div v-else>
-          <!-- Môžeš pridať ďalšiu logiku pre iné typy otázok -->
-          <button @click="disableEditing(question)">Uložiť</button>
-        </div>
-      </div>
-    </li>
-  </ul>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      questions: [
-        {
-          id: 1,
-          text: "Je obloha modrá?",
-          type: "boolean",
-          options: [],
-        },
-        {
-          id: 2,
-          text: "Aké je hlavné mesto Slovenska?",
-          type: "choice",
-          options: [
-            { text: "Bratislava", hasValue: false, value: 0 },
-            { text: "Košice", hasValue: false, value: 0 },
-          ],
-        }
-      ],
-      // Pre ukladanie dočasného stavu úpravy otázky, nie je to súčasť databázy
-      editingQuestion: null
-    };
-  },
-  methods: {
-    // Funkcia na povolenie úpravy otázky
-    enableEditing(question) {
-      this.editingQuestion = question; // Nastavíme otázku, ktorú upravujeme
-    },
-
-    // Funkcia na uloženie zmien a zrušenie úpravy
-    disableEditing(question) {
-      // Ak nie je typ otázky "choice", odstránime možnosti
-      if (question.type !== "choice") {
-        question.options = [];
-      }
-      this.editingQuestion = null; // Ukončíme úpravy
-    },
-
-    // Pridanie novej možnosti k otázke
-    addOption(question) {
-      question.options.push({ text: "", hasValue: false, value: 0 });
-    },
-
-    // Odstránenie možnosti zo zoznamu odpovedí
-    removeOption(question, optIndex) {
-      question.options.splice(optIndex, 1);
-    },
-
-    // Odstránenie otázky
-    deleteQuestion(id) {
-      this.questions = this.questions.filter(q => q.id !== id);
-    },
-
-    // Funkcia na zistenie, či je otázka v režime úpravy
-    isEditingQuestion(question) {
-      return this.editingQuestion === question;
-    }
-  }
 };
 </script>
+
+<style scoped>
+.test-detail {
+  margin: 0 auto;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.routing{
+  display: flex;
+  justify-content: space-evenly;
+  margin-top:10px;
+}
+.line {
+  height: 4px;
+  background-color: black;
+  border: none;
+  border-radius: 2px; /* Zaoblené okraje */
+  width: 100%;
+  margin-top: 10px;
+}
+h1 {
+  text-align: center ;
+}
+
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--color-background);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.question-card{
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 4px 0 var(--color-lightblue);
+  padding: 15px;
+}
+
+.question-card p {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+input[type="radio"] {
+  margin-right: 5px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.export{
+  margin-top: 20px;
+  padding-top: 20px;
+  margin:auto;
+}
+</style>

@@ -17,7 +17,7 @@
       </router-link>
 
       <div class="test-card" v-for="test in sortedTests(tests)" :key="test.id">
-        <div class="test-header">
+        <!-- <div class="test-header">
           <router-link
             v-if="test.id"
             :to="{ name: 'testDetail', params: { id: test.id } }"
@@ -26,6 +26,13 @@
             {{ test.name }}
             <p>Vytvorený {{ getDate(test.created_at) }}</p>
           </router-link>
+          <button class="delete-btn" @click.stop="deleteTest(test.id)">×</button>
+        </div> -->
+        <div class="test-header" @click="goToTest(test.id)">
+          <div class="test-name">
+            {{ test.name }}
+            <p>Vytvorený {{ getDate(test.created_at) }}</p>
+          </div>
           <button class="delete-btn" @click.stop="deleteTest(test.id)">×</button>
         </div>
       </div>
@@ -38,6 +45,7 @@
 import { ref, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import FooterComp from '@/components/FooterComp.vue';
+import router from '@/router';
 
 export default {
   components:{FooterComp},
@@ -92,6 +100,9 @@ export default {
         console.error('Error:', err);
       }
     };
+    const goToTest = (testId) => {
+      router.push({ name: 'testDetail', params: { id: testId } });
+    };
 
     onMounted(async () => {
       await store.dispatch('checkAuth'); 
@@ -113,6 +124,7 @@ export default {
       getDate,
       deleteTest,
       sortedTests,
+      goToTest
     };
   },
 };
@@ -139,7 +151,7 @@ export default {
   background-color: var(--color-lightGray);
   justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow:  0 4px 4px 0 var(--color-lightblue);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
@@ -190,14 +202,15 @@ export default {
   background: transparent;
   border: none;
   font-size: 1.5rem;
-  color: #f44336;
+  color: gray;
   cursor: pointer;
   padding: 0;
   margin: 0;
   transition: color 0.2s;
+  outline: none;
 }
 
 .delete-btn:hover {
-  color: #d32f2f;
+  color: black;
 }
 </style>

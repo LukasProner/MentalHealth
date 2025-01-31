@@ -140,13 +140,15 @@ header .logo h1 {
     font-size: 0.9rem;
     font-weight: bold;
     text-align: center;
-    transition: background-color 0.3s;
-    border: 1px solid var(--color-h1);
-    
+    transition: background-color 0.3s;   
+    outline: none; 
+    box-shadow: none;
+    border: none;
 }
 
 .navigation .btn:hover {
     background-color: var(--color-lightblue);
+    outline: none;
 }
 
 .navigation .register {

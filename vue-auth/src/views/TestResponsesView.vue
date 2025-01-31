@@ -1,6 +1,9 @@
 <template>
     <div>
-      <h1>Odpovede</h1>
+      <div class="routing">
+        <ButtonComp text="Odpovede" fontSize="1rem" @click="goToResponses" />
+        <ButtonComp text="Otazky" fontSize="1rem" @click="redirectToQuestions" />
+      </div>
       <div v-if="loading">
         <p>Načítavam odpovede...</p>
       </div>
@@ -8,7 +11,7 @@
         <p>{{ error }}</p>
       </div>
       <div v-else>
-        <div v-for="question in test.questions" :key="question.id">
+        <div v-for="question in sortedQuestions(test.questions)" :key="question.id">
           <div v-if="question.question_type !== 'drawing'">
             <h2>{{ question.text }} </h2>
             <ul>
@@ -36,9 +39,14 @@
   <script>
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
+  import ButtonComp from '@/components/ButtonComp.vue';
   
   export default {
+    components: {
+      ButtonComp,
+    },
     setup() {
+      
       const loading = ref(true);
       const error = ref('');
       const responses = ref([]);
@@ -84,10 +92,20 @@
         }
       };
   
-      const redirectToDrawing = (questionId) => {
-        router.push(`/draw/${questionId}/`);
+      const redirectToDrawing = () => {
+        router.push(`/draw/${route.params.id}/`);
       };
-  
+      
+      const redirectToQuestions = () => {
+        router.push(`/tests/${route.params.id}/`);
+      };
+
+      const goToResponses = () =>{
+        router.push(`/tests/${route.params.id}/responses`)
+      };
+      const sortedQuestions = (questions) => {
+        return [...questions].sort((a,b)=>a.id-b.id);
+      } 
       const initializeData = async () => {
         loading.value = true;
         await Promise.all([fetchTest(route.params.id), fetchResponses()]);
@@ -102,6 +120,8 @@
         test,
         loading,
         redirectToDrawing,
+        redirectToQuestions,
+        sortedQuestions,
       };
     },
   };

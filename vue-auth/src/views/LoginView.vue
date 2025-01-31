@@ -3,9 +3,9 @@
     <form @submit.prevent="submit">
       <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
   
-      <input v-model="data.email" type="email" class="form-control" placeholder="Email" required>
+      <input v-model="data.email" type="email" placeholder="Email" required>
   
-      <input v-model="data.password" type="password" class="form-control" placeholder="Password" required>
+      <input v-model="data.password" type="password" placeholder="Password" required>
   
       <ButtonComp text="Sign in" type="submit" fontSize="1rem" />
     </form>
@@ -47,11 +47,7 @@
   }
 </script>
   <style scoped> 
-  /* form {
-    max-width: 400px;
-    padding: 15px;
-    margin: auto;
-  } */
+ 
   .signin-container {
     display: flex;
     justify-content: center;
@@ -82,7 +78,7 @@
   }
   form input:focus {
     border-color: var(--color-lightblue);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 4px 4px 0 var(--color-lightblue);
+    box-shadow:  0 4px 4px 0 var(--color-lightblue);
   }
 
   form h1{
