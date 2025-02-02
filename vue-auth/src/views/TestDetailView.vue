@@ -137,7 +137,7 @@ export default {
 
     const goToResponses = () =>{
       router.push(`/tests/${route.params.id}/responses`)
-    }
+    };
     const redirectToQuestions = () => {
       router.push(`/tests/${route.params.id}/`);
     };

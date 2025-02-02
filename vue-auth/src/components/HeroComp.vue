@@ -4,21 +4,30 @@
         <h2>existujúcimi testami</h2>
         <h2>Vytvorte testy so</h2>
         <h2>širokou variabilitou možností</h2>
-        <ButtonComp text="Začať tvorbu testov" type="submit" fontSize="1.5rem" />
+        <ButtonComp text="Začať tvorbu testov" type="submit" fontSize="1.5rem" @click = "makeTest" />
     </div>
 </template>
 
 <script>
-import ButtonComp from './ButtonComp.vue'; // Import tlačidla
-
+import ButtonComp from './ButtonComp.vue'; 
+import { useRouter } from 'vue-router';
 export default {
-  name: "HeroComp", // Definuj názov komponentu
-  components: {
-    ButtonComp 
-  }
+    name: "HeroComp", 
+    components: {
+        ButtonComp 
+    },
+    setup() {
+        const router = useRouter();
+        const makeTest = () => {
+            router.push(`/tests`);
+        }
+    
+        return{
+            makeTest,
+        }
+    }
 };
 </script>
-
 <style>
 .hero {
     background-image: url('../assets/Rectangle 1.png');
