@@ -13,6 +13,7 @@ import DefaultTestsView from '@/views/DefaultTestsView.vue'
 import TestResponsesView from '@/views/TestResponsesView.vue'
 import VisualizeDrawing from '@/views/VisualizeDrawing.vue'
 import DrawingViewWithRecording from '@/views/DrawingViewWithRecording.vue'
+import Skuska from '@/components/skuska.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
@@ -26,6 +27,8 @@ const routes: Array<RouteRecordRaw> = [
     {path: '/tests/:id/responses',component: TestResponsesView,},
     {path: '/default', component: DefaultTestsView},
     {path: '/draw/:id', component: VisualizeDrawing},
+    {path: '/skuska', component: Skuska},
+
 ]
 // umožňuje používať moderné URL bez hash (#)
 const router = createRouter({

@@ -1,14 +1,18 @@
 <template>
-    <div>
+    <div class="test-responses">
       <div class="routing">
         <ButtonComp text="Odpovede" fontSize="1rem" @click="goToResponses" />
         <ButtonComp text="Otazky" fontSize="1rem" @click="redirectToQuestions" />
       </div>
+      <hr class="line" />
       <div v-if="loading">
         <p>Načítavam odpovede...</p>
       </div>
       <div v-else-if="error">
         <p>{{ error }}</p>
+      </div>
+      <div v-else-if="responses.length === 0">
+        <p class="no-responses">Na tento test ešte nebolo odpovedané.</p>
       </div>
       <div v-else>
         <div v-for="question in sortedQuestions(test.questions)" :key="question.id">
@@ -16,9 +20,7 @@
             <h2>{{ question.text }} </h2>
             <ul>
               <li v-for="response in responses" :key="response.submitted_at">
-                <!-- {{ response }} -->
                 <div v-for="answer in response.answers" :key="answer.answer_id">
-                    <!-- {{ answer.answer }} - {{ answer.question_id }} - {{ question.id }} -->
                     <div v-if="(answer.question_id) == (question.id)">
                         {{ answer.answer }}
                     </div>
@@ -36,7 +38,7 @@
     </div>
   </template>
   
-  <script>
+<script>
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import ButtonComp from '@/components/ButtonComp.vue';
@@ -125,5 +127,37 @@
       };
     },
   };
-  </script>
+</script>
+
+<style scoped>
+  .test-responses {
+    margin: 0 auto;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .routing{
+    display: flex;
+    justify-content: space-evenly;
+    margin-top:10px;
+  }
+  .line {
+    height: 4px;
+    background-color: black;
+    border: none;
+    border-radius: 2px; /* Zaoblené okraje */
+    width: 100%;
+    margin-top: 10px;
+  }
+    .no-responses {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
   

@@ -113,64 +113,51 @@
         </div>
 
         <div class="buttons-container">
-          <ButtonComp text="Uložiť otázku" @click="addQuestion" fontSize="1rem"/>
+          <ButtonComp text="Uložiť" @click="addQuestion" fontSize="1rem"/>
         </div>
-
+      </div>
+      <div v-if="testId && !loading && !error">
+        <div class="button-group">
+          <SendDataComp :testId="testId" :testCode="testCode" class="export"/>
+          <ButtonComp :text="showScaling ? 'Zavrieť' : 'Vytvoriť škálovanie'" @click="toggleScaling" fontSize="1rem"/>
+          <ButtonComp :text="isTestOpen ? 'Zavrieť' : 'Pridať test'" @click="chooseDefaultTest" fontSize="1rem"/>
+          <Import :testId="testId" @import-complete="handleImportComplete" />
+        </div>
+        <!-- <SendDataComp :testId="testId" :testCode="testCode" class="export"/>
+        <ButtonComp :text="showScaling? 'Zavrieť':'Vytvoriť škálovanie'" @click="toggleScaling" fontSize="1rem"/>
+        <ButtonComp :text="isTestOpen ? 'Zavrieť' : 'Pridať test'" @click="chooseDefaultTest" fontSize="1rem"/> -->
+        <!-- <Import :testId="testId" @import-complete="handleImportComplete" /> -->
         <div v-if="isTestOpen" class="test-selection">
-          <h2>Vyber test</h2>
+          <h3>Vyberte test</h3>
           <ul class="test-list">
-            <li
-              v-for="test in defaultTests"
-              :key="test.id"
-              @click="selectTest(test)"
-              class="test-item"
-            >
+            <li v-for="test in defaultTests" :key="test.id" @click="selectTest(test)" class="test-item">
+            <i class="bi bi-file-earmark-arrow-down"></i>
               {{ test.name }}
             </li>
           </ul>
         </div>
-      </div>
-    </div>
-    <div v-if="testId && !loading && !error" class="ending">
-      <SendDataComp :testId="testId" :testCode="testCode" class="export"/>
-      <ButtonComp text="Vytvoriť škálovanie" @click="toggleScaling" fontSize="1rem"/>
-      <ButtonComp :text="isTestOpen ? 'Zavrieť' : 'Pridať test'" @click="chooseDefaultTest" fontSize="1rem"/>
-    <!-- Sekcia pre škalovanie testu -->
-      <div v-if="showScaling">
-        <h3>Škalovanie výsledkov</h3>
-        <div v-for="(scale, index) in scales" :key="index" class="scale-item">
-          <input 
-            type="number" 
-            v-model.number="scale.min" 
-            placeholder="Minimálne body" 
-          />
-          <input 
-            type="number" 
-            v-model.number="scale.max" 
-            placeholder="Maximálne body" 
-          />
-          <input 
-            v-model="scale.response" 
-            placeholder="Odpoveď (napr. Výborný výkon)" 
-          />
-          <input 
-            v-model="scale.category" 
-            placeholder="Vyber kategoriu" 
-          />
-          <button @click="removeScale(index)">Odstrániť</button>
+        <div v-if="showScaling" class="scaling-container">
+          <h3 class="ScaleH3">Škalovanie výsledkov</h3>
+          
+          <div v-for="(scale, index) in scales" :key="index" class="scale-item">
+              <input type="number" v-model.number="scale.min" placeholder="Minimálne body" class="min" />
+              <input type="number" v-model.number="scale.max" placeholder="Maximálne body" class="max"/>
+              <input v-model="scale.response" placeholder="Odpoveď (napr. Výborný výkon)" />
+              <input v-model="scale.category" placeholder="Vyber kategoriu" />
+              <button @click="removeScale(index)" class="button remove-button">×</button>
+          </div>
+          <div style="display: flex;gap: 10px; text-align: center; justify-content: center;">
+            <ButtonComp text="Pridať nové škálovanie" @click="addScale" fontSize="1rem"/>
+            <ButtonComp text="Uložiť škálovanie" @click="actualizeScales" fontSize="1rem"/>
+          </div>
         </div>
-        <button @click="addScale">Pridať nové škálovanie</button>
-
-        <!-- Uložiť škálovanie -->
-        <button @click="actualizeScales">Uložiť škálovanie</button>
       </div>
-      <Import :testId="testId" @import-complete="handleImportComplete" />
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useStore } from 'vuex';
 import Import from '../components/Import.vue';
 import ButtonComp from '../components/ButtonComp.vue';
@@ -219,6 +206,7 @@ export default {
 
     // Vytvorenie testu
     const createTest = () => {
+      addScale();
       if (!store.getters.isAuthenticated) {
         error.value = 'Nie ste prihlásený. Prihláste sa, aby ste mohli vytvoriť test.';
         return;
@@ -646,16 +634,20 @@ export default {
             }
         }
     };
-    const toggleScaling = () => {
-      showScaling.value = true; 
-    };
+  const toggleScaling = () => {
+    showScaling.value = !showScaling.value;
+    console.log(showScaling.value)
+    actualizeScales();
+  };
+   
+  onMounted(() => {
+    checkAuth();
+    fetchDefaultTests();
+  });
 
-    // Načítanie komponentu
-    onMounted(() => {
-      checkAuth();
-      fetchDefaultTests();
-    });
-
+  onUnmounted(() => {
+    // document.removeEventListener('click', handleClickOutside);
+  });
     return {
       testName,
       editedName,
@@ -694,7 +686,9 @@ export default {
       disableEditingQuestion,
       isEditingQuestion,
       addOptionUpdate,
-      removeOptionUpdate
+      removeOptionUpdate,
+      toggleScaling,
+      showScaling
     };
   },
 };
@@ -800,7 +794,7 @@ h3 {
 }
 
 .question-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.2);
   padding: 15px;
   border-radius: 10px;
   box-shadow: 0 4px 8px var(--color-lightblue);
@@ -816,14 +810,6 @@ h3 {
   padding-left: 20px;
   text-align: left;
   list-style: none;
-}
-
-.option-item {
-  font-size: 1rem;
-  margin-bottom: 5px;
-  display: flex;
-  align-items: center;  /* Zarovná text vertikálne na stred */
-  gap: 10px; 
 }
 
 .option-value {
@@ -847,73 +833,17 @@ h3 {
   border-radius: 5px;
 }
 
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-}
-
-.add-category {
-  background-color: #17a2b8;
-  color: white;
-}
-
 .edit {
   background-color: #ffc107;
   color: black;
 }
 
-.delete {
-  background-color: #dc3545;
-  color: white;
-}
-
-.edit-form {
-  background: #fff;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.edit-input, .edit-select {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.choices-container {
-  margin-top: 10px;
-}
 
 .choice-item {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 5px;
-}
-
-.choice-input {
-  flex: 1;
-}
-
-.value-input {
-  width: 70px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 
 .question-form {
@@ -923,6 +853,7 @@ h3 {
   box-shadow: 0 4px 8px var(--color-lightblue);
   max-width: 800px;
   margin: auto;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -983,28 +914,13 @@ h3 {
 }
 
 .button {
-  padding: 10px 15px;
+  padding: 6px 10px;
   border: none;
   border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
 }
-
-.primary-button {
-  background-color: #007bff;
-  color: white;
-}
-
-.secondary-button {
-  background-color: #6c757d;
-  color: white;
-}
-
-.add-option-button {
-  background-color: #28a745;
-  color: white;
-  margin-top: 10px;
-}
+ 
 
 .remove-button {
   background-color: #dc3545;
@@ -1015,6 +931,109 @@ h3 {
   display: flex;
   justify-content: space-evenly;
   margin:10px 20px 0px 20px
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap; /* Povolenie zalomenia */
+  gap: 10px; /* Rozostup medzi tlačidlami */
+  align-items: center;
+  justify-content: center;
+  max-width: 800px;
+}
+@media (max-width: 600px) {
+  .button-group {
+    justify-content: space-between;
+  }
+
+  .button-group > * {
+    flex: 1 1 calc(50% - 10px); /* Každé tlačidlo bude mať 50% šírky mínus gap */
+    text-align: center;
+  }
+}
+
+/* skaly */
+.scaling-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+h3 {
+    text-align: center;
+    color: black;
+    font-size: 1.4rem;
+}
+
+.scale-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.scale-item input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+.scale-item .min,.max{
+  width: 60px;
+}
+.test-selection {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.test-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.test-item {
+  text-align: left;
+  background-color: #fff;
+  padding: 10px 15px;
+  margin: 5px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.test-item:hover {
+  background-color: var(--color-lightblue);
+  transform: translateY(-2px);
+}
+
+.test-item:active {
+  background-color: #b2ebf2;
+}
+
+.test-item.selected {
+  background-color: #80deea;
+  font-weight: bold;
+}
+.test-item i{
+  margin-right: 10px;
+  font-size: 1.5rem;
+  color:var(--color-lightblue)
 }
 
 

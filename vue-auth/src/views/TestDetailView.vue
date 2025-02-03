@@ -31,10 +31,10 @@
         </div>
       </div>
     </form>
-    <ExportData :testId="test.id" class="export"/>
-    {{ test.test_code }}
-    <SendDataComp :testId="test.id" :testCode="test.test_code" class="export"/>
-
+    <div style="display: flex; justify-content: center; margin: 20px 0 30px 0; gap: 10px;"> 
+      <ExportData :testId="test.id" class="export"/>
+      <SendDataComp :testId="test.id" :testCode="test.test_code" class="export"/>
+    </div>
   </div>
   <div v-else-if="loading">
     <p>Loading test data...</p>
@@ -218,9 +218,9 @@ label {
   font-size: 1rem;
   cursor: pointer;
 }
-.export{
+/* .export{
   margin-top: 20px;
   padding-top: 20px;
   margin:auto;
-}
+} */
 </style>

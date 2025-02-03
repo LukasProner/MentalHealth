@@ -1,6 +1,6 @@
 Frontend :
     pri zlom prihlaseni vypisať chybu
-    hamburger
+    .hamburger
     pridať vypis nejaky pekny použivatela
     zobrazenie testov
     
@@ -11,24 +11,24 @@ Backend:
     .1.pridať import z dakade prejdť si este hlasovku
     .zobrazenie odpovedí 
         -Chcel by som asi pridať zaheslovanie odpovedi a pri otvorení testu ich zobraziť po teste
-   2. pridať dalsie sposoby odpovedí 
+   .2. pridať dalsie sposoby odpovedí 
         - vcetne kreslenia a snimania obrazovky
-    .prida+t samovzhodnocovanie
+    .prida+t samovzhodnocovanie,
+    kopirovanie otázok
     otazky pri vytvarani testu nie len upravovať ale aj premiestnovať
-    pridať zobrazovanie kodu tvorcovi pri dokončiť test - pridať uložiť test 
-    pridať zdielanie
+    .pridať zobrazovanie kodu tvorcovi pri dokončiť test - pridať uložiť test 
+    .pridať zdielanie
     .zoradiť odpovede podla casu vytvorenia
     .skontrolovať poradie otazok a testov
-    odosielanie mailom
-    pridať možnosť otestovať sa pre neprihlasenych
+    -odosielanie mailom
+    .pridať možnosť otestovať sa pre neprihlasenych
     .opraviť ukladanie škál - ked pridam aby sa nevytváraly zbytočné kopie ktoré to cele mozu skaziť
-    pridať kopirovanie odpovedi z predhadzajucej otázky
 
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
     kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
     .pridať zobrazenie škál pri pridavani testov - abo vlastne asi nie lebo nie je povolene meniť škalovanie ale to asi netreba ked budu rozne kategorie no neviem
-    pri tvorbe otázok treba ukatať možnosti odpvoedí
+    .pri tvorbe otázok treba ukatať možnosti odpvoedí
     prida´t moznost znazornit/ ukazať alebo naopak neukazať odpovede ucastníkovi
     znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
     pridať povinne a nepovinne otázky
@@ -38,7 +38,7 @@ ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t
     zoradit odpovede
     refresh v odpovediach a vo vzyualiyacii
     pridat prelink po dokončen=i kreslenia bez nutnosti zadavania kodu  
-    
+    pridat autentifikacie vsade
 
 
 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
