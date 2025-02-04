@@ -36,10 +36,10 @@
       <SendDataComp :testId="test.id" :testCode="test.test_code" class="export"/>
     </div>
   </div>
-  <div v-else-if="loading">
+  <div v-else-if="loading" class="loading">
     <p>Loading test data...</p>
   </div>
-  <div v-else>
+  <div v-else class = "error">
     <p>{{ error }}</p>
   </div>
 </template>
@@ -157,70 +157,102 @@ export default {
 </script>
 
 <style scoped>
-.test-detail {
-  margin: 0 auto;
-  max-width: 800px;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-}
-.routing{
-  display: flex;
-  justify-content: space-evenly;
-  margin-top:10px;
-}
-.line {
-  height: 4px;
-  background-color: black;
-  border: none;
-  border-radius: 2px; /* Zaoblené okraje */
-  width: 100%;
-  margin-top: 10px;
-}
-h1 {
-  text-align: center ;
-}
+  .test-detail {
+    margin: 0 auto;
+    max-width: 800px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .routing{
+    display: flex;
+    justify-content: space-evenly;
+    margin-top:10px;
+  }
+  .line {
+    height: 4px;
+    background-color: black;
+    border: none;
+    border-radius: 2px; /* Zaoblené okraje */
+    width: 100%;
+    margin-top: 10px;
+  }
+  h1 {
+    text-align: center ;
+  }
 
-.form-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background: var(--color-background);
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-.question-card{
-  background-color: white;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 4px 0 var(--color-lightblue);
-  padding: 15px;
-}
+  .form-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--color-background);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  .question-card{
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 4px 0 var(--color-lightblue);
+    padding: 15px;
+  }
 
-.question-card p {
-  font-size: 1.1rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-input[type="radio"] {
-  margin-right: 5px;
-}
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-/* .export{
-  margin-top: 20px;
-  padding-top: 20px;
-  margin:auto;
-} */
+  .question-card p {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  /* .export{
+    margin-top: 20px;
+    padding-top: 20px;
+    margin:auto;
+  } */
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0f2fe;
+    color: #0284c7;
+    padding: 20px;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 20px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .error p{
+    margin: 0;
+  }
+
 </style>

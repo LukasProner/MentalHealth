@@ -60,21 +60,20 @@
     },
     methods: {
   startRecording() {
-    // Zachytenie obrazovky
     navigator.mediaDevices.getDisplayMedia({ video: true })
       .then(stream => {
         this.mediaRecorder = new MediaRecorder(stream);
-        this.chunks = []; // Uloženie fragmentov videa
+        this.chunks = [];  
 
         this.mediaRecorder.ondataavailable = event => {
           if (event.data.size > 0) {
-            this.chunks.push(event.data); // Ukladanie dát
+            this.chunks.push(event.data);  
           }
         };
 
         this.mediaRecorder.onstop = this.saveRecording;
 
-        this.mediaRecorder.start(); // Začiatok nahrávania
+        this.mediaRecorder.start();  
       })
       .catch(err => {
         console.error("Error accessing display media:", err);
@@ -82,19 +81,18 @@
     },
     stopRecording() {
         if (this.mediaRecorder) {
-        this.mediaRecorder.stop(); // Zastavenie nahrávania
+        this.mediaRecorder.stop();  
         }
     },
     saveRecording() {
-        const blob = new Blob(this.chunks, { type: 'video/webm' });
-        const formData = new FormData();
-        formData.append('video', blob);
-         formData.append('question_id', this.questionId);
-        // Odoslanie videa na backend
-        fetch('http://localhost:8000/api/save_video/', {
-            method: 'POST',
-            body: formData,
-        })
+      const blob = new Blob(this.chunks, { type: 'video/webm' });
+      const formData = new FormData();
+      formData.append('video', blob);
+      formData.append('question_id', this.questionId);
+      fetch('http://localhost:8000/api/save_video/', {
+          method: 'POST',
+          body: formData,
+      })
       .then(response => response.json())
       .then(data => {
         console.log('Video uložené:', data);

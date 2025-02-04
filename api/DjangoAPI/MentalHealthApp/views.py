@@ -626,6 +626,7 @@ class TestListAdmin(APIView):
 
 class UloadDrawingView(APIView):
     def post(self,request):
+        print("upload drawing post")
         question_id = request.data.get('question_id')
         image_data = request.data.get('image')
 
@@ -637,9 +638,14 @@ class UloadDrawingView(APIView):
         except Question.DoesNotExist:
             return Response({'error':'Question not found'}, status = 404)
         print(question, image_data)
+        Drawing.objects.filter(question_id=question_id).delete()
+
         Drawing.objects.create(question = question, image = image_data)
         return Response({'message':'Drawing saved successfully'})
     def get(self, request, questionId):
+        print("upload drawing get")
+        print("request", request)
+        print("questionId", questionId)
         drawings = Drawing.objects.filter(question_id=questionId)
         if drawings.exists():
             # Vyberieme prvý obrázok z výsledku, ak existuje viacero
@@ -660,11 +666,14 @@ class SaveVideoView(APIView):
         if not video_file or not question_id:
             return JsonResponse({'error': 'Invalid data'}, status=400)
 
+        RecordedVideo.objects.filter(question_id=question_id).delete()
+
         # Uloženie videa do databázy
         recorded_video = RecordedVideo.objects.create(
             question_id=question_id,
             video_file=video_file
         )
+        
 
         return JsonResponse({'message': 'Video saved successfully', 'id': recorded_video.id})
     

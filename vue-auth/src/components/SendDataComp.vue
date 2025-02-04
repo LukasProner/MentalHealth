@@ -47,9 +47,7 @@ import ButtonComp from './ButtonComp.vue';
             this.showModal = false;
         },
         copyToClipboard() {
-            navigator.clipboard.writeText(this.testLink).then(() => {
-            alert("Odkaz skopírovaný do schránky!");
-            });
+            navigator.clipboard.writeText(this.testLink)
         }
     }
   };

@@ -1,42 +1,42 @@
 <template>
-    <div class="test-responses">
-      <div class="routing">
-        <ButtonComp text="Odpovede" fontSize="1rem" @click="goToResponses" />
-        <ButtonComp text="Otazky" fontSize="1rem" @click="redirectToQuestions" />
-      </div>
-      <hr class="line" />
-      <div v-if="loading">
-        <p>Načítavam odpovede...</p>
-      </div>
-      <div v-else-if="error">
-        <p>{{ error }}</p>
-      </div>
-      <div v-else-if="responses.length === 0">
-        <p class="no-responses">Na tento test ešte nebolo odpovedané.</p>
-      </div>
-      <div v-else>
-        <div v-for="question in sortedQuestions(test.questions)" :key="question.id">
-          <div v-if="question.question_type !== 'drawing'">
-            <h2>{{ question.text }} </h2>
-            <ul>
-              <li v-for="response in responses" :key="response.submitted_at">
-                <div v-for="answer in response.answers" :key="answer.answer_id">
-                    <div v-if="(answer.question_id) == (question.id)">
-                        {{ answer.answer }}
-                    </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div v-else>
-            <h2>{{ question.text }}</h2>
-            <p>Táto otázka vyžaduje vizualizáciu.</p>
-            <button @click="redirectToDrawing(question.id)">Vizualizovať obrázok</button>
-          </div>
+  <div class="test-responses">
+    <div class="routing">
+      <ButtonComp text="Odpovede" fontSize="1rem" @click="goToResponses" />
+      <ButtonComp text="Otazky" fontSize="1rem" @click="redirectToQuestions" />
+    </div>
+    <hr class="line" />
+    <div v-if="loading" class="loading">
+      <p>Načítavam odpovede...</p>
+    </div>
+    <div v-else-if="error" class="error">
+      <p>{{ error }}</p>
+    </div>
+    <div v-else-if="responses.length === 0">
+      <p class="no-responses">Na tento test ešte nebolo odpovedané.</p>
+    </div>
+    <div v-else>
+      <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
+        <div v-if="question.question_type !== 'drawing'" class="answers-list">
+          <h2>{{ question.text }} </h2>
+          <ul>
+            <li v-for="response in responses" :key="response.submitted_at" class="response-item">
+              <div v-for="answer in response.answers" :key="answer.answer_id">
+                  <div v-if="(answer.question_id) == (question.id)" class="answer">
+                      {{ answer.answer }}
+                  </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div v-else class="drawing-section">
+          <h2>{{ question.text }}</h2>
+          <p>Táto otázka vyžaduje vizualizáciu.</p>
+          <ButtonComp text="Vizualizovať obrázok" @click="redirectToDrawing(question.id)" fontSize="1rem" />
         </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
 <script>
   import { ref, onMounted } from 'vue';
@@ -94,8 +94,9 @@
         }
       };
   
-      const redirectToDrawing = () => {
-        router.push(`/draw/${route.params.id}/`);
+      const redirectToDrawing = (question_id) => {
+        console.log("id otazky",question_id);
+        router.push(`/draw/${question_id}/`);
       };
       
       const redirectToQuestions = () => {
@@ -150,14 +151,84 @@
     width: 100%;
     margin-top: 10px;
   }
-    .no-responses {
-    background-color: #f8d7da;
-    color: #721c24;
+
+  .question-card {
+    background: #f9f9f9;
+    border-left: 6px solid #007bff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+    transition: 0.3s;
+  }
+  .question-card:hover {
+    background: #f1f1f1;
+  }
+
+  .answers-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .response-item {
+    margin-top: 8px;
+  }
+  .answer {
+    background: #e9ecef;
     padding: 10px;
     border-radius: 5px;
+    font-size: 1rem;
+    margin-top: 5px;
+    transition: 0.3s;
+  }
+
+  .answer:hover {
+    background: #dee2e6;
+  }
+
+  .drawing-section {
+    text-align: center;
+    padding: 10px;
+  }
+  .drawing-section h2 {
+    text-align: left;
+  }
+  .drawing-section p {
+    font-style: italic;
+
+  }
+
+  .drawing-button {
+    background: #28a745;
+    color: white;
+    padding: 8px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .drawing-button:hover {
+    background: #218838;
+  }
+
+  .loading, .error, .no-responses {
     text-align: center;
     font-weight: bold;
-    margin-top: 10px;
+    font-size: 1.2rem;
+    padding: 15px;
+    border-radius: 5px;
+  }
+
+  .error {
+    background-color: #ffdddd;
+    color: #d9534f;
+  }
+
+  .no-responses {
+    background-color: #f8d7da;
+    color: #721c24;
   }
 </style>
   
