@@ -8,10 +8,10 @@
         <p v-if="error" style="color: red">{{ error }}</p>
       </div>
     
-      <div v-else>
+      <div v-else class="PublicTestView">
         <h1>{{ test.name }}</h1>
         <form @submit.prevent="submitAnswers">
-          <div v-for="question in sortedQuestions(test.questions)" :key="question.id">
+          <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
             <p>{{ question.text }}</p>
             <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
             <div v-if="question.question_type === 'choice'">
@@ -28,7 +28,7 @@
               </label>
             </div>
             <div v-if="question.question_type ==='drawing'">
-              <button @click.prevent="goDraw(question.id)"></button>
+              <button @click.prevent="goDraw(question.id)"> Tu </button>
             </div>
           </div>
           <button @click="evaluateTest" type="submit">Odoslať odpovede</button>
@@ -53,9 +53,9 @@
     </div>
   </template>
   
-  <script>
+<script>
   import router from '@/router';
-import { onMounted, ref, toRaw, watch } from 'vue';
+  import { onMounted, ref, toRaw, watch } from 'vue';
   import { useRoute } from 'vue-router';
   
   export default {
@@ -84,6 +84,7 @@ import { onMounted, ref, toRaw, watch } from 'vue';
           }
   
           test.value = await response.json();
+          localStorage.setItem('testCode', testCode.value);
         } catch (err) {
           error.value = err.message;
         }
@@ -164,8 +165,16 @@ import { onMounted, ref, toRaw, watch } from 'vue';
             answers.value = JSON.parse(savedAnswers);
           }
       };
+      const loadTestCode = async () => {
+        const savedCode = localStorage.getItem('testCode');
+        if (savedCode) {
+          testCode.value = savedCode;
+          await verifyCode(); // Automatické overenie kódu
+        }
+      };
       onMounted(() => {
         loadAnswersFromLocalStorage();
+        loadTestCode();
       });
 
       watch(answers, () => {
@@ -186,5 +195,43 @@ import { onMounted, ref, toRaw, watch } from 'vue';
       };
     },
   };
-  </script>
+</script>
+
+<style scoped>
+.PublicTestView {
+  margin: 0 auto;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.question-card{
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 4px 0 var(--color-lightblue);
+  padding: 15px;
+}
+.question-card p {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+input[type="radio"] {
+  margin-right: 5px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+</style>
   
