@@ -64,7 +64,7 @@ import ButtonComp from './ButtonComp.vue';
         display: flex;
         justify-content: center;
         align-items: center;
-        z-index: 9999;
+        z-index: 1000;
     }
 
     .modal {
@@ -79,7 +79,6 @@ import ButtonComp from './ButtonComp.vue';
         justify-content: center; 
         align-items: center; 
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-        z-index: 10000;
         position: relative;
     }
 

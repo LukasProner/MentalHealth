@@ -33,23 +33,28 @@
           <li v-for="(question, index) in questions" :key="question.id">
             <div v-if="!isEditingQuestion(question)" class="question-card" @click="enableEditingQuestion(question)">
               <p class="question-text">{{ question.text }}</p>
-              <ul v-if="question.options && question.options.length > 0" class="options-list"> 
+              
+              <ul v-if="question.options && question.options.length > 0" class="options-list">
                 <li v-for="(option, index) in question.options" :key="index" class="option-item">
                   <p class="option-text">{{ option.text }}</p>
-                  <p v-if="option.hasValue" class="option-value" >Hodnota: {{ option.value }}</p>
+                  <p v-if="option.hasValue" class="option-value">Hodnota: {{ option.value }}</p>
                 </li>
               </ul>
-              <div v-if="question.showCategoryInput" class="category-section">
-                <p class="category-label" >Aktuálna kategória: {{ question.category }}</p>
-                <input v-model="question.newCategory" placeholder="Zadajte novú kategóriu" @blur="saveCategory(index)" class="category-input"
-                />
+
+              <div v-if="question.showCategoryInput" class="category-section" @click.stop>
+                <p class="category-label">Aktuálna kategória: {{ question.category }}</p>
+                <input v-model="question.newCategory" placeholder="Zadajte novú kategóriu" 
+                      @blur="saveCategory(index)" class="category-input"/>
               </div>
+
               <div class="buttons">
-                <ButtonComp text="Pridať kategóriu" @click="toggleCategoryInput(index)" fontSize="1rem"/>
-                <ButtonComp text="Upraviť otázku" @click="enableEditingQuestion(question)" fontSize="1rem"/>
-                <ButtonComp text="Odstrániť" @click="deleteQuestion(question.id, index)" fontSize="1rem"/>
+                <ButtonComp text="Pridať kategóriu" @click.stop="toggleCategoryInput(index)" fontSize="1rem"/>
+                <ButtonComp text="Upraviť otázku" @click.stop="enableEditingQuestion(question)" fontSize="1rem"/>
+                <ButtonComp text="Odstrániť" @click.stop="deleteQuestion(question.id, index)" fontSize="1rem"/>
+                <ButtonComp text="Kopírovať otázku" @click.stop="copyQuestion(question, index)" fontSize="1rem"/>
               </div>
             </div>
+
             <!-- Formulár na úpravu otázky -->
             <div v-else class="question-form">
               <input v-model="question.text" placeholder="Zadajte novú otázku" class="input-field question-input"/>
@@ -123,10 +128,7 @@
           <ButtonComp :text="isTestOpen ? 'Zavrieť' : 'Pridať test'" @click="chooseDefaultTest" fontSize="1rem"/>
           <Import :testId="testId" @import-complete="handleImportComplete" />
         </div>
-        <!-- <SendDataComp :testId="testId" :testCode="testCode" class="export"/>
-        <ButtonComp :text="showScaling? 'Zavrieť':'Vytvoriť škálovanie'" @click="toggleScaling" fontSize="1rem"/>
-        <ButtonComp :text="isTestOpen ? 'Zavrieť' : 'Pridať test'" @click="chooseDefaultTest" fontSize="1rem"/> -->
-        <!-- <Import :testId="testId" @import-complete="handleImportComplete" /> -->
+        
         <div v-if="isTestOpen" class="test-selection">
           <h3>Vyberte test</h3>
           <ul class="test-list">
@@ -477,6 +479,29 @@ export default {
       })
       .catch(console.error);
   };
+  const copyQuestion = (question, index)=> {
+    const newQuestion = {
+      text: question.text,
+      question_type: question.question_type,
+      options: question.options,
+      category: question.category
+    };
+    fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuestion),
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Response data:', data); 
+        questions.value.push(data);
+      })
+      .catch(console.error);
+  }
+  
 
     // Odstránenie otázky
   const deleteQuestion = (questionId, index) => {
@@ -498,30 +523,30 @@ export default {
       });
   };
 
-    const updateQuestion = async (questionId, updatedData) => {
-      console.log('Aktualizujem otázku:', questionId, updatedData);
-      try {
-        const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`, {
-          method: 'PUT', 
-          headers: {
-            'Content-Type': 'application/json', // Označenie, že telo požiadavky je JSON
-          },
-          credentials: 'include', // Zabezpečenie, že cookies (napr. JWT) budú odoslané
-          body: JSON.stringify(updatedData), // Serializácia dát na JSON
-        });
+  const updateQuestion = async (questionId, updatedData) => {
+    console.log('Aktualizujem otázku:', questionId, updatedData);
+    try {
+      const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`, {
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json', // Označenie, že telo požiadavky je JSON
+        },
+        credentials: 'include', // Zabezpečenie, že cookies (napr. JWT) budú odoslané
+        body: JSON.stringify(updatedData), // Serializácia dát na JSON
+      });
 
-        if (!response.ok) {
-          throw new Error(`Chyba pri aktualizácii: ${response.statusText}`);
-        }
-
-        const responseData = await response.json(); // Parsovanie odpovede na JSON
-        // console.log('Otázka bola aktualizovaná:', responseData);
-        return responseData;
-      } catch (error) {
-        console.error('Chyba pri aktualizácii otázky:', error);
-        throw error; // Re-throw, ak potrebuješ chybu ošetriť vyššie
+      if (!response.ok) {
+        throw new Error(`Chyba pri aktualizácii: ${response.statusText}`);
       }
-    };
+
+      const responseData = await response.json(); // Parsovanie odpovede na JSON
+      // console.log('Otázka bola aktualizovaná:', responseData);
+      return responseData;
+    } catch (error) {
+      console.error('Chyba pri aktualizácii otázky:', error);
+      throw error; // Re-throw, ak potrebuješ chybu ošetriť vyššie
+    }
+  };
 
     const addScale = () => {
       scales.value.push({ min: 0, max: 0, response: '' });
@@ -565,75 +590,75 @@ export default {
             console.error('Chyba pri ukladaní:', err.message || err);
         });
       };
-    const actualizeScales = async () => {
-      try {
-          const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
-              method: 'DELETE',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-          });
+  const actualizeScales = async () => {
+    try {
+        const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-          if (!response.ok) {
-              const error = await response.json();
-              console.error('Chyba pri odstránení škál:', error);
-              throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Chyba pri odstránení škál:', error);
+            throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
+        }
+        saveScales();
+    } catch (error) {
+        console.error('Chyba pri aktualizácii škál:', error.message || error);
+    }
+  };
+
+  const toggleCategoryInput = (index) => {
+    const question = questions.value[index];
+    question.showCategoryInput = !question.showCategoryInput;
+  };
+  const saveCategory = (index) => {
+    const question = questions.value[index];
+    if (question.newCategory) {
+
+      question.category = question.newCategory;
+      console.log(question.category)
+      question.newCategory = ''; // Resetovať textové pole
+    }
+    question.showCategoryInput = false; // Skryť input po uložení
+    updateQuestion(question.id, { 
+      category: question.category, // Aktualizovaná kategória
+      text: question.text, // Nezabudni na text otázky (ak je povinný)
+      question_type: question.question_type // Ak je potrebný aj typ otázky
+    })
+    .then(response => {
+      console.log('Kategória bola úspešne aktualizovaná:', response);
+    })
+    .catch(error => {
+      console.error('Chyba pri aktualizácii kategórie:', error);
+    });
+    
+  };
+  const handleImportComplete = async (data,scalesData) => {
+      console.log("Import bol úspešne dokončený!");
+      for (const question of data) {
+          try {
+              questions.value.push(question);
+          } catch (error) {
+              console.error("Chyba pri pridávaní otázky:", error);
           }
-          saveScales();
-      } catch (error) {
-          console.error('Chyba pri aktualizácii škál:', error.message || error);
       }
-    };
-
-    const toggleCategoryInput = (index) => {
-      const question = questions.value[index];
-      question.showCategoryInput = !question.showCategoryInput;
-    };
-    const saveCategory = (index) => {
-      const question = questions.value[index];
-      if (question.newCategory) {
-
-        question.category = question.newCategory;
-        console.log(question.category)
-        question.newCategory = ''; // Resetovať textové pole
+      for (const scale of scalesData) {
+          try {
+            scales.value.push({
+              min: scale.min_points,
+              max: scale.max_points,
+              response: scale.response,
+              category: scale.category
+          });
+            // scales.value.push({ scale.min_points, scale.max_points, scale.response, scale.category });
+          } catch (error) {
+              console.error("Chyba pri pridávaní scale:", error);
+          }
       }
-      question.showCategoryInput = false; // Skryť input po uložení
-      updateQuestion(question.id, { 
-        category: question.category, // Aktualizovaná kategória
-        text: question.text, // Nezabudni na text otázky (ak je povinný)
-        question_type: question.question_type // Ak je potrebný aj typ otázky
-      })
-      .then(response => {
-        console.log('Kategória bola úspešne aktualizovaná:', response);
-      })
-      .catch(error => {
-        console.error('Chyba pri aktualizácii kategórie:', error);
-      });
-      
-    };
-    const handleImportComplete = async (data,scalesData) => {
-        console.log("Import bol úspešne dokončený!");
-        for (const question of data) {
-            try {
-                questions.value.push(question);
-            } catch (error) {
-                console.error("Chyba pri pridávaní otázky:", error);
-            }
-        }
-        for (const scale of scalesData) {
-            try {
-              scales.value.push({
-                min: scale.min_points,
-                max: scale.max_points,
-                response: scale.response,
-                category: scale.category
-            });
-              // scales.value.push({ scale.min_points, scale.max_points, scale.response, scale.category });
-            } catch (error) {
-                console.error("Chyba pri pridávaní scale:", error);
-            }
-        }
-    };
+  };
   const toggleScaling = () => {
     showScaling.value = !showScaling.value;
     console.log(showScaling.value)
@@ -688,7 +713,8 @@ export default {
       addOptionUpdate,
       removeOptionUpdate,
       toggleScaling,
-      showScaling
+      showScaling,
+      copyQuestion
     };
   },
 };

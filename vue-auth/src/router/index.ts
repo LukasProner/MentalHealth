@@ -14,6 +14,7 @@ import TestResponsesView from '@/views/TestResponsesView.vue'
 import VisualizeDrawing from '@/views/VisualizeDrawing.vue'
 import DrawingViewWithRecording from '@/views/DrawingViewWithRecording.vue'
 import Skuska from '@/components/skuska.vue'
+import DefaultTestView from '@/views/DefaultTestView.vue'
 const routes: Array<RouteRecordRaw> = [
     {path: '/', component: HomeView},
     {path: '/login', component: LoginView},
@@ -27,6 +28,7 @@ const routes: Array<RouteRecordRaw> = [
     {path: '/tests/:id/responses',component: TestResponsesView,},
     {path: '/default', component: DefaultTestsView},
     {path: '/draw/:id', component: VisualizeDrawing},
+    {path: '/defaulttest/:id', component: DefaultTestView},
     {path: '/skuska', component: Skuska},
 
 ]

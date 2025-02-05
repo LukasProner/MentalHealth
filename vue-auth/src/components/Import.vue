@@ -1,9 +1,19 @@
+ 
 <template>
     <div class="import">
-        <ButtonComp text="import otázok a odpovedí" @click="handleOpenImport" fontSize="1rem"/>
-        <div v-if="openImport">
-            <input type="file" @change="handleFileImport">
-            <button @click="importData">Importovať</button>
+        <ButtonComp text="Import a Export otázok" @click="openModal" fontSize="1rem"/>
+
+        <!-- Modálne okno -->
+        <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+            <div class="modal-content">
+                <h2>Importovanie otázok</h2>
+                <div class="modal-section">
+                    <input type="file" @change="handleFileImport">
+                </div>
+                <button class="close-button" @click="closeModal">✖</button>
+                <ButtonComp text="Importovať" @click="importData" fontSize="1rem"/>
+
+            </div>
         </div>
     </div>
 </template>
@@ -27,20 +37,27 @@ export default {
         const file = ref(null);
         const scales = [];
         const openImport = ref(false);
+        const showModal = ref(false);
+
+        const openModal = () => {
+            showModal.value = true;
+        };
+
+        const closeModal = () => {
+            showModal.value = false;
+        };
 
         const handleOpenImport = () => {
-            openImport.value = !openImport.value; // Prepínanie viditeľnosti
+            openImport.value = !openImport.value; 
             console.log('openImport:', openImport.value);
         };
 
-        // Skrytie importu pri kliknutí mimo
         const handleClickOutside = (event) => {
             if (!event.target.closest('.import')) {
                 openImport.value = false;
             }
         };
 
-        // Pridanie event listenera na kliknutie mimo
         document.addEventListener("click", handleClickOutside);
         
         const handleFileImport = (event) => {
@@ -134,7 +151,61 @@ export default {
             handleFileImport,
             handleOpenImport,
             importData,
+            openModal,
+            showModal,
+            closeModal
         };
     }
 };
 </script>
+<style scoped>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width:500px;
+    height: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+/* Nadpisy sekcií */
+.modal-section h3 {
+    margin-bottom: 10px;
+}
+
+/* Štýl zatváracieho tlačidla */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #555;
+    outline: none;
+}
+.close-btn:hover {
+    color: #000;
+}
+</style>

@@ -7,7 +7,7 @@
 
     <ul v-else>
       <li v-for="test in tests" :key="test.id">
-        <router-link v-if="test.id" :to="{ name: 'testDetail', params: { id: test.id } }" class="test-link">
+        <router-link v-if="test.id" :to="`/defaulttest/${test.id}`" class="test-link">
           <i class="bi bi-file-earmark"></i>
           {{ test.name }}
         </router-link>

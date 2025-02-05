@@ -1,12 +1,9 @@
 Frontend :
     pri zlom prihlaseni vypisať chybu
-    .hamburger
     pridať vypis nejaky pekny použivatela
-    zobrazenie testov
     
 Backend:
     pridať vseobecne testy
-    .pridať moznosť pridavania testov
     pridať testy
     .1.pridať import z dakade prejdť si este hlasovku
     .zobrazenie odpovedí 
@@ -39,6 +36,10 @@ ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t
     refresh v odpovediach a vo vzyualiyacii
     pridat prelink po dokončen=i kreslenia bez nutnosti zadavania kodu  
     pridat autentifikacie vsade
+    opraviť import 
+    pridať vysvetlivku v podobe obrazka v exceli ale pred tym asi zmenim vstup
+    vysledky škál aj pre tvorcov
+    
 
 
 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
