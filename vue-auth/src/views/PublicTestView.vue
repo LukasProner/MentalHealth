@@ -31,10 +31,18 @@
               <ButtonComp @click.prevent="goDraw(question.id)" text="Prejsť ku kresleniu" fontSize = "0.95rem"/>
             </div>
           </div>
-          <ButtonComp @click="evaluateTest" text="Odoslať odpovede" fontSize = "0.95rem"/>
+          <ButtonComp @click="evaluateTest" type="submit" text="Odoslať odpovede" fontSize = "0.95rem"/>
         </form>
-        
-        <div v-if="evaluationResult">
+        <div v-if="showModal" class="modal" @click="closeModal">
+          <div class="modal-content">
+            <h2>Výsledok testu</h2>
+            <div v-for="result in evaluationResult" :key="result.category">
+              <p> {{ result.response }}</p>
+            </div>
+            <!-- <button @click="closeModal">Zatvoriť</button> -->
+          </div>
+        </div>
+        <!-- <div v-if="evaluationResult">
           <h2>Výsledok testu</h2>
           <div v-for="result in evaluationResult" :key="result.category">
             <p><strong>Kategória:</strong> {{ result.category }}</p>
@@ -48,7 +56,7 @@
               Otázka {{ question_id }}: {{ answer }}
             </li>
           </ul>
-        </div>
+        </div> -->
       </div>
     </div>
   </template>
@@ -72,7 +80,8 @@
       const error = ref('');
       const answers = ref({});
       const evaluationResult = ref(null); // Pridáme stav pre výsledok vyhodnotenia
-  
+      const showModal = ref(false);
+
       const verifyCode = async () => {
         try {
           console.log(testCode.value);
@@ -116,7 +125,7 @@
             throw new Error('Failed to submit answers');
           }
           localStorage.removeItem('answers');
-          alert('Odpovede boli úspešne odoslané!');
+          // alert('Odpovede boli úspešne odoslané!');
         } catch (err) {
           console.error(err);
           alert('Nastala chyba pri odosielaní odpovedí.');
@@ -146,10 +155,11 @@
   
             const data = await response.json();
             console.log('Výsledok testu:', data);
-            evaluationResult.value = data.total_score; 
+            evaluationResult.value = data.total_score;
+            showModal.value = true; 
   
             // Zobraz odpoveď používateľovi
-            alert(`Dosiahnuté body: ${data.total_score[0].total_points}\nOdpoveď: ${data.total_score[0].response}`);
+            // alert(`Dosiahnuté body: ${data.total_score[0].total_points}\nOdpoveď: ${data.total_score[0].response}`);
         } catch (err) {
             console.error('Chyba pri vyhodnocovaní:', err.message || err);
         }
@@ -176,6 +186,10 @@
           await verifyCode(); // Automatické overenie kódu
         }
       };
+      const closeModal = () => {
+        showModal.value = false;
+      };
+  
       onMounted(() => {
         loadAnswersFromLocalStorage();
         loadTestCode();
@@ -196,6 +210,8 @@
         evaluationResult, // Vrátim aj stav pre výsledky
         sortedQuestions,
         goDraw,
+        closeModal,
+        showModal,
       };
     },
   };
@@ -279,6 +295,44 @@ label {
   font-size: 1rem;
   cursor: pointer;
 }
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  max-width: 800px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 10px;
+}
+
+/* .modal-content button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+} */
+/* 
+.modal-content button:hover {
+  background: #0056b3;
+} */
 
 .error {
     display: flex;
