@@ -1,11 +1,11 @@
    <template>
-    <div>
-      <div v-if="!test">
-        <h1>Overenie testového kódu</h1>
-        <p>Zadajte kód, ktorý ste dostali od psychológa:</p>
-        <input v-model="testCode" placeholder="Testový kód" />
-        <button @click="verifyCode">Overiť</button>
-        <p v-if="error" style="color: red">{{ error }}</p>
+    <div class="all">
+      <div v-if="!test" class="enter-code">
+        <h1>Overenie kódu</h1>
+        <p>Zadajte kód, ktorý ste dostali:</p>
+        <input v-model="testCode" placeholder="Testový kód"/>
+        <ButtonComp @click="verifyCode" text="Overiť" fontSize="1rem" class="custom-button" />
+        <p v-if="error" style="color: red" class="error-message">{{ error }} </p>
       </div>
     
       <div v-else class="PublicTestView">
@@ -27,11 +27,11 @@
                 <input type="radio" value="No" v-model="answers[question.id]" /> No
               </label>
             </div>
-            <div v-if="question.question_type ==='drawing'">
-              <button @click.prevent="goDraw(question.id)"> Tu </button>
+            <div v-if="question.question_type ==='drawing'" class="drawing-div">
+              <ButtonComp @click.prevent="goDraw(question.id)" text="Prejsť ku kresleniu" fontSize = "0.95rem"/>
             </div>
           </div>
-          <button @click="evaluateTest" type="submit">Odoslať odpovede</button>
+          <ButtonComp @click="evaluateTest" text="Odoslať odpovede" fontSize = "0.95rem"/>
         </form>
         
         <div v-if="evaluationResult">
@@ -54,11 +54,15 @@
   </template>
   
 <script>
+  import ButtonComp from '@/components/ButtonComp.vue';
   import router from '@/router';
   import { onMounted, ref, toRaw, watch } from 'vue';
   import { useRoute } from 'vue-router';
   
   export default {
+    components:{
+      ButtonComp,
+    },
     setup() {
       const route = useRoute(); 
       const testId = route.params.id; 
@@ -198,6 +202,47 @@
 </script>
 
 <style scoped>
+.all{
+  height: 98vh;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  background-color: var(--color-background);
+  text-align: center;
+}
+.enter-code{
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  max-width: 800px;
+  background-color: white;
+  border-radius: 30px;
+  margin: auto;
+  margin-top: 15px;
+  box-shadow: 1px 4px 4px 1px var(--color-lightblue);
+  padding: 0px 40px 40px 40px;
+}
+.enter-code input{
+  width: 100%;
+  padding: 8px 9.5px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.enter-code input:focus {
+  border-color: var(--color-lightblue);
+  box-shadow:  0 4px 4px 0 var(--color-lightblue);
+}
+.custom-button {
+  margin: 0px 40px;
+}
+ 
+.drawing-div{
+  text-align: center;
+}
 .PublicTestView {
   margin: 0 auto;
   max-width: 800px;
@@ -211,6 +256,7 @@
   margin-bottom: 15px;
   box-shadow: 0 4px 4px 0 var(--color-lightblue);
   padding: 15px;
+  text-align: left;
 }
 .question-card p {
   font-size: 1.1rem;
@@ -233,5 +279,23 @@ label {
   font-size: 1rem;
   cursor: pointer;
 }
+
+.error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 20px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .error p{
+    margin: 0;
+  }
 </style>
   
