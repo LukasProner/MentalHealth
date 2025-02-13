@@ -62,6 +62,7 @@ class Question(models.Model):
     )
     options = JSONField(blank=True, null=True)  
     category = models.CharField(max_length=100, blank=True, null=True, default='Nezaradená')
+    image_url = models.CharField(max_length=500, blank=True, null=True)  # Uloží URL obrázka
     
     def save(self, *args, **kwargs):
         if self.question_type == 'choice' and isinstance(self.options, str):

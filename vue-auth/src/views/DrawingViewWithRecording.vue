@@ -1,7 +1,21 @@
-<template>
+   <template>
     <div>
       <h1>Kresliaci skicár</h1>
-      
+  
+      <!-- Nástroje na kreslenie -->
+      <div class="toolbar">
+        <label>
+          Farba pera:
+          <input type="color" v-model="lineColor" />
+        </label>
+  
+        <label>
+          Hrúbka pera:
+          <input type="range" v-model="lineWidth" min="1" max="20" />
+          <span>{{ lineWidth }} px</span>
+        </label>
+      </div>
+  
       <!-- Kresliace plátno -->
       <canvas 
         ref="canvas"
@@ -32,16 +46,16 @@
   
   <script>
   import { ref, onMounted } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   
   export default {
     setup() {
-        const route = useRoute(); // Prístup k aktuálnej trase
-        const questionId = Number(route.query.question_id); // Získaj parameter z query
-
-        console.log("Query ID:", questionId);
-
-        return { questionId }; // Ak ho chceš použiť v šablóne
+      const route = useRoute();
+      const questionId = Number(route.query.question_id);
+      const testId = Number(route.query.testId);
+      console.log("Query ID:", questionId);
+      const router = useRouter();
+      return { questionId,testId, router };
     },
   
     data() {
@@ -49,8 +63,8 @@
         canvasWidth: 500,
         canvasHeight: 500,
         drawing: false,
-        lineColor: '#000000',
-        lineWidth: 5,
+        lineColor: '#000000',  // Farba pera
+        lineWidth: 5,  // Hrúbka čiary
         ctx: null,
         recorder: null,
         stream: null,
@@ -58,50 +72,8 @@
         mediaChunks: [],
       };
     },
-    methods: {
-  startRecording() {
-    navigator.mediaDevices.getDisplayMedia({ video: true })
-      .then(stream => {
-        this.mediaRecorder = new MediaRecorder(stream);
-        this.chunks = [];  
-
-        this.mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            this.chunks.push(event.data);  
-          }
-        };
-
-        this.mediaRecorder.onstop = this.saveRecording;
-
-        this.mediaRecorder.start();  
-      })
-      .catch(err => {
-        console.error("Error accessing display media:", err);
-      });
-    },
-    stopRecording() {
-        if (this.mediaRecorder) {
-        this.mediaRecorder.stop();  
-        }
-    },
-    saveRecording() {
-      const blob = new Blob(this.chunks, { type: 'video/webm' });
-      const formData = new FormData();
-      formData.append('video', blob);
-      formData.append('question_id', this.questionId);
-      fetch('http://localhost:8000/api/save_video/', {
-          method: 'POST',
-          body: formData,
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Video uložené:', data);
-      })
-      .catch(error => {
-        console.error('Chyba pri ukladaní videa:', error);
-      });
-    },
   
+    methods: {
       // Začiatok kreslenia
       startDrawing(event) {
         this.drawing = true;
@@ -174,21 +146,85 @@
           .catch((error) => {
             console.error('Error:', error);
           });
+          console.log("Test ID:", this.testId);
+          this.router.push(`/tests/${this.testId}/public`)
+      },
+  
+      // Spustenie nahrávania obrazovky
+      startRecording() {
+        navigator.mediaDevices.getDisplayMedia({ video: true })
+          .then(stream => {
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.chunks = [];
+  
+            this.mediaRecorder.ondataavailable = event => {
+              if (event.data.size > 0) {
+                this.chunks.push(event.data);
+              }
+            };
+  
+            this.mediaRecorder.onstop = this.saveRecording;
+  
+            this.mediaRecorder.start();
+          })
+          .catch(err => {
+            console.error("Error accessing display media:", err);
+          });
+      },
+  
+      // Zastavenie nahrávania
+      stopRecording() {
+        if (this.mediaRecorder) {
+          this.mediaRecorder.stop();
+        }
+      },
+  
+      // Uloženie videa
+      saveRecording() {
+        const blob = new Blob(this.chunks, { type: 'video/webm' });
+        const formData = new FormData();
+        formData.append('video', blob);
+        formData.append('question_id', this.questionId);
+        fetch('http://localhost:8000/api/save_video/', {
+          method: 'POST',
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Video uložené:', data);
+        })
+        .catch(error => {
+          console.error('Chyba pri ukladaní videa:', error);
+        });
       },
     },
   };
   </script>
   
   <style scoped>
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
   .controls {
     margin-top: 10px;
   }
+  
   button {
     margin-right: 10px;
     padding: 8px;
     font-size: 14px;
     cursor: pointer;
   }
+  
   canvas {
     border: 1px solid #000;
   }

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from MentalHealthApp.models import Scale, User, Question, Test, TestSubmission, QuestionAnswer
+from MentalHealthApp.models import Scale, User, Question, Test, TestSubmission, QuestionAnswer, ImageModel
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -66,3 +66,8 @@ class ScaleSerializer(serializers.ModelSerializer):
                 "Minimálne body musia byť menšie ako maximálne body."
             )
         return data
+    
+class ImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageModel
+        fields = '__all__'

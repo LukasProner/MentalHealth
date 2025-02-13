@@ -12,7 +12,11 @@
         <h1>{{ test.name }}</h1>
         <form @submit.prevent="submitAnswers">
           <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
-            <p>{{ question.text }}</p>
+            <p>{{ question}}</p>
+            <div v-if="question.image_url!==null">
+              obrazok je - {{ question.image_url }} a {{ question.category }}<br>
+              <img :src="question.image_url" alt="Question Image" class="question-image" />
+            </div>
             <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
             <div v-if="question.question_type === 'choice'">
               <label v-for="option in question.options" :key="option">
@@ -167,7 +171,8 @@
       const goDraw = (question_id) => {
         console.log(question_id);
         saveAnswersToLocalStorage();
-        router.push({ path: '/draw', query: { question_id: question_id } });
+        console.log("test id je " + test.value.id);
+        router.push({ path: '/draw', query: { question_id: question_id,testId :test.value.id } });
       };
       const saveAnswersToLocalStorage = () => {
         localStorage.setItem('answers', JSON.stringify(answers.value));

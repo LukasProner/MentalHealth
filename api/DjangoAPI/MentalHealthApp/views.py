@@ -140,21 +140,38 @@ def SaveFile(request):
     return JsonResponse(file_name,safe=False)
 
 
+ 
 class UploadImageView(APIView):
-    def post(self, request, *args, **kwargs):
-        data = request.data
-        image_data = data.get('image')
-        if image_data:
-            # Decode the Base64 image
-            format, imgstr = image_data.split(';base64,')
-            ext = format.split('/')[-1]
-            image = ContentFile(base64.b64decode(imgstr), name=f"uploaded.{ext}")
+    def post(self, request):
+        # Skontroluj, či je v požiadavke obrázok
+        if 'image' not in request.FILES:
+            return Response({"error": "No image uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Save the image to the database
-            image_instance = ImageModel.objects.create(image=image)
-            return Response({"message": "Obrázok bol uložený."})
-        return Response({"error": "Žiadny obrázok nebol odoslaný."}, status=400)
+        # Získame obrázok
+        image_file = request.FILES['image']
 
+        # Uložíme obrázok na server (default_storage môže byť disk alebo cloud)
+        file_path = default_storage.save(f'questions/{image_file.name}', ContentFile(image_file.read()))
+
+        # Získame URL obrázka
+        image_url = request.build_absolute_uri(f'/media/{file_path}')
+
+        # Vrátime URL obrázka
+        return Response({"image_url": image_url}, status=status.HTTP_201_CREATED)
+
+# from rest_framework.parsers import MultiPartParser, FormParser
+# from .serializers import ImageSerializer
+# class ImageUploadView(APIView):
+#     parser_classes = (MultiPartParser, FormParser)
+
+#     def post(self, request, *args, **kwargs):
+#         file_serializer = ImageSerializer(data=request.data)
+
+#         if file_serializer.is_valid():
+#             file_serializer.save()
+#             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 User = get_user_model()
 
@@ -218,6 +235,7 @@ class QuestionListView(APIView):
         text = request.data.get('text')
         options = request.data.get('options', '')  # CSV možnosti
         category = request.data.get('category')  # Pridanie kategórie
+        imageURL = request.data.get('image_url')
 
         if not category:
             return Response({'error': 'Category is required!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -227,11 +245,12 @@ class QuestionListView(APIView):
             text=text,
             question_type=question_type,
             options=options,
-            category=category,  
+            category=category,
+            image_url = imageURL,
         )
 
         return Response(
-            {'id': question.id, 'text': question.text, 'type': question.question_type, 'category': question.category, 'options': question.options},
+            {'id': question.id, 'text': question.text, 'type': question.question_type, 'category': question.category, 'options': question.options, 'image_url': question.image_url},
             status=status.HTTP_201_CREATED
         )
 
@@ -459,7 +478,7 @@ class PublicTestView(APIView):
                 "id": test.id,
                 "name": test.name,
                 "questions": [
-                    {"id": q.id, "text": q.text, "question_type": q.question_type, "options": q.options}
+                    {"id": q.id, "text": q.text, "question_type": q.question_type, "options": q.options, "category": q.category, "image_url": q.image_url}
                     for q in test.questions.all()
                 ]
             })
