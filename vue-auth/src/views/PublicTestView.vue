@@ -1,69 +1,53 @@
-   <template>
-    <div class="all">
-      <div v-if="!test" class="enter-code">
-        <h1>Overenie kódu</h1>
-        <p>Zadajte kód, ktorý ste dostali:</p>
-        <input v-model="testCode" placeholder="Testový kód"/>
-        <ButtonComp @click="verifyCode" text="Overiť" fontSize="1rem" class="custom-button" />
-        <p v-if="error" style="color: red" class="error-message">{{ error }} </p>
-      </div>
-    
-      <div v-else class="PublicTestView">
-        <h1>{{ test.name }}</h1>
-        <form @submit.prevent="submitAnswers">
-          <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
-            <p>{{ question}}</p>
-            <div v-if="question.image_url!==null">
-              obrazok je - {{ question.image_url }} a {{ question.category }}<br>
-              <img :src="question.image_url" alt="Question Image" class="question-image" />
-            </div>
-            <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
-            <div v-if="question.question_type === 'choice'">
-              <label v-for="option in question.options" :key="option">
-                <input type="radio" :value="option" v-model="answers[question.id]" /> {{ option.text }}
-              </label>
-            </div>
-            <div v-if="question.question_type === 'boolean'">
-              <label>
-                <input type="radio" value="Yes" v-model="answers[question.id]" /> Yes
-              </label>
-              <label>
-                <input type="radio" value="No" v-model="answers[question.id]" /> No
-              </label>
-            </div>
-            <div v-if="question.question_type ==='drawing'" class="drawing-div">
-              <ButtonComp @click.prevent="goDraw(question.id)" text="Prejsť ku kresleniu" fontSize = "0.95rem"/>
-            </div>
+<template>
+  <div class="all">
+    <div v-if="!test" class="enter-code">
+      <h1>Overenie kódu</h1>
+      <p>Zadajte kód, ktorý ste dostali:</p>
+      <input v-model="testCode" placeholder="Testový kód"/>
+      <ButtonComp @click="verifyCode" text="Overiť" fontSize="1rem" class="custom-button" />
+      <p v-if="error" style="color: red" class="error-message">{{ error }} </p>
+    </div>
+  
+    <div v-else class="PublicTestView">
+      <h1>{{ test.name }}</h1>
+      <form @submit.prevent="submitAnswers" style="margin-bottom: 30px;" class="form-container">
+        <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
+          <p>{{ question.text }}</p>
+          <div v-if="question.image_url!==null">
+            <img :src="question.image_url" alt="Question Image" class="question-image" />
           </div>
-          <ButtonComp @click="evaluateTest" type="submit" text="Odoslať odpovede" fontSize = "0.95rem"/>
-        </form>
-        <div v-if="showModal" class="modal" @click="closeModal">
-          <div class="modal-content">
-            <h2>Výsledok testu</h2>
-            <div v-for="result in evaluationResult" :key="result.category">
-              <p> {{ result.response }}</p>
-            </div>
-            <!-- <button @click="closeModal">Zatvoriť</button> -->
+          <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
+          <div v-if="question.question_type === 'choice'">
+            <label v-for="option in question.options" :key="option">
+              <input type="radio" :value="option" v-model="answers[question.id]" /> {{ option.text }}
+            </label>
+          </div>
+          <div v-if="question.question_type === 'boolean'">
+            <label>
+              <input type="radio" value="Yes" v-model="answers[question.id]" /> Yes
+            </label>
+            <label>
+              <input type="radio" value="No" v-model="answers[question.id]" /> No
+            </label>
+          </div>
+          <div v-if="question.question_type ==='drawing'" class="drawing-div">
+            <ButtonComp @click.prevent="goDraw(question.id)" text="Prejsť ku kresleniu" fontSize = "0.95rem"/>
           </div>
         </div>
-        <!-- <div v-if="evaluationResult">
+        <ButtonComp @click="evaluateTest" type="submit" text="Odoslať odpovede" fontSize = "0.95rem"/>
+      </form>
+      <div v-if="showModal" class="modal" @click="closeModal">
+        <div class="modal-content">
           <h2>Výsledok testu</h2>
           <div v-for="result in evaluationResult" :key="result.category">
-            <p><strong>Kategória:</strong> {{ result.category }}</p>
-            <p><strong>Dosiahnuté body:</strong> {{ result.total_points }}</p>
-            <p><strong>Odpoveď:</strong> {{ result.response }}</p>
+            <p> {{ result.response }}</p>
           </div>
-  
-          <h3>Vaše odpovede:</h3>
-          <ul>
-            <li v-for="(answer, question_id) in answers" :key="question_id">
-              Otázka {{ question_id }}: {{ answer }}
-            </li>
-          </ul>
-        </div> -->
+          <!-- <button @click="closeModal">Zatvoriť</button> -->
+        </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
 <script>
   import ButtonComp from '@/components/ButtonComp.vue';
@@ -83,7 +67,7 @@
       const testCode = ref('');
       const error = ref('');
       const answers = ref({});
-      const evaluationResult = ref(null); // Pridáme stav pre výsledok vyhodnotenia
+      const evaluationResult = ref(null);  
       const showModal = ref(false);
 
       const verifyCode = async () => {
@@ -223,14 +207,21 @@
 </script>
 
 <style scoped>
+
 .all{
-  height: 98vh;
+  /* height: 98vh;
   display: flex;
   justify-content: center;
   flex-direction: column;
   background-color: var(--color-background);
-  text-align: center;
+  text-align: center; */
+  margin: 0 auto;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
 }
+
 .enter-code{
   display: flex;
   flex-direction: column;
@@ -258,15 +249,24 @@
   box-shadow:  0 4px 4px 0 var(--color-lightblue);
 }
 .custom-button {
-  margin: 0px 40px;
+  margin: auto;
 }
  
 .drawing-div{
   text-align: center;
 }
-.PublicTestView {
-  margin: 0 auto;
+.form-container {
+  /* margin: 0 auto;
   max-width: 800px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column; */
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--color-background);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -278,6 +278,7 @@
   box-shadow: 0 4px 4px 0 var(--color-lightblue);
   padding: 15px;
   text-align: left;
+  border-left: 6px solid var(--color-lightblue);
 }
 .question-card p {
   font-size: 1.1rem;
@@ -325,20 +326,12 @@ label {
   margin-bottom: 10px;
 }
 
-/* .modal-content button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  border: none;
-  background: #007bff;
-  color: white;
-  cursor: pointer;
-  border-radius: 5px;
-} */
-/* 
-.modal-content button:hover {
-  background: #0056b3;
-} */
-
+.question-image {
+  width: 90%;  
+  height: auto;  
+  display: block; /* Zabezpečí správne vykreslenie */
+  margin: 10px auto;
+}
 .error {
     display: flex;
     justify-content: center;

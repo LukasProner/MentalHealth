@@ -12,6 +12,9 @@
     <form class="form-container">
       <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
         <p>{{ question.text }}</p>
+        <div v-if="question.image_url!==null">
+          <img :src="question.image_url" alt="Question Image" class="question-image" />
+        </div>
         <!-- Textová odpoveď -->
         <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
 
@@ -182,7 +185,7 @@ export default {
   }
 
   .form-container {
-    max-width: 800px;
+    width: 100%;
     margin: 0 auto;
     padding: 20px;
     background: var(--color-background);
@@ -191,6 +194,7 @@ export default {
   }
   .question-card{
     background-color: white;
+    border-left: 6px solid var(--color-lightblue);
     border-radius: 8px;
     margin-bottom: 15px;
     box-shadow: 0 4px 4px 0 var(--color-lightblue);
@@ -218,11 +222,12 @@ export default {
     font-size: 1rem;
     cursor: pointer;
   }
-  /* .export{
-    margin-top: 20px;
-    padding-top: 20px;
-    margin:auto;
-  } */
+  .question-image {
+    width: 90%;  
+    height: auto;  
+    display: block; /* Zabezpečí správne vykreslenie */
+    margin: 10px auto;
+  }
   .loading {
     display: flex;
     justify-content: center;

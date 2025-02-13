@@ -14,15 +14,18 @@
     <div v-else-if="responses.length === 0">
       <p class="no-responses">Na tento test ešte nebolo odpovedané.</p>
     </div>
-    <div v-else>
+    <div v-else class = "form-container">
       <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
         <div v-if="question.question_type !== 'drawing'" class="answers-list">
           <h2>{{ question.text }} </h2>
+          <div v-if="question.image_url!==null">
+            <img :src="question.image_url" alt="Question Image" class="question-image" />
+          </div>
           <ul>
             <li v-for="response in responses" :key="response.submitted_at" class="response-item">
               <div v-for="answer in response.answers" :key="answer.answer_id">
                   <div v-if="(answer.question_id) == (question.id)" class="answer">
-                      {{ answer.answer }}
+                    {{ responses }}
                   </div>
               </div>
             </li>
@@ -55,7 +58,8 @@
       const test = ref(null);
       const route = useRoute();
       const router = useRouter();
-  
+
+
       const fetchResponses = async () => {
         try {
           // Fetch odpovede
@@ -151,10 +155,17 @@
     width: 100%;
     margin-top: 10px;
   }
-
+  .form-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--color-background);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
   .question-card {
-    background: #f9f9f9;
-    border-left: 6px solid #007bff;
+    background: white;
+    border-left: 6px solid var(--color-button-hover);
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -198,7 +209,7 @@
 
   }
 
-  .drawing-button {
+  /* .drawing-button {
     background: #28a745;
     color: white;
     padding: 8px 15px;
@@ -211,7 +222,7 @@
 
   .drawing-button:hover {
     background: #218838;
-  }
+  } */
 
   .loading, .error, .no-responses {
     text-align: center;
@@ -219,6 +230,12 @@
     font-size: 1.2rem;
     padding: 15px;
     border-radius: 5px;
+  }
+  .question-image {
+    width: 90%;  
+    height: auto;  
+    display: block; /* Zabezpečí správne vykreslenie */
+    margin: 10px auto;
   }
 
   .error {

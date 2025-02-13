@@ -1,17 +1,17 @@
 Priority :
     .dizajn pre odpovedanie klintom
-    pri zlom prihlaseni vypisať chybu
-    pridat pridavanie obrázkov
-    znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
+    .pri zlom prihlaseni vypisať chybu
+    .pridat pridavanie obrázkov
+    -znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
     pridať vseobecne testy
-    pri zadavani kodu trimnut to
-    pridat autentifikacie vsade
+    -pri zadavani kodu trimnut to
+    -pridat autentifikacie vsade
     pridať vysvetlivku v podobe obrazka v exceli ale pred tym asi zmenim vstup
-    vysledky škál aj pre tvorcov
+    -vysledky škál aj pre tvorcov
 
 Frontend :
-    pri zlom prihlaseni vypisať chybu
-    pridať vypis nejaky pekny použivatela
+    .pri zlom prihlaseni vypisať chybu
+    -pridať vypis nejaky pekny použivatela
     
 Backend:
     pridať vseobecne testy
@@ -23,7 +23,7 @@ Backend:
         - vcetne kreslenia a snimania obrazovky
     .prida+t samovzhodnocovanie,
     .kopirovanie otázok
-    otazky pri vytvarani testu nie len upravovať ale aj premiestnovať
+    -otazky pri vytvarani testu nie len upravovať ale aj premiestnovať
     .pridať zobrazovanie kodu tvorcovi pri dokončiť test - pridať uložiť test 
     .pridať zdielanie
     .zoradiť odpovede podla casu vytvorenia
@@ -34,22 +34,22 @@ Backend:
 
 
 ostatne : zistit preco po zlom hesle ma hodi na hlavnu stranku malo by vypisa´t aspon chybu
-    kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
+    -kontrola mailu ci existuje - teda praca s dvojitou autentifikaciou
     .pridať zobrazenie škál pri pridavani testov - abo vlastne asi nie lebo nie je povolene meniť škalovanie ale to asi netreba ked budu rozne kategorie no neviem
     .pri tvorbe otázok treba ukatať možnosti odpvoedí
-    prida´t moznost znazornit/ ukazať alebo naopak neukazať odpovede ucastníkovi
-    znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
-    pridať povinne a nepovinne otázky
-    pridať odpovede pre obyc cloveka ktorý sa chce otestovať
+    -prida´t moznost znazornit/ ukazať alebo naopak neukazať odpovede ucastníkovi
+    -znazorniť samovyhodnocovanie aj pre tvorcu ked prejde k odpovediam
+    -pridať povinne a nepovinne otázky
+    .pridať odpovede pre obyc cloveka ktorý sa chce otestovať
     .skontrolovať pridavanie viacerých kategorii pre otázku teda aby boli aj jasne viditelne 
-    pri zadavani kodu trimnut to
+    -pri zadavani kodu trimnut to
     .zoradit odpovede
     refresh v odpovediach a vo vzyualiyacii
-    pridat prelink po dokončen=i kreslenia bez nutnosti zadavania kodu  
+    .pridat prelink po dokončen=i kreslenia bez nutnosti zadavania kodu  
     pridat autentifikacie vsade
     opraviť import 
     pridať vysvetlivku v podobe obrazka v exceli ale pred tym asi zmenim vstup
-    vysledky škál aj pre tvorcov
+    -vysledky škál aj pre tvorcov
     
 
 

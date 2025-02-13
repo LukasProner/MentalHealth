@@ -29,14 +29,18 @@
       const router = useRouter();
   
       const submit = async () => {
-        await fetch('http://localhost:8000/api/login/', {
+        const response = await fetch('http://localhost:8000/api/login/', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           credentials: 'include',
           body: JSON.stringify(data)
         });
-  
-        await router.push('/');
+        console.log(response)
+        if (response.ok === true){
+          await router.push('/');
+        }else{
+          alert('Invalid credentials');
+        }
       }
   
       return {
