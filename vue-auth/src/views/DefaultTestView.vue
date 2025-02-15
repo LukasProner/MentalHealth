@@ -25,10 +25,12 @@
         </form>
         <div style="display: flex; justify-content: center; margin: 20px 0 30px 0; gap: 10px;"> 
             <ExportData :testId="test.id" class="export"/>
-            <button @click="evaluateTest" type="submit">Odoslať odpovede</button>
+            <ButtonComp @click="evaluateTest" type="submit" text="Odoslať odpovede" fontSize = '1 rem'/>
+            <!-- <button @click="evaluateTest" type="submit">Odoslať odpovede 111</button> -->
         </div>
-        <div v-if="showModal" class="modal">
+        <div v-if="showModal" class="modal" @click.self="closeModal">
             <div class="modal-content">
+              <button class="close-btn" @click="closeModal">×</button>
               <h2>Výsledok testu</h2>
               <div v-for="result in evaluationResult" :key="result.category">
                 <p> {{ result.response }}</p>
@@ -50,10 +52,12 @@
   import { useStore } from 'vuex';
   import { useRoute, useRouter } from 'vue-router';
   import ExportData from '@/components/Export.vue';
+  import ButtonComp from '@/components/ButtonComp.vue';
   
   export default {
     components: {
       ExportData,
+      ButtonComp
     },
     setup() {
       const store = useStore(); // používame Vuex store
@@ -218,7 +222,18 @@
   h1 {
     text-align: center ;
   }
-
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #555;
+    outline: none;
+  }
   .form-container {
     max-width: 800px;
     margin: 0 auto;
@@ -269,6 +284,7 @@
   }
 
   .modal-content {
+    max-width: 800px;
     background: white;
     padding: 20px;
     border-radius: 10px;

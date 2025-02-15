@@ -25,7 +25,7 @@
             <li v-for="response in responses" :key="response.submitted_at" class="response-item">
               <div v-for="answer in response.answers" :key="answer.answer_id">
                   <div v-if="(answer.question_id) == (question.id)" class="answer">
-                    {{ responses }}
+                    {{ answer.answer }}
                   </div>
               </div>
             </li>

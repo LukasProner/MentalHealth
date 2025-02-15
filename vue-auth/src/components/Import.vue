@@ -1,7 +1,7 @@
  
 <template>
     <div class="import">
-        <ButtonComp text="Import a Export otázok" @click="openModal" fontSize="1rem"/>
+        <ButtonComp text="Import otázok" @click="openModal" fontSize="1rem"/>
 
         <!-- Modálne okno -->
         <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
@@ -115,7 +115,7 @@ export default {
                     } catch (error) {
                         console.error("Chyba pri spracovaní otázky:", error);
                     }
-                } else {
+                } else if (row[0]!=="" && row[1]!=="" && row[1]!=row[0]) {
                     scales.push({
                         min_points: parseFloat(row[0]) || 0,
                         max_points: parseFloat(row[1]) || 0,
