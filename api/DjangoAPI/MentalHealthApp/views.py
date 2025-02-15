@@ -313,6 +313,7 @@ class QuestionListView(APIView):
             "options": question.options,
             "question_type": question.question_type,
             "category": question.category,
+            "image_url": question.image_url
         }, status=status.HTTP_200_OK)
 
 
