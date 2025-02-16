@@ -236,7 +236,7 @@
   }
   .form-container {
     max-width: 800px;
-    margin: 0 auto;
+    /* margin: 0 auto; */
     padding: 20px;
     background: var(--color-background);
     border-radius: 10px;
@@ -248,6 +248,8 @@
     margin-bottom: 15px;
     box-shadow: 0 4px 4px 0 var(--color-lightblue);
     padding: 15px;
+    border-left: 6px solid var(--color-button-hover);
+
   }
 
   .question-card p {

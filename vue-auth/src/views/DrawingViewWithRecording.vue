@@ -3,7 +3,7 @@
     <h1>{{ question.text }}</h1>
 
     <!-- Nástroje na kreslenie -->
-    <div class="toolbar">
+    <!-- <div class="toolbar">
       <label>
         Farba pera:
         <input type="color" v-model="lineColor" />
@@ -18,7 +18,76 @@
         <i :class="isErasing ? 'bi bi-eraser-fill' : 'bi bi-brush'"></i> 
       </button>
       <button @click="undo"><i class="bi bi-arrow-counterclockwise"></i></button>
-    </div>
+      <button @click="clearCanvas"><i class="bi bi-trash3"></i></button>
+      <button @click="downloadImage">
+        <i class="bi bi-download"></i>  
+      </button>
+      <button @click="saveDrawing">Dokončiť</button>
+      <button @click="toggleRecording">
+        <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
+        {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
+      </button>
+    </div> -->
+
+    <div class="toolbar">
+  <div class="tooltip-container">
+    <label>
+      Farba pera:
+      <input type="color" v-model="lineColor" />
+    </label>
+    <span class="tooltip-text">Vyberte farbu pera</span>
+  </div>
+
+  <div class="tooltip-container">
+    <label>
+      Hrúbka pera:
+      <input type="range" v-model="lineWidth" min="1" max="20" />
+      <span>{{ lineWidth }} px</span>
+    </label>
+    <span class="tooltip-text">Vyberte hrúbku pera</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="toggleEraser">
+      <i :class="isErasing ? 'bi bi-eraser-fill' : 'bi bi-brush'"></i>
+    </button>
+    <span class="tooltip-text">Prepínať medzi guma a pero</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="undo">
+      <i class="bi bi-arrow-counterclockwise"></i>
+    </button>
+    <span class="tooltip-text">Krok späť</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="clearCanvas">
+      <i class="bi bi-trash3"></i>
+    </button>
+    <span class="tooltip-text">Vymazať plátno</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="downloadImage">
+      <i class="bi bi-download"></i>
+    </button>
+    <span class="tooltip-text">Stiahnuť obrázok</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="saveDrawing">Dokončiť</button>
+    <span class="tooltip-text">Uložiť kresbu</span>
+  </div>
+
+  <div class="tooltip-container">
+    <button @click="toggleRecording">
+      <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
+      {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
+    </button>
+    <span class="tooltip-text">{{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}</span>
+  </div>
+</div>
 
     <!-- Kresliace plátno -->
     <canvas 
@@ -31,20 +100,6 @@
       @mouseleave="stopDrawing"
     ></canvas>
 
-    <!-- Tlačidlá pre ovládanie -->
-    <div class="controls">
-      <button @click="clearCanvas"><i class="bi bi-trash3"></i></button>
-      <button @click="downloadImage">
-        <i class="bi bi-download"></i>  
-      </button>
-      <button @click="saveDrawing">Dokončiť</button>
-      <!-- <button @click="startRecording">Začať nahrávanie</button>
-      <button @click="stopRecording">Ukončiť nahrávanie</button> -->
-      <button @click="toggleRecording">
-        <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
-        {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
-      </button>
-    </div>
 
     <!-- Prehrávanie video záznamu -->
     <div v-if="videoUrl">
@@ -348,6 +403,41 @@ canvas {
 }
 </style> -->
 <style scoped>
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+    text-align: center;
+    justify-content: center;
+}
+
+.tooltip-container .tooltip-text {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    color: var(--color-button-hover);
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
+    border: 3px solid var(--color-lightblue);
+}
+
+.tooltip-container:hover .tooltip-text {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 2s;  
+}
+
+.tooltip-container:not(:hover) .tooltip-text {
+    transition-delay: 0s;
+}
+
 /* Celý kontajner */
 div {
   display: flex;
@@ -355,7 +445,6 @@ div {
   align-items: center;
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
-  padding: 20px;
   border-radius: 10px;
 }
 

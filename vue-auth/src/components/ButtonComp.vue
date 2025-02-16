@@ -4,6 +4,7 @@
     :type="type"
     :style="{ fontSize: fontSize }"
   >
+  <slot></slot>
     {{ text }}
   </button>
 </template>
