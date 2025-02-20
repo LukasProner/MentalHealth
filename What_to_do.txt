@@ -6,16 +6,17 @@ Priority :
     pridať vseobecne testy
     -pri zadavani kodu trimnut to
     -pridat autentifikacie vsade
-    pridať vysvetlivku v podobe obrazka v exceli ale pred tym asi zmenim vstup
+    -pridať vysvetlivku v podobe obrazka v exceli ale pred tym asi zmenim vstup
     -vysledky škál aj pre tvorcov
     po dokonceni vzplnania testu napisat spravu
 
 erikine pripomienky: 
     .ciarky v headery
     .vo vseobecnych testoch presnu sirku
-    kopirovanie otazok pri tvorbe testov cez ikonu (odstranit tiez)
+    .kopirovanie otazok pri tvorbe testov cez ikonu (odstranit tiez)
     .pri kopirovani sa da automaticky ano nie odpoved
     vysvetlivky 
+    opravit skalovanie teda po otvoreni aby sa nevypisala hlaska o ulozeni a aby sa po kliknuti pobom zavrela
 Frontend :
     .pri zlom prihlaseni vypisať chybu
     -pridať vypis nejaky pekny použivatela

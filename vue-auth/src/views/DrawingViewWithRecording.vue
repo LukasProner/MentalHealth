@@ -65,7 +65,7 @@
     <button @click="clearCanvas">
       <i class="bi bi-trash3"></i>
     </button>
-    <span class="tooltip-text">Vymazať plátno</span>
+    <span class="tooltip-text">Vymazať co ste doposial nakreslili</span>
   </div>
 
   <div class="tooltip-container">

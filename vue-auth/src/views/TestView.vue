@@ -216,6 +216,7 @@ export default {
     const showScaling = ref(false);
     const selectedImage = ref(null);
     const imageUrl = ref("");
+    const added = ref(false);
 
     const handleImageUpload = (event) => {
       const file = event.target.files[0];
@@ -288,7 +289,7 @@ export default {
 
     // Vytvorenie testu
     const createTest = () => {
-      addScale();
+      // addScale();
       if (!store.getters.isAuthenticated) {
         error.value = 'Nie ste prihlásený. Prihláste sa, aby ste mohli vytvoriť test.';
         return;
@@ -635,11 +636,33 @@ export default {
         })
         .then((data) => {
             console.log('Scales uložené:', data);
+            alert('Škálovanie bolo úspešne uložené!');
         })
         .catch((err) => {
             console.error('Chyba pri ukladaní:', err.message || err);
+            alert(`Chyba: ${err.message || 'Neznáma chyba pri ukladaní škál'}`);
         });
       };
+  // const actualizeScales = async () => {
+  //   try {
+  //       const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
+  //           method: 'DELETE',
+  //           headers: {
+  //               'Content-Type': 'application/json',
+  //           },
+  //       });
+
+  //       if (!response.ok) {
+  //           const error = await response.json();
+  //           console.error('Chyba pri odstránení škál:', error);
+  //           throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
+  //       }
+  //       saveScales();
+  //   } catch (error) {
+  //       console.error('Chyba pri aktualizácii škál:', error.message || error);
+  //   }
+  //   alert('Škálovanie bolo úspešne aktualizované!');
+  // };
   const actualizeScales = async () => {
     try {
         const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
@@ -654,11 +677,11 @@ export default {
             console.error('Chyba pri odstránení škál:', error);
             throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
         }
-        saveScales();
+
+        await saveScales(); // Po úspešnom DELETE voláme saveScales
     } catch (error) {
         console.error('Chyba pri aktualizácii škál:', error.message || error);
     }
-    alert('Škálovanie bolo úspešne aktualizované!');
   };
 
   const toggleCategoryInput = (index) => {
@@ -711,6 +734,10 @@ export default {
       }
   };
   const toggleScaling = () => {
+    if(added.value === false){
+      addScale();
+      added.value = true
+    }
     showScaling.value = !showScaling.value;
     console.log(showScaling.value)
     actualizeScales();

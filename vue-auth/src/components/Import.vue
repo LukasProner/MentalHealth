@@ -77,8 +77,13 @@ export default {
 
             const formattedData = [];
             for (const row of dataRows) {
+                console.log('Row:', row);
+                console.log('Row length:', row.length);
                 if (row.length < 2) continue;
-                if (isNaN(row[0])) {
+                console.log('Row0:', row[0]);
+                // if (isNaN(row[0])) {
+                if (row[1]!=="" && (row[1]==="choice" || row[1] === 'boolean')) {
+                    console.log('Otázka:', row);
                     const rawOptions = row[2] ? row[2].split(",") : [];
                     const options = rawOptions.map(option => {
                         const [text, value] = option.split("-");
