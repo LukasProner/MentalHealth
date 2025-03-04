@@ -140,38 +140,68 @@ def SaveFile(request):
     return JsonResponse(file_name,safe=False)
 
 
- 
+ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
+# class UploadImageView(APIView):
+#     def post(self, request):
+#         # Skontroluj, či je v požiadavke obrázok
+#         if 'image' not in request.FILES:
+#             return Response({"error": "No image uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Získame obrázok
+#         image_file = request.FILES['image']
+
+#         # Uložíme obrázok na server (default_storage môže byť disk alebo cloud)
+#         file_path = default_storage.save(f'questions/{image_file.name}', ContentFile(image_file.read()))
+
+#         # Získame URL obrázka
+#         image_url = request.build_absolute_uri(f'/media/{file_path}')
+
+#         # Vrátime URL obrázka
+#         return Response({"image_url": image_url}, status=status.HTTP_201_CREATED)
+
+from django.core.files.images import get_image_dimensions
+import uuid
+import os
+
 class UploadImageView(APIView):
     def post(self, request):
         # Skontroluj, či je v požiadavke obrázok
         if 'image' not in request.FILES:
             return Response({"error": "No image uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Získame obrázok
         image_file = request.FILES['image']
 
+        # Kontrola typu súboru
+        file_extension = os.path.splitext(image_file.name)[1].lower()
+        if file_extension not in ALLOWED_EXTENSIONS:
+            return Response({"error": "Invalid file type. Only images are allowed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kontrola veľkosti súboru
+        if image_file.size > MAX_FILE_SIZE:
+            return Response({"error": "File size exceeds the maximum limit of 5 MB."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Získame rozmery obrázka
+        try:
+            width, height = get_image_dimensions(image_file)
+        except Exception:
+            return Response({"error": "Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Voliteľne: môžeme nastaviť ďalšie validácie rozmerov obrázku, ak je potrebné (napr. minimálna šírka a výška)
+
+        # Generovanie bezpečného názvu súboru (napr. pomocou UUID)
+        safe_filename = f"{uuid.uuid4().hex}{file_extension}"
+
         # Uložíme obrázok na server (default_storage môže byť disk alebo cloud)
-        file_path = default_storage.save(f'questions/{image_file.name}', ContentFile(image_file.read()))
+        file_path = default_storage.save(f'questions/{safe_filename}', ContentFile(image_file.read()))
 
         # Získame URL obrázka
         image_url = request.build_absolute_uri(f'/media/{file_path}')
 
-        # Vrátime URL obrázka
         return Response({"image_url": image_url}, status=status.HTTP_201_CREATED)
 
-# from rest_framework.parsers import MultiPartParser, FormParser
-# from .serializers import ImageSerializer
-# class ImageUploadView(APIView):
-#     parser_classes = (MultiPartParser, FormParser)
-
-#     def post(self, request, *args, **kwargs):
-#         file_serializer = ImageSerializer(data=request.data)
-
-#         if file_serializer.is_valid():
-#             file_serializer.save()
-#             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 User = get_user_model()
 

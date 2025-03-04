@@ -1,4 +1,5 @@
 Priority :
+    po vyplneni nech sa napi3e 6e odpovede boli uspe3ne ulozene
     .dizajn pre odpovedanie klintom
     .pri zlom prihlaseni vypisať chybu
     .pridat pridavanie obrázkov

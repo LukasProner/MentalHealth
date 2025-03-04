@@ -1,34 +1,6 @@
 <template>
   <div>
     <h1>{{ question.text }}</h1>
-
-    <!-- Nástroje na kreslenie -->
-    <!-- <div class="toolbar">
-      <label>
-        Farba pera:
-        <input type="color" v-model="lineColor" />
-      </label>
-
-      <label>
-        Hrúbka pera:
-        <input type="range" v-model="lineWidth" min="1" max="20" />
-        <span>{{ lineWidth }} px</span>
-      </label>
-      <button @click="toggleEraser">
-        <i :class="isErasing ? 'bi bi-eraser-fill' : 'bi bi-brush'"></i> 
-      </button>
-      <button @click="undo"><i class="bi bi-arrow-counterclockwise"></i></button>
-      <button @click="clearCanvas"><i class="bi bi-trash3"></i></button>
-      <button @click="downloadImage">
-        <i class="bi bi-download"></i>  
-      </button>
-      <button @click="saveDrawing">Dokončiť</button>
-      <button @click="toggleRecording">
-        <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
-        {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
-      </button>
-    </div> -->
-
     <div class="toolbar">
   <div class="tooltip-container">
     <label>
@@ -142,12 +114,7 @@ export default {
       isRecording: false,
     };
   },
-  // computed: {
-  //   hasBackgroundImage() {
-  //     return this.question.image_url !== null;
-  //   }
-  // },
-
+ 
   methods: {
     toggleRecording() {
       if (this.isRecording) {
@@ -483,7 +450,7 @@ input[type="range"] {
 
 /* Tlačidlá */
 button {
-  background: #007bff;
+  background: #8c00ff;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -497,7 +464,7 @@ button {
 }
 
 button:hover {
-  background: #0056b3;
+  background: #8c00ff;
 }
 
 button i {

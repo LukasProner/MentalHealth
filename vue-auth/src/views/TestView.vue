@@ -453,7 +453,7 @@ export default {
       }
 
       const data = await response.json();
-      console.log('Questions from selected test:', data.questions);
+      console.log('Questions from selected test:', data);
       questions.value.push(...data.questions.sort((a, b) => a.id - b.id));
 
       // Iterácia cez otázky a ich uloženie k aktuálnemu testu
@@ -498,6 +498,15 @@ export default {
       }
       const temp_scales = await scale_response.json();
       console.log('Scales from selected test:', temp_scales);
+
+      for (const scale of temp_scales) {
+        scales.value.push({
+          min: scale.min_points,
+          max: scale.max_points,
+          response: scale.response,
+          category: scale.category
+        });
+      }
 
       await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
         method: 'POST',
@@ -636,11 +645,11 @@ export default {
         })
         .then((data) => {
             console.log('Scales uložené:', data);
-            alert('Škálovanie bolo úspešne uložené!');
+            // alert('Škálovanie bolo úspešne uložené!');
         })
         .catch((err) => {
             console.error('Chyba pri ukladaní:', err.message || err);
-            alert(`Chyba: ${err.message || 'Neznáma chyba pri ukladaní škál'}`);
+            // alert(`Chyba: ${err.message || 'Neznáma chyba pri ukladaní škál'}`);
         });
       };
   // const actualizeScales = async () => {
