@@ -23,7 +23,7 @@ const routes: Array<RouteRecordRaw> = [
     {path: '/tests', component: TestView },
     {path: '/choosetest', component: ChooseTestView},
     {path: '/tests/:id',name: 'testDetail',component: TestDetailView},
-    {path: '/test/:id/:code',component: TestAnswers,},
+    // {path: '/test/:id/:code',component: TestAnswers,},
     {path: '/tests/:id/public',component: PublicTestView,},
     {path: '/tests/:id/responses',component: TestResponsesView,},
     {path: '/default', component: DefaultTestsView},

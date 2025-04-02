@@ -45,19 +45,28 @@
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import ButtonComp from '@/components/ButtonComp.vue';
+  import { useStore } from 'vuex';
   
   export default {
     components: {
       ButtonComp,
     },
     setup() {
-      
+      const store = useStore();
       const loading = ref(true);
       const error = ref('');
       const responses = ref([]);
       const test = ref(null);
       const route = useRoute();
       const router = useRouter();
+
+      const checkAuth = async () => {
+        try {
+          await store.dispatch('checkAuth');
+        } catch (err) {
+          error.value = 'Chyba pri overovaní prihlásenia.';
+        } 
+      };
 
 
       const fetchResponses = async () => {
@@ -119,7 +128,13 @@
         loading.value = false;
       };
   
-      onMounted(initializeData);
+      // onMounted(initializeData,checkAuth);
+      onMounted(async () => {
+        loading.value = true;
+        await checkAuth();  // Počkať na dokončenie overenia prihlásenia
+        await initializeData(); // Až potom načítať dáta
+        loading.value = false;
+      });
   
       return {
         error,
@@ -129,6 +144,7 @@
         redirectToDrawing,
         redirectToQuestions,
         sortedQuestions,
+        checkAuth
       };
     },
   };

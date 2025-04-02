@@ -37,9 +37,9 @@
       <router-link to="/default" >Zoznam testov</router-link>
        -->
       <router-link v-if="!auth" to="/login" class="btn">Prihlásiť</router-link>
-      <router-link v-if="!auth" to="/register" class="btn register">Register</router-link>
+      <router-link v-if="!auth" to="/register" class="btn register">Registrovať</router-link>
     
-      <router-link v-if="auth" to="/login" class="btn" @click="logout">Logout</router-link>
+      <router-link v-if="auth" to="/login" class="btn" @click="logout">Odhlásiť</router-link>
     </nav>
   </header>
 </template>

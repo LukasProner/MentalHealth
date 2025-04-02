@@ -1,8 +1,5 @@
 from django.test import TestCase
-from .models import QuestionAnswer, Scale, User,Test
-from rest_framework import status
-from django.test import TestCase
-from .models import User, Test
+from .models import QuestionAnswer, Scale, User,Test,User, Test
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -146,7 +143,7 @@ class CreateTestTestCase(TestCase):
         response = self.client.post('/api/tests/', invalid_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-class TestCreationTestCase(TestCase):
+class QuestionsTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create(email="test@example.com", name="Test User")

@@ -86,7 +86,6 @@ class QuestionAnswer(models.Model):
     category = models.CharField(max_length=100, blank=True, null=True, default='Nezaradená')
 
     def save(self, *args, **kwargs):
-        # Automaticky nastav kategóriu podľa otázky bez kontroly
         self.category = self.question.category
         super().save(*args, **kwargs)
 

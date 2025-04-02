@@ -76,11 +76,11 @@ export default {
       }
     };
     const getDate = (dateString) => {
-      const date = new Date(dateString); // Vytvorenie objektu Date
-      const day = date.getDate(); // Získanie dňa
-      const month = date.getMonth() + 1; // Získanie mesiaca, +1 pretože mesiace sú počítané od 0
-      const year = date.getFullYear(); // Získanie roka
-      return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`; // Formátovanie dátumu
+      const date = new Date(dateString);  
+      const day = date.getDate();  
+      const month = date.getMonth() + 1;  
+      const year = date.getFullYear();  
+      return `${day < 10 ? '0' + day : day}.${month < 10 ? '0' + month : month}.${year}`;  
     }
     const deleteTest = async (testId) => {
       try {

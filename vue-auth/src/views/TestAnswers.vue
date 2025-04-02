@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <div>
       <h1>Odpovede na test</h1>
       <div v-if="submission">
@@ -35,4 +35,4 @@
     },
   };
   </script>
-  
+   -->

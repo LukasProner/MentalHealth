@@ -105,32 +105,33 @@ export default {
     };
     init();
     
+    onMounted(init);
 
-    onMounted(async () => {
-      try {
-        const testId = route.params.id; // Získanie testId zo smeru URL
-        const response = await fetch(`http://localhost:8000/api/tests/${testId}/`);
+    // onMounted(async () => {
+    //   try {
+    //     const testId = route.params.id; // Získanie testId zo smeru URL
+    //     const response = await fetch(`http://localhost:8000/api/tests/${testId}/`);
         
-        if (response.ok) {
-          const data = await response.json();
-          test.value = data; // Nastav dáta pre zobrazenie testu
-          console.log(test.value)
-        } else if (response.status === 401) {
-          // Neautentifikovaný prístup k testu, ktorý nie je admin test
-          error.value = 'Test nie je dostupný. Prihláste sa na prístup.';
-        } else if (response.status === 403) {
-          // Používateľ nemá oprávnenie na prístup
-          error.value = 'Nemáte oprávnenie na zobrazenie tohto testu.';
-        } else if (response.status === 404) {
-          // Test neexistuje
-          error.value = 'Test neexistuje.';
-        }
-      } catch (err) {
-        error.value = 'Došlo k chybe pri načítaní testu.';
-      } finally {
-        loading.value = false;
-      }
-    });
+    //     if (response.ok) {
+    //       const data = await response.json();
+    //       test.value = data; // Nastav dáta pre zobrazenie testu
+    //       console.log(test.value)
+    //     } else if (response.status === 401) {
+    //       // Neautentifikovaný prístup k testu, ktorý nie je admin test
+    //       error.value = 'Test nie je dostupný. Prihláste sa na prístup.';
+    //     } else if (response.status === 403) {
+    //       // Používateľ nemá oprávnenie na prístup
+    //       error.value = 'Nemáte oprávnenie na zobrazenie tohto testu.';
+    //     } else if (response.status === 404) {
+    //       // Test neexistuje
+    //       error.value = 'Test neexistuje.';
+    //     }
+    //   } catch (err) {
+    //     error.value = 'Došlo k chybe pri načítaní testu.';
+    //   } finally {
+    //     loading.value = false;
+    //   }
+    // });
 
     const sortedQuestions = (questions) => {
         return [...questions].sort((a, b) => a.id - b.id);
@@ -158,6 +159,106 @@ export default {
   },
 };
 </script>
+<!-- <script> OPRAVIT <!!!!!!!!!
+import { ref, onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
+import ExportData from '@/components/Export.vue';
+import ButtonComp from '@/components/ButtonComp.vue';
+import SendDataComp from '@/components/SendDataComp.vue';
+
+export default {
+  components: {
+    ExportData,
+    ButtonComp,
+    SendDataComp
+  },
+  setup() {
+    const store = useStore();
+    const route = useRoute();
+    const router = useRouter();
+
+    const answers = ref({});
+    const test = ref(null);
+    const testCode = ref('');
+    const error = ref('');
+    const loading = ref(true);
+
+    // Načítanie testu zo servera
+    const fetchTest = async () => {
+      const testId = route.params.id;
+      if (!testId) {
+        error.value = 'ID testu nie je platné.';
+        loading.value = false;
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            error.value = 'Test nie je dostupný. Prihláste sa na prístup.';
+          } else if (response.status === 403) {
+            error.value = 'Nemáte oprávnenie na zobrazenie tohto testu.';
+          } else if (response.status === 404) {
+            error.value = 'Test neexistuje.';
+          } else {
+            error.value = `Chyba ${response.status}: Test sa nepodarilo načítať.`;
+          }
+          return;
+        }
+
+        test.value = await response.json();
+        console.log(test.value);
+      } catch (err) {
+        error.value = 'Došlo k chybe pri načítaní testu.';
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // Inicializácia komponentu
+    const init = async () => {
+      await store.dispatch('checkAuth');
+      if (store.getters.isAuthenticated) {
+        await fetchTest();
+      } else {
+        error.value = 'Nie ste prihlásený. Prihláste sa na prístup k testu.';
+        loading.value = false;
+      }
+    };
+
+    // Načítanie dát pri mountnutí komponentu
+    onMounted(init);
+
+    // Funkcia na zoradenie otázok
+    const sortedQuestions = (questions) => {
+      return [...questions].sort((a, b) => a.id - b.id);
+    };
+
+    // Presmerovania
+    const goToResponses = () => router.push(`/tests/${route.params.id}/responses`);
+    const redirectToQuestions = () => router.push(`/tests/${route.params.id}/`);
+
+    return {
+      answers,
+      test,
+      error,
+      loading,
+      testCode,
+      goToResponses,
+      sortedQuestions,
+      redirectToQuestions
+    };
+  },
+};
+</script>
+ -->
 
 <style scoped>
   .test-detail {

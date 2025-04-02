@@ -1,44 +1,42 @@
-from django.shortcuts import  render, redirect
-from rest_framework import status
-from rest_framework.decorators import api_view
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
+# from django.shortcuts import  render, redirect
+# from rest_framework import status
+# from rest_framework.decorators import api_view
+# from django.views.decorators.csrf import csrf_exempt
+# from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
 from rest_framework.response import Response
-from django.contrib.auth import login, authenticate,logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib import messages
-from django.contrib.auth.hashers import check_password
-from MentalHealthApp.models import User
+# from django.contrib.auth import login, authenticate,logout
+# from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+# from django.contrib import messages
+# from django.contrib.auth.hashers import check_password
+from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer, ImageModel, Scale, Test, Drawing, RecordedVideo
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
 # from .forms import RegistrationForm
 from rest_framework.views import APIView
-from rest_framework.exceptions import AuthenticationFailed
-import json
+# from rest_framework.exceptions import AuthenticationFailed
+# import json
 import jwt,datetime
-from rest_framework.response import Response
+# from rest_framework.response import Response
 from rest_framework import status
-from .models import TestSubmission, Question, QuestionAnswer
+# from .models import TestSubmission, Question, QuestionAnswer
 from django.shortcuts import get_object_or_404
-import base64
+# import base64
 from django.core.files.base import ContentFile
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import ImageModel, Scale
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Test, Question, Drawing
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from .models import ImageModel, Scale
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from .models import Test, Question, Drawing
 from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
-import jwt
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed, NotFound
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import AuthenticationFailed
-import jwt
-from .models import RecordedVideo
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.exceptions import AuthenticationFailed
+# from .models import RecordedVideo
 
 class RegisterView(APIView):
     def post(self,request):
@@ -103,64 +101,47 @@ class LogoutView(APIView):
         }
         return response
 
-@csrf_exempt
-def userApi(request,id=0):
-    if request.method=='GET':
-        users = User.objects.all()
-        user_serializer=UserSerializer(users,many=True)# Serializuje získané dáta do JSON formátu pomocou UserSerializer
-        return JsonResponse(user_serializer.data,safe=False)
-    elif request.method=='POST':
-        user_data=JSONParser().parse(request)
-        user_serializer=UserSerializer(data=user_data)
-        if user_serializer.is_valid():
-            user_serializer.save()
-            return JsonResponse("Added Successfully",safe=False)
-        return JsonResponse("Failed to Add",safe=False)
-    elif request.method=='PUT':
-        user_data=JSONParser().parse(request)
-        user=User.objects.get(UserId=user_data['UserId'])
-        user_serializer=UserSerializer(user,data=user_data)
-        if user_serializer.is_valid():
-            user_serializer.save()
-            return JsonResponse("Updated Successfully",safe=False)
-        return JsonResponse("Failed to Update")
-    elif request.method == 'DELETE':
-        try:
-            user = User.objects.get(UserId=id)
-        except User.DoesNotExist:
-            return JsonResponse("User not found", status=404, safe=False)
+# @csrf_exempt
+# def userApi(request,id=0):
+#     if request.method=='GET':
+#         users = User.objects.all()
+#         user_serializer=UserSerializer(users,many=True)# Serializuje získané dáta do JSON formátu pomocou UserSerializer
+#         return JsonResponse(user_serializer.data,safe=False)
+#     elif request.method=='POST':
+#         user_data=JSONParser().parse(request)
+#         user_serializer=UserSerializer(data=user_data)
+#         if user_serializer.is_valid():
+#             user_serializer.save()
+#             return JsonResponse("Added Successfully",safe=False)
+#         return JsonResponse("Failed to Add",safe=False)
+#     elif request.method=='PUT':
+#         user_data=JSONParser().parse(request)
+#         user=User.objects.get(UserId=user_data['UserId'])
+#         user_serializer=UserSerializer(user,data=user_data)
+#         if user_serializer.is_valid():
+#             user_serializer.save()
+#             return JsonResponse("Updated Successfully",safe=False)
+#         return JsonResponse("Failed to Update")
+#     elif request.method == 'DELETE':
+#         try:
+#             user = User.objects.get(UserId=id)
+#         except User.DoesNotExist:
+#             return JsonResponse("User not found", status=404, safe=False)
 
-        user.delete()
-        return JsonResponse("Deleted Successfully", safe=False)
+#         user.delete()
+#         return JsonResponse("Deleted Successfully", safe=False)
 
-@csrf_exempt
-def SaveFile(request):
-    file=request.FILES['file']
-    file_name=default_storage.save(file.name,file)
-    return JsonResponse(file_name,safe=False)
+# @csrf_exempt
+# def SaveFile(request):
+#     file=request.FILES['file']
+#     file_name=default_storage.save(file.name,file)
+#     return JsonResponse(file_name,safe=False)
 
 
 ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
-# class UploadImageView(APIView):
-#     def post(self, request):
-#         # Skontroluj, či je v požiadavke obrázok
-#         if 'image' not in request.FILES:
-#             return Response({"error": "No image uploaded"}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # Získame obrázok
-#         image_file = request.FILES['image']
-
-#         # Uložíme obrázok na server (default_storage môže byť disk alebo cloud)
-#         file_path = default_storage.save(f'questions/{image_file.name}', ContentFile(image_file.read()))
-
-#         # Získame URL obrázka
-#         image_url = request.build_absolute_uri(f'/media/{file_path}')
-
-#         # Vrátime URL obrázka
-#         return Response({"image_url": image_url}, status=status.HTTP_201_CREATED)
 
 from django.core.files.images import get_image_dimensions
 import uuid
@@ -449,7 +430,7 @@ class SubmitTestView(APIView):
             )
 
         submission = TestSubmission.objects.create(test_code=test_code, test=test)
-
+        print("Aspon tu som sa dostal")
         answers = request.data.get('answers', [])
         for answer_data in answers:
             question_id = answer_data.get('question_id')
@@ -559,6 +540,42 @@ class ScaleView(APIView):
         scales.delete()
         return Response({"message": "Všetky škály boli odstránené."}, status=status.HTTP_204_NO_CONTENT)
     
+    def put(self, request, test_id):
+        try:
+            test =Test.objects.get(pk=test_id)
+        except Test.DoesNotExist:
+            return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+        
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {"error": "Údaje musia byť vo forme zoznamu."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        updated_scales = []
+        for scale_data in data:
+            scale_id = scale_data.get("id")  # Získanie ID škály, ak existuje
+
+            if scale_id:
+                try:
+                    scale = Scale.objects.get(pk=scale_id, test=test)
+                    serializer = ScaleSerializer(scale, data=scale_data, partial=True)
+                except Scale.DoesNotExist:
+                    return Response(
+                        {"error": f"Škála s ID {scale_id} neexistuje."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            else:
+                scale_data["test"] = test.id  # Ak škála neexistuje, pridáme test
+                serializer = ScaleSerializer(data=scale_data)
+
+            if serializer.is_valid():
+                serializer.save()
+                updated_scales.append(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(updated_scales, status=status.HTTP_200_OK)
 
 class EvaluateTestView(APIView):
     def post(self, request, test_id):

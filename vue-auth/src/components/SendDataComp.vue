@@ -34,7 +34,7 @@ import ButtonComp from './ButtonComp.vue';
         return {
             showModal: false
         };
-    },
+    },//zistit ci treeba computed
     computed: {
         testLink() {
             console.log(this.testId);
