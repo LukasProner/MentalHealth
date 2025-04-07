@@ -471,14 +471,14 @@ class TestResponsesView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
     
-class TestSubmissionDetailView(APIView):
-    def get(self, request, test_code):
-        try:
-            submission = TestSubmission.objects.get(test_code=test_code)
-            serializer = TestSubmissionSerializer(submission)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except TestSubmission.DoesNotExist:
-            return Response({'error': 'Test submission not found'}, status=status.HTTP_404_NOT_FOUND)
+# class TestSubmissionDetailView(APIView):
+#     def get(self, request, test_code):
+#         try:
+#             submission = TestSubmission.objects.get(test_code=test_code)
+#             serializer = TestSubmissionSerializer(submission)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except TestSubmission.DoesNotExist:
+#             return Response({'error': 'Test submission not found'}, status=status.HTTP_404_NOT_FOUND)
         
 class PublicTestView(APIView):
     def post(self, request, test_id, *args, **kwargs):

@@ -13,7 +13,7 @@
 </template>
   
 <script lang="ts">
-  import {reactive} from 'vue';
+  import {onMounted, reactive} from 'vue';
   import {useRouter} from "vue-router";
   import ButtonComp from '@/components/ButtonComp.vue'; 
   export default {
@@ -42,7 +42,11 @@
           alert('Invalid credentials');
         }
       }
-  
+      onMounted(() => {
+        localStorage.removeItem('answers');
+        localStorage.removeItem('testCode');
+      });
+
       return {
         data,
         submit

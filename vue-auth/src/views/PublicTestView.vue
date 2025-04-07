@@ -69,6 +69,7 @@
       const answers = ref({});
       const evaluationResult = ref(null);  
       const showModal = ref(false);
+      const firstTimeOnWebsite = ref(true); 
 
       const verifyCode = async () => {
         try {
@@ -85,6 +86,9 @@
           }
   
           test.value = await response.json();
+          if(localStorage.getItem("testCode")!==testCode.value){
+            localStorage.removeItem("answers");
+          }
           localStorage.setItem('testCode', testCode.value);
         } catch (err) {
           error.value = err.message;
@@ -97,6 +101,7 @@
   
       const submitAnswers = async () => {
         try {
+          alert(JSON.stringify(answers.value, null, 2));
           const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/submit/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -118,6 +123,8 @@
           console.error(err);
           alert('Nastala chyba pri odosielaní odpovedí.');
         }
+        localStorage.removeItem('answers');
+        localStorage.removeItem('testCode');
       };
   
       const evaluateTest = async () => {
@@ -178,10 +185,21 @@
       const closeModal = () => {
         showModal.value = false;
       };
+
+      const clearLocalStorage = ()=>{
+        
+        if(firstTimeOnWebsite.value===true){
+          localStorage.removeItem("answers");
+          localStorage.setItem("firstTime","false")
+          firstTimeOnWebsite.value = false;
+          localStorage.removeItem("testCode");
+        }
+      }
   
       onMounted(() => {
         loadAnswersFromLocalStorage();
         loadTestCode();
+        // clearLocalStorage();
       });
 
       watch(answers, () => {
