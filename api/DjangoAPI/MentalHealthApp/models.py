@@ -124,3 +124,5 @@ class RecordedVideo(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE)
     video_file = models.FileField(upload_to='videos/')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    

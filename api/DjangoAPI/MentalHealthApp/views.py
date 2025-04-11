@@ -285,7 +285,7 @@ class QuestionListView(APIView):
         # Aktualizuj otázku na základe dát z požiadavky
         question.text = request.data.get('text', question.text)
         question.question_type = request.data.get('question_type', question.question_type)
-        question.category = request.data.get('category', question.category)  # Pridanie aktualizácie kategórie
+        question.category = request.data.get('category', question.category)  
         question.options = request.data.get('options', question.options)
         question.save()
 
@@ -540,42 +540,42 @@ class ScaleView(APIView):
         scales.delete()
         return Response({"message": "Všetky škály boli odstránené."}, status=status.HTTP_204_NO_CONTENT)
     
-    def put(self, request, test_id):
-        try:
-            test =Test.objects.get(pk=test_id)
-        except Test.DoesNotExist:
-            return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+    # def put(self, request, test_id):
+    #     try:
+    #         test =Test.objects.get(pk=test_id)
+    #     except Test.DoesNotExist:
+    #         return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
         
-        data = request.data
-        if not isinstance(data, list):
-            return Response(
-                {"error": "Údaje musia byť vo forme zoznamu."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        updated_scales = []
-        for scale_data in data:
-            scale_id = scale_data.get("id")  # Získanie ID škály, ak existuje
+    #     data = request.data
+    #     if not isinstance(data, list):
+    #         return Response(
+    #             {"error": "Údaje musia byť vo forme zoznamu."},
+    #             status=status.HTTP_400_BAD_REQUEST,
+    #         )
+    #     updated_scales = []
+    #     for scale_data in data:
+    #         scale_id = scale_data.get("id")  # Získanie ID škály, ak existuje
 
-            if scale_id:
-                try:
-                    scale = Scale.objects.get(pk=scale_id, test=test)
-                    serializer = ScaleSerializer(scale, data=scale_data, partial=True)
-                except Scale.DoesNotExist:
-                    return Response(
-                        {"error": f"Škála s ID {scale_id} neexistuje."},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-            else:
-                scale_data["test"] = test.id  # Ak škála neexistuje, pridáme test
-                serializer = ScaleSerializer(data=scale_data)
+    #         if scale_id:
+    #             try:
+    #                 scale = Scale.objects.get(pk=scale_id, test=test)
+    #                 serializer = ScaleSerializer(scale, data=scale_data, partial=True)
+    #             except Scale.DoesNotExist:
+    #                 return Response(
+    #                     {"error": f"Škála s ID {scale_id} neexistuje."},
+    #                     status=status.HTTP_404_NOT_FOUND,
+    #                 )
+    #         else:
+    #             scale_data["test"] = test.id  # Ak škála neexistuje, pridáme test
+    #             serializer = ScaleSerializer(data=scale_data)
 
-            if serializer.is_valid():
-                serializer.save()
-                updated_scales.append(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             updated_scales.append(serializer.data)
+    #         else:
+    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(updated_scales, status=status.HTTP_200_OK)
+    #     return Response(updated_scales, status=status.HTTP_200_OK)
 
 class EvaluateTestView(APIView):
     def post(self, request, test_id):
@@ -653,10 +653,10 @@ class EvaluateTestView(APIView):
             print("9999")
             print({"total_score": responses})
             return Response({"total_score": responses}, status=status.HTTP_200_OK)
-        except Test.DoesNotExist:
-            return Response({"error": "Test not found."}, status=status.HTTP_404_NOT_FOUND)
-        except Question.DoesNotExist:
-            return Response({"error": "Invalid question ID provided."}, status=status.HTTP_400_BAD_REQUEST)
+        # except Test.DoesNotExist:
+        #     return Response({"error": "Test not found."}, status=status.HTTP_404_NOT_FOUND)
+        # except Question.DoesNotExist:
+        #     return Response({"error": "Invalid question ID provided."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(f"Error: {str(e)}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

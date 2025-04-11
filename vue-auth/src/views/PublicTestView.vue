@@ -123,8 +123,6 @@
           console.error(err);
           alert('Nastala chyba pri odosielaní odpovedí.');
         }
-        localStorage.removeItem('answers');
-        localStorage.removeItem('testCode');
       };
   
       const evaluateTest = async () => {
@@ -158,6 +156,8 @@
         } catch (err) {
             console.error('Chyba pri vyhodnocovaní:', err.message || err);
         }
+        localStorage.removeItem('answers');
+        localStorage.removeItem('testCode');
       };
       const goDraw = (question_id) => {
         console.log(question_id);
