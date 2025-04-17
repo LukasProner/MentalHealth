@@ -1129,7 +1129,7 @@ class UserViewTests(TestCase):
         self.assertIn('detail', response.data)
         self.assertEqual(response.data['detail'], 'Unauthenticated')
 
-# class SaveVideoViewTests(TestCase):
+class SaveVideoViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create(email='test@example.com')

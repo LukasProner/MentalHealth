@@ -1,73 +1,68 @@
 from locust import HttpUser, task, between
 import random
 import json
-# class UserBehavior(HttpUser):
-#     host = "http://localhost:8000"  
-#     wait_time = between(1, 2)   
+from io import BytesIO
+import string
 
-#     @task
-#     def register_success(self):
-#         user_data = {
-#             "name": f"Test User {random.randint(1000, 9999)}",
-#             "email": f"user{random.randint(1000, 9999)}@example.com",
-#             "password": "securepassword123"
-#         }
-#         response = self.client.post("/api/register/", json=user_data, name="/api/register/")
-#         assert response.status_code == 200  
-#         assert "email" in response.json()  
-#     @task
-#     def test_valid_test_code(self):
-#         response = self.client.post("/api/tests/16/public/", json={"test_code": "NqmSRtWKAj"}, name="/api/tests/16/public/")
-#         assert response.status_code == 200, f"Chyba: {response.status_code}"
-#         assert response.json().get("name") == "Test for Public", f"Neočakávaný výsledok: {response.json()}"
-
-#     @task
-#     def login_success(self):
-#         login_data = {
-#             "email": "sk@sk.sk",
-#             "password": "sk"
-#         }
-#         response = self.client.post("/api/login/", json=login_data)
-
-#         assert response.status_code == 200, f"Chyba: {response.status_code}"
-#         assert "jwt" in response.json(), "JWT token nie je v odpovedi"
+logged_in_users = set()
 
 class AlreadyLogged(HttpUser):
     host = "http://localhost:8000"
     wait_time = between(1, 2)
 
     @task
-    def showAllTests(self):
-        user_data = {'email': 'sk@sk.sk', 'password': 'sk'}
-        response = self.client.post('/api/login/', json=user_data, name='/api/login/')
-        if response.status_code == 200:
-            self.token = response.json().get('jwt')
-            response = self.client.get('/api/tests/')  
-            assert response.status_code == 200
-
-    @task
     def create_test_success(self):
-        user_data = {'email': 'sk@sk.sk', 'password': 'sk'}
-        response = self.client.post('/api/login/', json=user_data, name='/api/login/')
-        if response.status_code == 200:
-            self.token = response.json().get('jwt')
+        # Vygeneruj unikátne meno/email/heslo
+        name = f"Test User {random.randint(1000, 9999)}"
+        email = f"user{random.randint(1000, 9999)}@example.com"
+        password = f"securepassword{random.randint(1000, 9999)}"
+
+        # Zabezpeč, že tento email ešte nie je v logged_in_users
+        if email in logged_in_users:
+            print(f"[SKIP] Používateľ {email} už je prihlásený.")
+            return
+        
+        # Registrácia
+        user_data = {
+            "name": name,
+            "email": email,
+            "password": password
+        }
+        response_register = self.client.post("/api/register/", json=user_data)
+
+        # Login
+        login_data = {"email": email, "password": password}
+        response_login = self.client.post('/api/login/', json=login_data, name='/api/login/')
+
+        if response_login.status_code == 200:
+            self.token = response_login.json().get('jwt')
+            logged_in_users.add(email)  # Pridáme medzi prihlásených
         else:
             self.token = None
             print("Login failed")
+            return
+
         if self.token:
             headers = {'Authorization': f'Bearer {self.token}'}
             test_data = {"name": f"Test názov {random.randint(1000, 5000)}"}
 
-            # Vytváranie testu
+            # Vytvor test
             response = self.client.post('/api/tests/', json=test_data, headers=headers)
             assert response.status_code == 201, f"Failed to create test: {response.status_code}"
             test_id = response.json().get("id")
-            for_code = self.client.get(f'/api/tests/{test_id}/', headers=headers)
-            self.testCode = for_code.json().get("test_code")
-            print("Test code: ", self.testCode)
-            assert test_id, "Test ID not found in the response"
 
-            # Pridávanie otázok k testu
+            # Získaj test kód
+            for_code = self.client.get(f'/api/tests/{test_id}/', headers=headers)
+            if for_code.status_code == 200:
+                try:
+                    self.testCode = for_code.json().get("test_code")
+                    print("Test code: ", self.testCode)
+                except ValueError:
+                    print("Chyba pri dekódovaní JSON!")
+            else:
+                print(f"Nepodarilo sa získať test. Status kód: {for_code.status_code}")
+
+           # Pridávanie otázok k testu
             self.questions_data = [
                 {"text": "Is the sky blue?", "question_type": "text", "options": "", "category": "Nezaradená"}
             ]
@@ -101,8 +96,8 @@ class AlreadyLogged(HttpUser):
 
 
 
-            #     delete_question_response = self.client.delete(f'/api/questions/{question_id}/', headers=headers)
-            #     assert delete_question_response.status_code == 204, f"Failed to delete question (id={question_id}): {delete_question_response.status_code}"
+                # delete_question_response = self.client.delete(f'/api/questions/{question_id}/', headers=headers)
+                # assert delete_question_response.status_code == 204, f"Failed to delete question (id={question_id}): {delete_question_response.status_code}"
 
             # pridavam skaly
             self.scales_data = [
@@ -111,10 +106,10 @@ class AlreadyLogged(HttpUser):
                 {"min_points": 21, "max_points": 30, "response": "High", "category": "Nezaradená"},
             ]
             scale_response = self.client.post(f'/api/tests/{test_id}/scales/',json=self.scales_data,headers=headers)
-            assert scale_response.status_code == 201
+            assert scale_response.status_code == 201,f"Scale response status code: {scale_response.status_code}"
 
             get_scales_response = self.client.get(f'/api/tests/{test_id}/scales/', headers=headers)
-            assert get_scales_response.status_code == 200
+            assert get_scales_response.status_code == 200,f"Scale response status code: {scale_response.status_code}"
 
             # Overenie, že otázky sú pridané k testu
             test_with_questions = self.client.get(f'/api/tests/{test_id}/', headers=headers)
@@ -153,14 +148,32 @@ class AlreadyLogged(HttpUser):
                 assert response_responses.status_code == 200
                 response_list_of_admins_tests = self.client.get('/api/tests/default/')
                 assert response_list_of_admins_tests.status_code == 200
+
+                # #test ukladania obrazku
+                # data = {
+                #     'question_id': question_id,
+                #     'image': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'
+                # }
+                # response_drawing = self.client.post('/api/save_drawing/', json=data)
+                # assert response_drawing.status_code == 200
+
+
+                #ulozenie videa
+                files = {
+                    "question_id": (None, str(question_id)),
+                    "video": ("test_video.webm", BytesIO(b"this is test video content"), "video/webm")
+                }
+                response_video = self.client.post("/api/save_video/", files=files)
+                delete_response = self.client.delete(f"/api/tests/{test_id}/", headers=headers)
+                assert delete_response.status_code == 204, f"Failed to delete test (id={test_id}): {delete_response.status_code}"
             # Mazanie testu po vytvorení a overení
-            delete_response = self.client.delete(f"/api/tests/{test_id}/", headers=headers)
-            assert delete_response.status_code == 204, f"Failed to delete test (id={test_id}): {delete_response.status_code}"
+            
 
-            response_logout = self.client.post('/api/logout/')  
+            # Odhlásenie
+            response_logout = self.client.post('/api/logout/', headers=headers)
+            assert "success" in response_logout.text
+            
 
-            assert response_logout.status_code == 200, f"Failed to lohout"
+            logged_in_users.remove(email)  # Odstráň používateľa zo zoznamu
         else:
             print("Skipping test creation due to failed login")
-
-

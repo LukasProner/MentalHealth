@@ -101,41 +101,7 @@ class LogoutView(APIView):
         }
         return response
 
-# @csrf_exempt
-# def userApi(request,id=0):
-#     if request.method=='GET':
-#         users = User.objects.all()
-#         user_serializer=UserSerializer(users,many=True)# Serializuje získané dáta do JSON formátu pomocou UserSerializer
-#         return JsonResponse(user_serializer.data,safe=False)
-#     elif request.method=='POST':
-#         user_data=JSONParser().parse(request)
-#         user_serializer=UserSerializer(data=user_data)
-#         if user_serializer.is_valid():
-#             user_serializer.save()
-#             return JsonResponse("Added Successfully",safe=False)
-#         return JsonResponse("Failed to Add",safe=False)
-#     elif request.method=='PUT':
-#         user_data=JSONParser().parse(request)
-#         user=User.objects.get(UserId=user_data['UserId'])
-#         user_serializer=UserSerializer(user,data=user_data)
-#         if user_serializer.is_valid():
-#             user_serializer.save()
-#             return JsonResponse("Updated Successfully",safe=False)
-#         return JsonResponse("Failed to Update")
-#     elif request.method == 'DELETE':
-#         try:
-#             user = User.objects.get(UserId=id)
-#         except User.DoesNotExist:
-#             return JsonResponse("User not found", status=404, safe=False)
 
-#         user.delete()
-#         return JsonResponse("Deleted Successfully", safe=False)
-
-# @csrf_exempt
-# def SaveFile(request):
-#     file=request.FILES['file']
-#     file_name=default_storage.save(file.name,file)
-#     return JsonResponse(file_name,safe=False)
 
 
 ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
@@ -371,9 +337,24 @@ class TestDetailView(APIView):
         serializer = TestSerializer(test)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # def delete(self, request, id):
+    #     try:
+    #         test = Test.objects.get(id=id) 
+    #         test.delete() 
+    #         return Response({"message": "Test bol úspešne odstránený."}, status=status.HTTP_204_NO_CONTENT)
+    #     except Test.DoesNotExist:
+    #         return Response({"error": "Test s daným ID neexistuje."}, status=status.HTTP_404_NOT_FOUND)
     def delete(self, request, id):
         try:
             test = Test.objects.get(id=id) 
+            questions = Question.objects.filter(test=test)
+            for question in questions:
+                videos = RecordedVideo.objects.filter(question_id=question.id)
+                for video in videos:
+                    if video.video_file:
+                        video.video_file.delete(save=False)  
+
+
             test.delete() 
             return Response({"message": "Test bol úspešne odstránený."}, status=status.HTTP_204_NO_CONTENT)
         except Test.DoesNotExist:

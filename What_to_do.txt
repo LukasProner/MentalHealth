@@ -5,6 +5,9 @@ ImageSerializer, questionAnswerserializer
     .OPRAVIT aktualiyaciu škál
     EXPORT DAT - ak je na test odpovedane nech su tam aj odpovede, ak je nakreslene nech je tam aj obrazok ak sa bude dať a podobneasi len tie odpovede nech tam su a nech je to v štýle v akom su importovane
     po vyplneni nech sa napi3e 6e odpovede boli uspe3ne ulozene
+    vypis uspešneho uloženia škal a odoslania odpovedi
+    jednotne ukladanie obrazkov ci uz base64 alebo do suboru
+    odstranenie videa po odstraneni testu
     
     .dizajn pre odpovedanie klintom
     .pri zlom prihlaseni vypisať chybu
