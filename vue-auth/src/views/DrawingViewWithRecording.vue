@@ -201,35 +201,64 @@ export default {
       a.click();
     },
 
-    // Uloženie kresby
+    // // Uloženie kresby
+    // saveDrawing() {
+    //   const canvas = this.$refs.canvas;
+    //   const dataURL = canvas.toDataURL();
+    //   fetch('http://localhost:8000/api/save_drawing/', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       Authorization: `Bearer ${localStorage.getItem('token')}`,
+    //     },
+    //     body: JSON.stringify({
+    //       question_id: this.questionId,
+    //       image: dataURL,
+    //     }),
+    //   })
+    //     .then((response) => {
+    //       if (!response.ok) {
+    //         throw new Error('Network response was not ok');
+    //       }
+    //       return response.json();
+    //     })
+    //     .then((data) => {
+    //       console.log('Image saved:', data);
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error:', error);
+    //     });
+    //     console.log("Test ID:", this.testId);
+    //     this.router.push(`/tests/${this.testId}/public`)
+    // },
     saveDrawing() {
       const canvas = this.$refs.canvas;
-      const dataURL = canvas.toDataURL();
-      fetch('http://localhost:8000/api/save_drawing/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          question_id: this.questionId,
-          image: dataURL,
-        }),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
+      canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append('image', blob, 'drawing.png');
+        formData.append('question_id', this.questionId);
+
+        fetch('http://localhost:8000/api/save_drawing/', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: formData,
         })
-        .then((data) => {
-          console.log('Image saved:', data);
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
-        console.log("Test ID:", this.testId);
-        this.router.push(`/tests/${this.testId}/public`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log('Image saved:', data);
+            this.router.push(`/tests/${this.testId}/public`);
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      }, 'image/png');
     },
 
     // Spustenie nahrávania obrazovky

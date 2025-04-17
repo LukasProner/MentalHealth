@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer, ImageModel, Scale, Test, Drawing, RecordedVideo
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
+from django.conf import settings
 # from .forms import RegistrationForm
 from rest_framework.views import APIView
 # from rest_framework.exceptions import AuthenticationFailed
@@ -114,6 +115,7 @@ import uuid
 import os
 
 class UploadImageView(APIView):
+    
     def post(self, request):
         # Skontroluj, či je v požiadavke obrázok
         if 'image' not in request.FILES:
@@ -136,7 +138,6 @@ class UploadImageView(APIView):
         except Exception:
             return Response({"error": "Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Voliteľne: môžeme nastaviť ďalšie validácie rozmerov obrázku, ak je potrebné (napr. minimálna šírka a výška)
 
         # Generovanie bezpečného názvu súboru (napr. pomocou UUID)
         safe_filename = f"{uuid.uuid4().hex}{file_extension}"
@@ -353,6 +354,17 @@ class TestDetailView(APIView):
                 for video in videos:
                     if video.video_file:
                         video.video_file.delete(save=False)  
+
+                if question.image_url:
+                    # Získaj relatívnu cestu z úplnej URL
+                    media_url = request.build_absolute_uri('/media/')
+                    if question.image_url.startswith(media_url):
+                        relative_path = question.image_url.replace(media_url, '')
+                        file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
+
+                        if os.path.exists(file_path):
+                            os.remove(file_path)
+
 
 
             test.delete() 
@@ -674,34 +686,63 @@ class TestListAdmin(APIView):
 
 class UloadDrawingView(APIView):
     def post(self,request):
-        print("upload drawing post")
-        question_id = request.data.get('question_id')
-        image_data = request.data.get('image')
+        image_file = request.FILES.get('image')
+        question_id = request.POST.get('question_id')
 
-        if not question_id or not image_data:
-            return Response({'error':'Invalid data'}, status = 400)
+        if not image_file or not question_id:
+            return Response({"error": "Chýbajúci obrázok alebo question_id"}, status=400)
 
+        # Validácia a uloženie obrázku
+        file_extension = os.path.splitext(image_file.name)[1].lower()
+        safe_filename = f"{uuid.uuid4().hex}{file_extension}"
+        file_path = default_storage.save(f'questions/{safe_filename}', ContentFile(image_file.read()))
+        image_url = request.build_absolute_uri(f'/media/{file_path}')
+
+        # ➕ Uloženie URL do otázky
         try:
-            question = Question.objects.get(id = question_id)
+            question = Question.objects.get(id=question_id)
+            question.image_url = image_url
+            question.save()
         except Question.DoesNotExist:
-            return Response({'error':'Question not found'}, status = 404)
-        print(question, image_data)
-        Drawing.objects.filter(question_id=question_id).delete()
+            return Response({"error": "Otázka neexistuje"}, status=404)
 
-        Drawing.objects.create(question = question, image = image_data)
-        return Response({'message':'Drawing saved successfully'})
+        return Response({"image_url": image_url}, status=201)
+        # print("upload drawing post")
+        # question_id = request.data.get('question_id')
+        # image_data = request.data.get('image')
+
+        # if not question_id or not image_data:
+        #     return Response({'error':'Invalid data'}, status = 400)
+
+        # try:
+        #     question = Question.objects.get(id = question_id)
+        # except Question.DoesNotExist:
+        #     return Response({'error':'Question not found'}, status = 404)
+        # print(question, image_data)
+        # Drawing.objects.filter(question_id=question_id).delete()
+
+        # Drawing.objects.create(question = question, image = image_data)
+        # return Response({'message':'Drawing saved successfully'})
     def get(self, request, questionId):
-        print("upload drawing get")
-        print("request", request)
-        print("questionId", questionId)
-        drawings = Drawing.objects.filter(question_id=questionId)
-        if drawings.exists():
-            # Vyberieme prvý obrázok z výsledku, ak existuje viacero
-            drawing = drawings.first()
-            print("++++++++++++++++++++++",drawing.image)
-            return JsonResponse({'drawing': drawing.image})
-        else:
-            return JsonResponse({'error': 'Obrázok nenájdený'}, status=404)
+        try:
+            question = Question.objects.get(id=questionId)
+            if question.image_url:
+                return Response({"image_url": question.image_url}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "Otázka nemá priradený obrázok."}, status=status.HTTP_204_NO_CONTENT)
+        except Question.DoesNotExist:
+            return Response({"error": "Otázka neexistuje."}, status=status.HTTP_404_NOT_FOUND)
+        # print("upload drawing get")
+        # print("request", request)
+        # print("questionId", questionId)
+        # drawings = Drawing.objects.filter(question_id=questionId)
+        # if drawings.exists():
+        #     # Vyberieme prvý obrázok z výsledku, ak existuje viacero
+        #     drawing = drawings.first()
+        #     print("++++++++++++++++++++++",drawing.image)
+        #     return JsonResponse({'drawing': drawing.image})
+        # else:
+        #     return JsonResponse({'error': 'Obrázok nenájdený'}, status=404)
      
 
 class SaveVideoView(APIView):

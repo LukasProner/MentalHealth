@@ -9,12 +9,12 @@
                 <h2>Obrázok:</h2>
                 <img :src="base64Image" alt="Obrázok" />
             </div>
-            <ButtonComp @click="downloadImage" fontSize = "1rem" text="Stiahnuť obrázok"/>
+            <!-- <ButtonComp @click="downloadImage" fontSize = "1rem" text="Stiahnuť obrázok"/> -->
             <div v-if="videoUrl" class="video-container">
                 <h2>Video:</h2>
                 <video :src="videoUrl" controls></video>
             </div>
-            <ButtonComp @click="downloadVideo" fontSize = "1rem" text="Stiahnuť video"/>
+            <ButtonComp v-if="videoUrl" @click="downloadVideo" fontSize = "1rem" text="Stiahnuť video"/>
             
         </div>
     </div>
@@ -37,14 +37,28 @@ export default {
         const route = useRoute();
 
         const fetchData = async () => {
+            // try {
+            //     // Fetch obrázok
+            //     const imageResponse = await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
+            //     if (!imageResponse.ok) {
+            //         throw new Error('Obrázok sa nepodarilo načítať.');
+            //     }
+            //     const imageData = await imageResponse.json();
+            //     base64Image.value = imageData.drawing;
+            // } catch (err) {
+            //     error.value = 'Chyba pri načítaní obrázka: ' + err.message;
+            // }
             try {
-                // Fetch obrázok
-                const imageResponse = await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
-                if (!imageResponse.ok) {
-                    throw new Error('Obrázok sa nepodarilo načítať.');
+                const response = await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
+
+                if (!response.ok) {
+                throw new Error('Obrázok sa nepodarilo načítať.');
                 }
-                const imageData = await imageResponse.json();
-                base64Image.value = imageData.drawing;
+
+                const data = await response.json();
+
+                // Tu už dostávaš URL
+                base64Image.value = data.image_url;  // URL, nie base64
             } catch (err) {
                 error.value = 'Chyba pri načítaní obrázka: ' + err.message;
             }
@@ -65,22 +79,53 @@ export default {
         };
 
         // Funkcia pre stiahnutie videa
-        const downloadVideo = () => {
-            if (videoUrl.value) {
-                const a = document.createElement('a');
-                a.href = videoUrl.value;
-                a.download = videoUrl.value.split('/').pop();
-                a.click();
+        // const downloadVideo = () => {
+        //     if (videoUrl.value) {
+        //         const a = document.createElement('a');
+        //         a.href = videoUrl.value;
+        //         a.download = videoUrl.value.split('/').pop();
+        //         a.click();
+        //     }
+        // };
+
+        const downloadVideo = async () => {
+            try {
+                const response = await fetch(videoUrl.value, {
+                mode: 'cors',
+                });
+                if (!response.ok) {
+                throw new Error('Chyba pri sťahovaní videa.');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'moje_video.mp4';  
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('Chyba pri stiahnutí videa:', err);
             }
         };
-        const downloadImage = () => {
-            if (base64Image.value) {
-                const a = document.createElement('a');
-                a.href = base64Image.value;
-                a.download = 'drawing.png';
-                a.click();
-            }
-        };
+
+        // const downloadImage = () => {
+        //     if (base64Image.value) {
+        //         const a = document.createElement('a');
+        //         a.href = base64Image.value;
+        //         a.download = 'drawing.png';
+        //         a.click();
+        //     }
+        // };
+        // const downloadImage = () => {
+        //     const link = document.createElement('a');
+        //     link.href = base64Image.value;  // teraz je to URL
+        //     link.download = 'drawing.png';
+        //     link.click();
+        //     };
 
         onMounted(fetchData);
 
@@ -89,8 +134,8 @@ export default {
             videoUrl,
             loading,
             error,
-            downloadVideo,
-            downloadImage
+            downloadVideo
+            // downloadImage
         };
     }
 };
