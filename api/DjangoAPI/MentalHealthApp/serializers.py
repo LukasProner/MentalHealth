@@ -17,21 +17,23 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
 class QuestionSerializer(serializers.ModelSerializer):
-    options = serializers.SerializerMethodField()
+    # options = serializers.SerializerMethodField()
     class Meta:
         model = Question
         fields = '__all__'
     
-    def get_options(self, obj):
-        if isinstance(obj.options, str):
-            return [opt.strip() for opt in obj.options.split(',')]
-        return obj.options
-    def validate_options(self, value):
-        if self.instance and self.instance.question_type == 'choice':
-            for option in value:
-                if 'text' not in option or 'value' not in option:
-                    raise serializers.ValidationError("Každá možnosť musí mať 'text' a 'value'.")
-        return value
+    # def get_options(self, obj):
+    #     if isinstance(obj.options, str):
+    #         print("Obj.options je reťazec:", obj.options)
+    #         return [opt.strip() for opt in obj.options.split(',')]
+    #     return obj.options
+    # def validate_options(self, value):
+    #     if self.instance and self.instance.question_type == 'choice':
+    #         for option in value:
+    #             if 'text' not in option or 'value' not in option:
+    #                 raise serializers.ValidationError("Každá možnosť musí mať 'text' a 'value'.")
+    #     return value
+    
 class TestSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)
 
@@ -46,13 +48,13 @@ class TestSubmissionSerializer(serializers.ModelSerializer):
 
 
 
-class QuestionAnswerSerializer(serializers.ModelSerializer):
-    question_text = serializers.CharField(source='question.text')  # Zahrnutie textu otázky
-    question_type = serializers.CharField(source='question.question_type')  # Typ otázky
+# class QuestionAnswerSerializer(serializers.ModelSerializer):
+#     question_text = serializers.CharField(source='question.text')  # Zahrnutie textu otázky
+#     question_type = serializers.CharField(source='question.question_type')  # Typ otázky
 
-    class Meta:
-        model = QuestionAnswer
-        fields = ['question_text', 'question_type', 'answer']
+#     class Meta:
+#         model = QuestionAnswer
+#         fields = ['question_text', 'question_type', 'answer']
 
 class ScaleSerializer(serializers.ModelSerializer):
     class Meta:

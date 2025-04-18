@@ -77,17 +77,6 @@ export default {
                 loading.value = false;
             }
         };
-
-        // Funkcia pre stiahnutie videa
-        // const downloadVideo = () => {
-        //     if (videoUrl.value) {
-        //         const a = document.createElement('a');
-        //         a.href = videoUrl.value;
-        //         a.download = videoUrl.value.split('/').pop();
-        //         a.click();
-        //     }
-        // };
-
         const downloadVideo = async () => {
             try {
                 const response = await fetch(videoUrl.value, {
@@ -111,21 +100,6 @@ export default {
                 console.error('Chyba pri stiahnutí videa:', err);
             }
         };
-
-        // const downloadImage = () => {
-        //     if (base64Image.value) {
-        //         const a = document.createElement('a');
-        //         a.href = base64Image.value;
-        //         a.download = 'drawing.png';
-        //         a.click();
-        //     }
-        // };
-        // const downloadImage = () => {
-        //     const link = document.createElement('a');
-        //     link.href = base64Image.value;  // teraz je to URL
-        //     link.download = 'drawing.png';
-        //     link.click();
-        //     };
 
         onMounted(fetchData);
 

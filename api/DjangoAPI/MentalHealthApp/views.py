@@ -9,7 +9,7 @@ from rest_framework.response import Response
 # from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 # from django.contrib import messages
 # from django.contrib.auth.hashers import check_password
-from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer, ImageModel, Scale, Test, Drawing, RecordedVideo
+from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer, ImageModel, Scale, Test,  RecordedVideo
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
