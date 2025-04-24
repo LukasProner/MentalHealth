@@ -1,43 +1,23 @@
-# from django.shortcuts import  render, redirect
-# from rest_framework import status
-# from rest_framework.decorators import api_view
-# from django.views.decorators.csrf import csrf_exempt
-# from rest_framework.parsers import JSONParser
 from django.http.response import JsonResponse
 from rest_framework.response import Response
-# from django.contrib.auth import login, authenticate,logout
-# from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-# from django.contrib import messages
-# from django.contrib.auth.hashers import check_password
-from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer, ImageModel, Scale, Test,  RecordedVideo
+from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer,  Scale, Test,  RecordedVideo
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
-# from .forms import RegistrationForm
 from rest_framework.views import APIView
-# from rest_framework.exceptions import AuthenticationFailed
-# import json
 import jwt,datetime
-# from rest_framework.response import Response
 from rest_framework import status
-# from .models import TestSubmission, Question, QuestionAnswer
 from django.shortcuts import get_object_or_404
-# import base64
 from django.core.files.base import ContentFile
-# from rest_framework.response import Response
-# from rest_framework.views import APIView
-# from .models import ImageModel, Scale
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-# from .models import Test, Question, Drawing
 from .serializers import ScaleSerializer, TestSerializer, QuestionSerializer,  TestSubmissionSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed, NotFound
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.exceptions import AuthenticationFailed
-# from .models import RecordedVideo
+from django.core.files.images import get_image_dimensions
+import uuid
+import os
+ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
 
 class RegisterView(APIView):
     def post(self,request):
@@ -68,9 +48,9 @@ class LoginView(APIView):
 
         token = jwt.encode(payload, 'secret', algorithm = 'HS256')
 
-        response = Response()
+        response = Response() #vytvorenie nového objektu odpovede (response), ktorý bude použitý na vrátenie odpovede zo servera.
 
-        response.set_cookie(key='jwt',value=token, httponly = True)
+        response.set_cookie(key='jwt',value=token, httponly = True) #ukladáš token ako cookie s názvom jwt
 
         response.data = {
             'jwt':token
@@ -102,29 +82,15 @@ class LogoutView(APIView):
         }
         return response
 
-
-
-
-ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif']
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
-
-
-
-from django.core.files.images import get_image_dimensions
-import uuid
-import os
-
 class UploadImageView(APIView):
     
     def post(self, request):
-        # Skontroluj, či je v požiadavke obrázok
         if 'image' not in request.FILES:
             return Response({"error": "No image uploaded"}, status=status.HTTP_400_BAD_REQUEST)
 
         image_file = request.FILES['image']
 
-        # Kontrola typu súboru
-        file_extension = os.path.splitext(image_file.name)[1].lower()
+        file_extension = os.path.splitext(image_file.name)[1].lower() #získava príponu súboru z názvu súboru, prevádza ju na malé písmená 
         if file_extension not in ALLOWED_EXTENSIONS:
             return Response({"error": "Invalid file type. Only images are allowed."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -138,8 +104,7 @@ class UploadImageView(APIView):
         except Exception:
             return Response({"error": "Invalid image file."}, status=status.HTTP_400_BAD_REQUEST)
 
-
-        # Generovanie bezpečného názvu súboru (napr. pomocou UUID)
+        # Generovanie bezpečného názvu súboru (pomocou UUID)
         safe_filename = f"{uuid.uuid4().hex}{file_extension}"
 
         # Uložíme obrázok na server (default_storage môže byť disk alebo cloud)
@@ -151,7 +116,7 @@ class UploadImageView(APIView):
         return Response({"image_url": image_url}, status=status.HTTP_201_CREATED)
 
 
-User = get_user_model()
+# User = get_user_model()
 
 class TestListView(APIView):
     def post(self, request):
@@ -211,8 +176,8 @@ class QuestionListView(APIView):
 
         question_type = request.data.get('question_type', 'boolean')
         text = request.data.get('text')
-        options = request.data.get('options', '')  # CSV možnosti
-        category = request.data.get('category')  # Pridanie kategórie
+        options = request.data.get('options', '') 
+        category = request.data.get('category') 
         imageURL = request.data.get('image_url')
 
         if not category:
@@ -284,55 +249,41 @@ class QuestionListView(APIView):
             question = Question.objects.get(id=question_id)
         except Question.DoesNotExist:
             raise NotFound('Question not found')
-        return Response({
-            "id": question.id,
-            "text": question.text,
-            "test_id": question.test_id,
-            "options": question.options,
-            "question_type": question.question_type,
-            "category": question.category,
-            "image_url": question.image_url
-        }, status=status.HTTP_200_OK)
+        # return Response({
+        #     "id": question.id,
+        #     "text": question.text,
+        #     "test_id": question.test_id,
+        #     "options": question.options,
+        #     "question_type": question.question_type,
+        #     "category": question.category,
+        #     "image_url": question.image_url
+        # }, status=status.HTTP_200_OK)
+        return Response(QuestionSerializer(question).data, status=status.HTTP_200_OK)
 
 
 class TestDetailView(APIView):
     def get(self, request, id):
         try:
-            # Načítaj test podľa ID
             test = Test.objects.get(id=id)
         except Test.DoesNotExist:
-            return Response(
-                {'error': 'Test not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'error': 'Test not found'},status=status.HTTP_404_NOT_FOUND)
         
         # Ak je test vytvorený adminom, je prístupný všetkým
         if test.created_by.is_admin:
             serializer = TestSerializer(test)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
-        # Ak nie je vytvorený adminom, overíme, či je používateľ autentifikovaný
         token = request.COOKIES.get('jwt')
         if not token:
-            return Response(
-                {'error': 'Unauthorized access'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({'error': 'Unauthorized access'},status=status.HTTP_401_UNAUTHORIZED)
         try:
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
             user_id = payload['id']
         except jwt.ExpiredSignatureError:
-            return Response(
-                {'error': 'Token has expired'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+            return Response({'error': 'Token has expired'},status=status.HTTP_401_UNAUTHORIZED)
         
-        # Overíme, či je autentifikovaný používateľ autorom testu
         if test.created_by.id != user_id:
-            return Response(
-                {'error': 'Not authorized to view this test'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({'error': 'Not authorized to view this test'},status=status.HTTP_403_FORBIDDEN)
         
         # Ak je používateľ autorom testu, vrátime dáta
         serializer = TestSerializer(test)
@@ -423,7 +374,7 @@ class SubmitTestView(APIView):
             )
 
         submission = TestSubmission.objects.create(test_code=test_code, test=test)
-        print("Aspon tu som sa dostal")
+        # print("Aspon tu som sa dostal")
         answers = request.data.get('answers', [])
         for answer_data in answers:
             question_id = answer_data.get('question_id')
@@ -447,6 +398,7 @@ class TestResponsesView(APIView):
         #mojimi slovami - django ma akusi funkciu ktorou najde nie len ze table ale aj stlpec v nom ktory je nejako spojeny s danou dabulkou
         #slovami gpt - Django používa relácie medzi modelmi (napríklad ForeignKey), ktoré definujú vzťah medzi dvoma tabuľkami. Keď v kóde použiješ prefetch_related alebo select_related, Django vykoná optimalizované dotazy na získanie údajov z viacerých tabuliek, ktoré sú navzájom prepojené.
         response_data = []
+        #neviem ci nebude vhodne pouzit serializer
         for submission in submissions:
             answers = submission.answers.all()
             response_data.append({
@@ -464,18 +416,10 @@ class TestResponsesView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
     
-# class TestSubmissionDetailView(APIView):
-#     def get(self, request, test_code):
-#         try:
-#             submission = TestSubmission.objects.get(test_code=test_code)
-#             serializer = TestSubmissionSerializer(submission)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         except TestSubmission.DoesNotExist:
-#             return Response({'error': 'Test submission not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+    
 class PublicTestView(APIView):
     def post(self, request, test_id, *args, **kwargs):
-        print(f"Received request for test ID: {test_id}")
+        # print(f"Received request for test ID: {test_id}")
         test_code = request.data.get("test_code")
         try:
             test = Test.objects.get(id=test_id, test_code=test_code)
@@ -533,59 +477,19 @@ class ScaleView(APIView):
         scales.delete()
         return Response({"message": "Všetky škály boli odstránené."}, status=status.HTTP_204_NO_CONTENT)
     
-    # def put(self, request, test_id):
-    #     try:
-    #         test =Test.objects.get(pk=test_id)
-    #     except Test.DoesNotExist:
-    #         return Response({"error": "Test neexistuje."}, status=status.HTTP_404_NOT_FOUND)
-        
-    #     data = request.data
-    #     if not isinstance(data, list):
-    #         return Response(
-    #             {"error": "Údaje musia byť vo forme zoznamu."},
-    #             status=status.HTTP_400_BAD_REQUEST,
-    #         )
-    #     updated_scales = []
-    #     for scale_data in data:
-    #         scale_id = scale_data.get("id")  # Získanie ID škály, ak existuje
-
-    #         if scale_id:
-    #             try:
-    #                 scale = Scale.objects.get(pk=scale_id, test=test)
-    #                 serializer = ScaleSerializer(scale, data=scale_data, partial=True)
-    #             except Scale.DoesNotExist:
-    #                 return Response(
-    #                     {"error": f"Škála s ID {scale_id} neexistuje."},
-    #                     status=status.HTTP_404_NOT_FOUND,
-    #                 )
-    #         else:
-    #             scale_data["test"] = test.id  # Ak škála neexistuje, pridáme test
-    #             serializer = ScaleSerializer(data=scale_data)
-
-    #         if serializer.is_valid():
-    #             serializer.save()
-    #             updated_scales.append(serializer.data)
-    #         else:
-    #             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    #     return Response(updated_scales, status=status.HTTP_200_OK)
 
 class EvaluateTestView(APIView):
     def post(self, request, test_id):
         try:
-            # Loguj celý request
-            print("Request data:", request.data)
+            # print("Request data:", request.data)
             test = Test.objects.get(pk=test_id)
             scales = Scale.objects.filter(test=test)
 
-            # Získaj odpovede
             user_answers = request.data.get('answers', [])
-            print("User answers:", user_answers)
+            # print("User answers:", user_answers)
 
-            # Inicializácia výsledkov pre jednotlivé kategórie
             category_scores = {}  # {'category1': total_score, 'category2': total_score, ...}
             
-            # Iterácia cez odpovede
             for answer in user_answers:
                 if not isinstance(answer, dict):
                     print(f"Invalid answer format: {answer}")
@@ -607,18 +511,15 @@ class EvaluateTestView(APIView):
                                 value = 0
                     question = Question.objects.get(pk=question_id)
 
-                    # Kategória otázky
                     question_category = (question.category or 'Nezaradená').strip()
                     print(f"\n(Category: {question_category}) has value: {value}")
 
-                    # Pridaj hodnotu do správnej kategórie
                     if question_category not in category_scores:
                         category_scores[question_category] = 0
                     category_scores[question_category] += value
 
             print(f"Category scores: {category_scores}")
 
-            # Výsledné odpovede na základe škál
             responses = []
             for category, score in category_scores.items():
                 matching_scales = scales.filter(category=category)
@@ -635,14 +536,12 @@ class EvaluateTestView(APIView):
                     else:
                         print("category2", category)
 
-            # Ak neexistuje žiadna odpoveď pre danú kategóriu
             if not responses:
                 return Response(
                     {"error": "No matching scales found for the provided answers."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Vráť výsledok
             print("9999")
             print({"total_score": responses})
             return Response({"total_score": responses}, status=status.HTTP_200_OK)
@@ -657,7 +556,6 @@ class EvaluateTestView(APIView):
 
 class TestListAdmin(APIView):
     def get(self, request, *args, **kwargs):
-        # Skontroluj, či používateľ poskytol JWT token
         token = request.COOKIES.get('jwt')
         user = None
         is_admin = False
@@ -665,21 +563,18 @@ class TestListAdmin(APIView):
         if token:
             try:
                 payload = jwt.decode(token, 'secret', algorithms=['HS256'])
-                user_id = payload.get('id')  # Predpokladá sa, že ID je v token payload
+                user_id = payload.get('id')  
                 user = User.objects.filter(id=user_id).first()
                 if user:
                     is_admin = user.is_admin
             except jwt.ExpiredSignatureError:
-                pass  # Token vypršal, pokračujeme ako neprihlásený používateľ
-            except jwt.DecodeError:
+                pass   
+            except jwt.DecodeError: #odstran asi
                 pass  # Neplatný token, pokračujeme ako neprihlásený používateľ
 
-        # Logika pre načítanie testov
         if is_admin:
-            # Admin vidí všetky testy
             tests = Test.objects.all().values('id', 'name', 'created_by__name')
         else:
-            # Neprihlásení aj neadmini vidia len testy vytvorené adminmi
             tests = Test.objects.filter(created_by__is_admin=True).values('id', 'name')
 
         return Response({"tests": list(tests)}, status=200)

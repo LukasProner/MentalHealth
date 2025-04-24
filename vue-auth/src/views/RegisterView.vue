@@ -34,13 +34,17 @@
       const router = useRouter();
   
       const submit = async () => {
-        await fetch('http://localhost:8000/api/register/', {
+        const response = await fetch('http://localhost:8000/api/register/', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(data)
         });
-  
-        await router.push('/login');
+        if(response.ok){
+          await router.push('/login');
+        }else{
+          const errorData = await response.json();
+          alert("Registrácia zlyhala: " + JSON.stringify(errorData));
+        }
       }
   
       return {

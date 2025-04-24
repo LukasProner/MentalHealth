@@ -8,6 +8,7 @@ ImageSerializer, questionAnswerserializer
     vypis uspešneho uloženia škal a odoslania odpovedi
     jednotne ukladanie obrazkov ci uz base64 alebo do suboru
     odstranenie videa po odstraneni testu
+    opravit testy pre kreslenei a zaznam
     
     .dizajn pre odpovedanie klintom
     .pri zlom prihlaseni vypisať chybu

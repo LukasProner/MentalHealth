@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from MentalHealthApp.models import Scale, User, Question, Test, TestSubmission, QuestionAnswer, ImageModel
+from MentalHealthApp.models import Scale, User, Question, Test, TestSubmission, QuestionAnswer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=['id','name','email','password']
         extra_kwargs = {
-            'password':{'write_only':True}
+            'password':{'write_only':True} #heslo sa nebude zobrazovať v odpovediach, ale môžeš ho odoslať
         }
-    def create(self,validated_data):
+    def create(self,validated_data): #volam automaticky ked serializer.save()
         password = validated_data.pop('password',None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
@@ -69,7 +69,4 @@ class ScaleSerializer(serializers.ModelSerializer):
             )
         return data
     
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ImageModel
-        fields = '__all__'
+

@@ -16,19 +16,19 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    def has_perm(self, perm, obj=None):
-        if self.is_admin:
-            return True  
-        return False 
+    # def has_perm(self, perm, obj=None):
+    #     if self.is_admin:
+    #         return True  
+    #     return False 
     
-    def has_module_perms(self, app_label):
-        if self.is_admin:
-            return True  
-        return False 
+    # def has_module_perms(self, app_label):
+    #     if self.is_admin:
+    #         return True  
+    #     return False 
     
 
-class ImageModel(models.Model):
-    image = models.ImageField(upload_to='images/')
+# class ImageModel(models.Model):
+#     image = models.ImageField(upload_to='images/')
 
 
 class Test(models.Model):
@@ -43,8 +43,8 @@ class Test(models.Model):
             self.test_code = get_random_string(10)  # 10 náhodných znakov
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 class Question(models.Model):
     QUESTION_TYPES = [
@@ -62,7 +62,7 @@ class Question(models.Model):
     )
     options = JSONField(blank=True, null=True)  
     category = models.CharField(max_length=100, blank=True, null=True, default='Nezaradená')
-    image_url = models.CharField(max_length=500, blank=True, null=True)  # Uloží URL obrázka
+    image_url = models.CharField(max_length=500, blank=True, null=True)  # URL obrázka
     
     def save(self, *args, **kwargs):
         if self.question_type == 'choice' and isinstance(self.options, str):
@@ -75,8 +75,8 @@ class TestSubmission(models.Model):
     test = models.ForeignKey(Test, related_name='submissions', on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Test: {self.test.name} - Code: {self.test_code}"
+    # def __str__(self):
+    #     return f"Test: {self.test.name} - Code: {self.test_code}"
 
     
 class QuestionAnswer(models.Model):
@@ -89,8 +89,8 @@ class QuestionAnswer(models.Model):
         self.category = self.question.category
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"{self.submission.user.email} - {self.question.text}: {self.answer}"
+    # def __str__(self):
+    #     return f"{self.submission.user.email} - {self.question.text}: {self.answer}"
 
 class Scale(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="scales")
@@ -99,22 +99,22 @@ class Scale(models.Model):
     response = models.TextField()
     category = models.CharField(max_length=100, default='Nezaradená')
 
-    def clean(self):
-        # Validácia rozpätí bodov
-        if self.min_points >= self.max_points:
-            raise ValidationError("Minimálne body musia byť menšie ako maximálne body.")
+    # def clean(self):
+    #     # Validácia rozpätí bodov
+    #     if self.min_points >= self.max_points:
+    #         raise ValidationError("Minimálne body musia byť menšie ako maximálne body.")
 
-        # Overenie, že rozsahy bodov sa neprekrývajú pre tento test
-        overlapping_scales = Scale.objects.filter(
-            test=self.test,
-            max_points__gte=self.min_points,
-            min_points__lte=self.max_points,
-        ).exclude(pk=self.pk)
-        if overlapping_scales.exists():
-            raise ValidationError("Rozpätia bodov sa prekrývajú s existujúcim škálovaním.")
+        # # Overenie, že rozsahy bodov sa neprekrývajú pre tento test
+        # overlapping_scales = Scale.objects.filter(
+        #     test=self.test,
+        #     max_points__gte=self.min_points,
+        #     min_points__lte=self.max_points,
+        # ).exclude(pk=self.pk)
+        # if overlapping_scales.exists():
+        #     raise ValidationError("Rozpätia bodov sa prekrývajú s existujúcim škálovaním.")
 
-    def __str__(self):
-        return f"{self.min_points} - {self.max_points}: {self.response}"
+    # def __str__(self):
+    #     return f"{self.min_points} - {self.max_points}: {self.response}"
     
 # class Drawing(models.Model):
 #     question = models.ForeignKey(Question, related_name = 'drawing_answears', on_delete=models.CASCADE)
