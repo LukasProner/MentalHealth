@@ -100,8 +100,8 @@ export default {
       canvasWidth: window.innerWidth * 0.9,
       canvasHeight: window.innerHeight * 0.9,
       drawing: false,
-      lineColor: '#000000',  // Farba pera
-      lineWidth: 5,  // Hrúbka čiary
+      lineColor: '#000000', 
+      lineWidth: 5, 
       ctx: null,
       recorder: null,
       stream: null,
@@ -137,22 +137,21 @@ export default {
       
       const canvas = this.$refs.canvas;
       const ctx = canvas.getContext('2d');
-      const previousState = this.history.pop(); // Vrátime posledný uložený stav
+      const previousState = this.history.pop();  
 
       const img = new Image();
       img.src = previousState;
       img.onload = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0); // Obnovíme predchádzajúci stav
+        ctx.drawImage(img, 0, 0);  
       };
     },
     toggleEraser() {
-      this.isErasing = !this.isErasing; // Prepnutie medzi kreslením a gumovaním
+      this.isErasing = !this.isErasing;  
     },
     hasBackgroundImage() {
       return this.question.image_url !== null;
     },
-    // Začiatok kreslenia
     startDrawing(event) {
       this.saveState();
       this.drawing = true;
@@ -161,7 +160,6 @@ export default {
       this.ctx.moveTo(event.offsetX, event.offsetY);
     },
 
-    // Kreslenie na plátne
     draw(event) {
       if (!this.drawing) return;
 
@@ -174,14 +172,12 @@ export default {
       this.ctx.stroke();
     },
 
-    // Zastavenie kreslenia
     stopDrawing() {
       if (!this.drawing) return;
       this.drawing = false;
       this.ctx.closePath();
     },
 
-    // Vymazanie plátna
     clearCanvas() {
       const canvas = this.$refs.canvas;
       this.ctx = canvas.getContext('2d');
@@ -191,7 +187,6 @@ export default {
       }
     },
 
-    // Stiahnutie obrázka
     downloadImage() {
       const canvas = this.$refs.canvas;
       const dataUrl = canvas.toDataURL('image/png');
@@ -200,37 +195,6 @@ export default {
       a.download = 'skica.png';
       a.click();
     },
-
-    // // Uloženie kresby
-    // saveDrawing() {
-    //   const canvas = this.$refs.canvas;
-    //   const dataURL = canvas.toDataURL();
-    //   fetch('http://localhost:8000/api/save_drawing/', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       Authorization: `Bearer ${localStorage.getItem('token')}`,
-    //     },
-    //     body: JSON.stringify({
-    //       question_id: this.questionId,
-    //       image: dataURL,
-    //     }),
-    //   })
-    //     .then((response) => {
-    //       if (!response.ok) {
-    //         throw new Error('Network response was not ok');
-    //       }
-    //       return response.json();
-    //     })
-    //     .then((data) => {
-    //       console.log('Image saved:', data);
-    //     })
-    //     .catch((error) => {
-    //       console.error('Error:', error);
-    //     });
-    //     console.log("Test ID:", this.testId);
-    //     this.router.push(`/tests/${this.testId}/public`)
-    // },
     saveDrawing() {
       const canvas = this.$refs.canvas;
       canvas.toBlob((blob) => {

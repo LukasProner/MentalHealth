@@ -50,7 +50,7 @@ class LoginView(APIView):
 
         response = Response() #vytvorenie nového objektu odpovede (response), ktorý bude použitý na vrátenie odpovede zo servera.
 
-        response.set_cookie(key='jwt',value=token, httponly = True) #ukladáš token ako cookie s názvom jwt
+        response.set_cookie(key='jwt',value=token, httponly = True) #ukladá token ako cookie s názvom jwt
 
         response.data = {
             'jwt':token
@@ -401,6 +401,7 @@ class TestResponsesView(APIView):
         #neviem ci nebude vhodne pouzit serializer
         for submission in submissions:
             answers = submission.answers.all()
+            # zatial bez serializera
             response_data.append({
                 "submitted_at": submission.submitted_at,
                 "answers": [
@@ -423,6 +424,7 @@ class PublicTestView(APIView):
         test_code = request.data.get("test_code")
         try:
             test = Test.objects.get(id=test_id, test_code=test_code)
+            #asi lepsie potom pridat serializer ale kym neopravim - pre ucely mojej lepsej vizualnosti necham zatial tak
             return Response({
                 "id": test.id,
                 "name": test.name,

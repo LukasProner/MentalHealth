@@ -1,13 +1,13 @@
 <template>
   <div class="signin-container">
     <form @submit.prevent="submit">
-      <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+      <h1 class="h3 mb-3 fw-normal">Prihláste sa</h1>
   
       <input v-model="data.email" type="email" placeholder="Email" required>
   
-      <input v-model="data.password" type="password" placeholder="Password" required>
+      <input v-model="data.password" type="password" placeholder="Heslo" required>
   
-      <ButtonComp text="Sign in" type="submit" fontSize="1rem" />
+      <ButtonComp text="Prihlásiť" type="submit" fontSize="1rem" />
     </form>
   </div>
 </template>

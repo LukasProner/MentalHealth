@@ -1,15 +1,15 @@
 <template>
   <div class="registration-container">
     <form @submit.prevent="submit">
-      <h1 class="h3 mb-3 fw-normal">Please register</h1>
+      <h1 class="h3 mb-3 fw-normal">Zaregistrujte sa</h1>
   
-      <input v-model="data.name" class="form-control" placeholder="Name" required>
+      <input v-model="data.name" class="form-control" placeholder="Meno" required>
   
       <input v-model="data.email" type="email" class="form-control" placeholder="Email" required>
   
-      <input v-model="data.password" type="password" class="form-control" placeholder="Password" required>
+      <input v-model="data.password" type="password" class="form-control" placeholder="Heslo" required>
   
-      <ButtonComp text="Register" type="submit" fontSize="1rem" />
+      <ButtonComp text="Registrovať" type="submit" fontSize="1rem" />
 
     </form>
   </div>

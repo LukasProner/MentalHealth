@@ -454,7 +454,7 @@ export default {
 
       const data = await response.json();
       console.log('Questions from selected test:', data);
-      questions.value.push(...data.questions.sort((a, b) => a.id - b.id));
+      // questions.value.push(...data.questions.sort((a, b) => a.id - b.id));
 
       // Iterácia cez otázky a ich uloženie k aktuálnemu testu
       for (const question of data.questions) {
@@ -480,9 +480,9 @@ export default {
             }
             return response.json();
           })
-          // .then((savedQuestion) => {
-          //   questions.value.push(savedQuestion);
-          // })
+          .then((savedQuestion) => {
+            questions.value.push(savedQuestion);
+          })
           .catch((err) => {
             console.error('Chyba pri ukladaní otázky:', err);
           });

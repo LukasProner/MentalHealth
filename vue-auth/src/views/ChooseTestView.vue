@@ -67,7 +67,7 @@ export default {
         }
 
         const data = await response.json();
-        tests.value = data; // Uloženie testov do premennej
+        tests.value = data; 
       } catch (err) {
         error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
         console.error('Error:', err);
@@ -87,7 +87,7 @@ export default {
         const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Zahŕňa cookies pre autentifikáciu
+          credentials: 'include', 
         });
 
         if (!response.ok) {

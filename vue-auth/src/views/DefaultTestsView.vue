@@ -92,7 +92,7 @@
     align-items: center;
     justify-content: center; 
     text-decoration: none;
-    color: #007bff;
+    color: #313840;
     font-weight: bold;
     transition: 0.3s;
   }
