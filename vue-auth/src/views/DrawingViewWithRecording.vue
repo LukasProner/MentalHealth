@@ -71,13 +71,11 @@
       @mouseup="stopDrawing"
       @mouseleave="stopDrawing"
     ></canvas>
-
-
-    <!-- Prehrávanie video záznamu -->
+    <!-- Prehrávanie video záznamu
     <div v-if="videoUrl">
       <h2>Prehrávanie záznamu</h2>
       <video :src="videoUrl" controls autoplay></video>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -85,18 +83,18 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-export default {
-  setup() {
+export default{
+  setup(){
     const route = useRoute();
     const questionId = Number(route.query.question_id);
     const testId = Number(route.query.testId);
-    console.log("Query ID:", questionId);
+    // console.log("Query ID:", questionId);
     const router = useRouter();
     return { questionId,testId, router };
   },
 
-  data() {
-    return {
+  data(){
+    return{
       canvasWidth: window.innerWidth * 0.9,
       canvasHeight: window.innerHeight * 0.9,
       drawing: false,
@@ -114,181 +112,234 @@ export default {
       isRecording: false,
     };
   },
- 
+ //Musim cez methods neviem pre4o inak nechce brat canvas ...
   methods: {
-    toggleRecording() {
+    toggleRecording(){
       if (this.isRecording) {
         this.stopRecording();
       } else {
         this.startRecording();
       }
-      this.isRecording = !this.isRecording;  // Prepnutie tlačidla
+      this.isRecording = !this.isRecording;   
     },
-    saveState() {
+    saveState(){
       const canvas = this.$refs.canvas;
-      this.history.push(canvas.toDataURL()); // Uloží aktuálny stav ako obrázok
+      this.history.push(canvas.toDataURL());  
 
-      if (this.history.length > this.maxHistory) {
-        this.history.shift(); // Odstráni najstarší záznam, ak prekročíme limit
+      if(this.history.length > this.maxHistory){
+        this.history.shift();  
       }
     },
-    undo() {
-      if (this.history.length === 0) return;
+    undo(){
+      if(this.history.length === 0) return;
       
-      const canvas = this.$refs.canvas;
-      const ctx = canvas.getContext('2d');
-      const previousState = this.history.pop();  
+      const canvas=this.$refs.canvas;
+      const ctx=canvas.getContext('2d');
+      const previousState=this.history.pop();  
 
-      const img = new Image();
-      img.src = previousState;
-      img.onload = () => {
+      const img=new Image();
+      img.src=previousState;
+      img.onload=()=>{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);  
       };
     },
-    toggleEraser() {
-      this.isErasing = !this.isErasing;  
+    toggleEraser(){
+      this.isErasing=!this.isErasing;  
     },
-    hasBackgroundImage() {
-      return this.question.image_url !== null;
+    hasBackgroundImage(){
+      return this.question.image_url!== null;
     },
-    startDrawing(event) {
+    startDrawing(event){
       this.saveState();
-      this.drawing = true;
-      this.ctx = this.$refs.canvas.getContext('2d');
+      this.drawing=true;
+      this.ctx =this.$refs.canvas.getContext('2d');
       this.ctx.beginPath();
       this.ctx.moveTo(event.offsetX, event.offsetY);
     },
 
-    draw(event) {
+    draw(event){
       if (!this.drawing) return;
 
-      this.ctx.lineCap = 'round';
-      this.ctx.lineJoin = 'round';
+      this.ctx.lineCap='round';
+      this.ctx.lineJoin='round';
       this.ctx.strokeStyle = this.isErasing ? '#FFFFFF' :this.lineColor;
-      this.ctx.lineWidth = this.lineWidth;
+      this.ctx.lineWidth=this.lineWidth;
 
       this.ctx.lineTo(event.offsetX, event.offsetY);
       this.ctx.stroke();
     },
 
-    stopDrawing() {
-      if (!this.drawing) return;
+    stopDrawing(){
+      if(!this.drawing) return;
       this.drawing = false;
       this.ctx.closePath();
     },
 
-    clearCanvas() {
-      const canvas = this.$refs.canvas;
-      this.ctx = canvas.getContext('2d');
+    clearCanvas(){
+      const canvas=this.$refs.canvas;
+      this.ctx=canvas.getContext('2d');
       this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (this.hasBackgroundImage) {
+      if(this.hasBackgroundImage){
         this.loadBackgroundImage();   
       }
     },
 
-    downloadImage() {
-      const canvas = this.$refs.canvas;
-      const dataUrl = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = 'skica.png';
+    downloadImage(){
+      const canvas=this.$refs.canvas;
+      const dataUrl=canvas.toDataURL('image/png');
+      const a=document.createElement('a');
+      a.href=dataUrl;
+      a.download='skica.png';
       a.click();
     },
-    saveDrawing() {
-      const canvas = this.$refs.canvas;
-      canvas.toBlob((blob) => {
-        const formData = new FormData();
+    async saveDrawing(){
+      const canvas=this.$refs.canvas;
+
+      if(!canvas){
+        console.error('Canvas sa nenašiel.');
+        return;
+      }
+
+      if(!canvas.toBlob){
+        console.error('Táto verzia prehliadača nepodporuje canvas.toBlob().');
+        return;
+      }
+
+      canvas.toBlob(async(blob)=>{
+        if(!blob){
+          console.error('chyba pri vtvoreni blobu');
+          return;
+        }
+
+        const formData =new FormData();
         formData.append('image', blob, 'drawing.png');
         formData.append('question_id', this.questionId);
 
-        fetch('http://localhost:8000/api/save_drawing/', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: formData,
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log('Image saved:', data);
-            this.router.push(`/tests/${this.testId}/public`);
-          })
-          .catch((error) => {
-            console.error('Error:', error);
+        try{
+          const response=await fetch('http://localhost:8000/api/save_drawing/',{
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: formData,
           });
+
+          if(!response.ok){
+            const errorDetail = await response.text();
+            throw new Error(`Chyba pri ukladaní obrázka: ${errorDetail}`);
+          }
+
+          const data = await response.json();
+          // console.log('obrázok bol ulozeny:', data);
+
+          this.$router.push(`/tests/${this.testId}/public`);
+        }catch(error){
+          // console.error('Chyba pri ukladani:', error);
+        }
       }, 'image/png');
     },
 
-    // Spustenie nahrávania obrazovky
-    startRecording() {
-      navigator.mediaDevices.getDisplayMedia({ video: true })
-        .then(stream => {
-          this.mediaRecorder = new MediaRecorder(stream);
-          this.chunks = [];
+    // startRecording(){
+    //   navigator.mediaDevices.getDisplayMedia({ video: true })
+    //     .then(stream=>{
+    //       this.mediaRecorder = new MediaRecorder(stream);
+    //       this.chunks=[];
 
-          this.mediaRecorder.ondataavailable = event => {
-            if (event.data.size > 0) {
-              this.chunks.push(event.data);
-            }
-          };
+    //       this.mediaRecorder.ondataavailable=event=>{
+    //         if(event.data.size > 0){
+    //           this.chunks.push(event.data);
+    //         }
+    //       };
 
-          this.mediaRecorder.onstop = this.saveRecording;
+    //       this.mediaRecorder.onstop = this.saveRecording;
 
-          this.mediaRecorder.start();
-        })
-        .catch(err => {
-          console.error("Error accessing display media:", err);
-        });
+    //       this.mediaRecorder.start();
+    //     })
+    //     .catch(err=>{
+    //       console.error("Error accessing display media:", err);
+    //     });
+    // },
+    async startRecording(){
+      try{
+        const stream=await navigator.mediaDevices.getDisplayMedia({ video: true });
+        this.mediaRecorder = new MediaRecorder(stream);
+        this.chunks=[];
+
+        this.mediaRecorder.ondataavailable=event=>{
+          if(event.data.size > 0){
+            this.chunks.push(event.data);
+          }
+        };
+
+        this.mediaRecorder.onstop = this.saveRecording;
+        this.mediaRecorder.start();
+      }catch(err){
+        // console.error("Chyba pri nahravani:", err);
+      }
     },
 
-    // Zastavenie nahrávania
-    stopRecording() {
-      if (this.mediaRecorder) {
+    stopRecording(){
+      if (this.mediaRecorder){
         this.mediaRecorder.stop();
       }
     },
 
-    // Uloženie videa
-    saveRecording() {
-      const blob = new Blob(this.chunks, { type: 'video/webm' });
-      const formData = new FormData();
+    // saveRecording(){
+    //   const blob = new Blob(this.chunks,{type: 'video/webm' });
+    //   const formData = new FormData();
+    //   formData.append('video', blob);
+    //   formData.append('question_id', this.questionId);
+    //   fetch('http://localhost:8000/api/save_video/',{
+    //     method: 'POST',
+    //     body: formData,
+    //   })
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     // console.log('Video uložené:', data);
+    //   })
+    //   .catch(error => {
+    //     console.error('Chyba pri ukladaní videa:', error);
+    //   });
+    // },
+
+
+    async saveRecording(){
+      const blob=new Blob(this.chunks,{type: 'video/webm' });
+      const formData=new FormData();
       formData.append('video', blob);
       formData.append('question_id', this.questionId);
-      fetch('http://localhost:8000/api/save_video/', {
-        method: 'POST',
-        body: formData,
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Video uložené:', data);
-      })
-      .catch(error => {
-        console.error('Chyba pri ukladaní videa:', error);
-      });
+
+      try{
+        const response =await fetch('http://localhost:8000/api/save_video/',{
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+        // console.log('Video uložené:', data);
+      } catch (error) {
+        // console.error('Chyba pri ukladaní videa:', error);
+      }
     },
+
     async fetchQuestion() {
       try {
-        console.log("ide fetchQuestion");
+        // console.log("ide fetchQuestion");
         const response = await fetch(`http://localhost:8000/api/questions/${this.questionId}/`);
         if (!response.ok) {
-          throw new Error('Chyba pri načítaní dát');
+          throw new Error('Chyba pri nacitani dat');
         }
         const data = await response.json();
         this.question = data;
-        console.log("preslo v fetch");
+        // console.log("preslo v fetch");
 
         if (this.hasBackgroundImage) {
           this.loadBackgroundImage();
-          console.log("preslo v fetch2");
+          // console.log("preslo v fetch2");
         }
       } catch (error) {
-        console.error('Chyba pri načítaní otázky:', error);
+        // console.error('Chyba pri nacitani otazky:', error);
       }
     },
 
@@ -298,10 +349,10 @@ export default {
       if (!canvas) return;
       
       this.ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.crossOrigin = "anonymous";  
+      const img =new Image();
+      img.crossOrigin="anonymous";  
 
-      console.log("Obrázok URL:", this.question.image_url);
+      // console.log("Obrázok URL:", this.question.image_url);
       
       img.src = this.question.image_url;
       
@@ -312,22 +363,21 @@ export default {
         canvas.height = imgHeight * variable ;
         canvas.width = imgWidth * variable ;
     
-        console.log("Obrázok načítaný a vykreslený");
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
         
         this.ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       };
       
       img.onerror = () => {
-        console.error("Chyba pri načítaní obrázka");
+        // console.error("Chyba pri nacitani obrazka");
       };
     }
   },
   mounted() {
     this.fetchQuestion();
-    console.log("prebieha")
+    // console.log("prebieha")
     if (this.hasBackgroundImage) {
-      console.log("prebieha2")
+      // console.log("prebieha2")
       this.loadBackgroundImage();   
     }
   },
@@ -398,7 +448,6 @@ canvas {
     transition-delay: 0s;
 }
 
-/* Celý kontajner */
 div {
   display: flex;
   flex-direction: column;
@@ -408,14 +457,12 @@ div {
   border-radius: 10px;
 }
 
-/* Nadpis */
 h1 {
   color: #333;
   font-size: 24px;
   margin-bottom: 10px;
 }
 
-/* Toolbar */
 .toolbar {
   display: flex;
   flex-direction: row;
@@ -441,7 +488,6 @@ input[type="range"] {
   cursor: pointer;
 }
 
-/* Tlačidlá */
 button {
   background: #8c00ff;
   color: white;
@@ -464,7 +510,6 @@ button i {
   font-size: 18px;
 }
 
-/* Kresliace plátno */
 canvas {
   border: 2px solid #ddd;
   background: white;
@@ -473,7 +518,6 @@ canvas {
   margin-bottom: 15px;
 }
 
-/* Ovládacie tlačidlá */
 .controls {
   display: flex;
   flex-direction: row;
@@ -488,7 +532,6 @@ canvas {
   background: #218838;
 }
 
-/* Prehrávač videa */
 video {
   margin-top: 10px;
   width: 100%;

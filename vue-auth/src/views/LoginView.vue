@@ -3,9 +3,9 @@
     <form @submit.prevent="submit">
       <h1 class="h3 mb-3 fw-normal">Prihláste sa</h1>
   
-      <input v-model="data.email" type="email" placeholder="Email" required>
+      <input v-model="email" type="email" placeholder="Email" required>
   
-      <input v-model="data.password" type="password" placeholder="Heslo" required>
+      <input v-model="password" type="password" placeholder="Heslo" required>
   
       <ButtonComp text="Prihlásiť" type="submit" fontSize="1rem" />
     </form>
@@ -13,89 +13,95 @@
 </template>
   
 <script lang="ts">
-  import {onMounted, reactive} from 'vue';
-  import {useRouter} from "vue-router";
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from "vue-router";
   import ButtonComp from '@/components/ButtonComp.vue'; 
-  export default {
+
+  export default{
     name: "LoginView",
     components: {
       ButtonComp 
     },
     setup() {
-      const data = reactive({
-        email: '',
-        password: ''
-      });
+      const email = ref('');  
+      const password = ref('');   
       const router = useRouter();
   
-      const submit = async () => {
-        const response = await fetch('http://localhost:8000/api/login/', {
+      const submit=async()=>{
+        const response = await fetch('http://localhost:8000/api/login/',{
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify(data)
+          body: JSON.stringify({
+            email: email.value,  
+            password: password.value   
+          })
         });
-        console.log(response)
-        if (response.ok === true){
+
+        // console.log(response);
+
+        if (response.ok === true) {
           await router.push('/');
-        }else{
+        } else {
           alert('Invalid credentials');
         }
-      }
-      onMounted(() => {
+      };
+
+      onMounted(()=>{
         localStorage.removeItem('answers');
         localStorage.removeItem('testCode');
       });
 
-      return {
-        data,
+      return{
+        email,   
+        password,   
         submit
-      }
+      };
     }
   }
 </script>
-  <style scoped> 
- 
-  .signin-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90vh;
-    background-color: var(--color-background);
-  }
-  form{
-    background-color: var(--color-white);
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-bottom: 100px;
-  }
-  form input {
-    width: 100%;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.3s ease;
-  }
-  form input:focus {
-    border-color: var(--color-lightblue);
-    box-shadow:  0 4px 4px 0 var(--color-lightblue);
-  }
+<style scoped> 
 
-  form h1{
-    text-align: center;
-    margin: 0px;
-    padding: 0px;
-  }
-  form h1.mb-3 {
-    margin-bottom: 0px !important;
-  }
-  
-  </style>
+.signin-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  background-color: var(--color-background);
+}
+form{
+  background-color: var(--color-white);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 100px;
+}
+form input{
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+form input:focus{
+  border-color: var(--color-lightblue);
+  box-shadow:  0 4px 4px 0 var(--color-lightblue);
+}
+
+form h1{
+  text-align: center;
+  margin: 0px;
+  padding: 0px;
+}
+form h1.mb-3{
+  margin-bottom: 0px !important;
+}
+
+</style>

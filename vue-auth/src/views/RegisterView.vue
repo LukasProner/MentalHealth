@@ -3,57 +3,62 @@
     <form @submit.prevent="submit">
       <h1 class="h3 mb-3 fw-normal">Zaregistrujte sa</h1>
   
-      <input v-model="data.name" class="form-control" placeholder="Meno" required>
+      <input v-model="name" class="form-control" placeholder="Meno" required>
   
-      <input v-model="data.email" type="email" class="form-control" placeholder="Email" required>
+      <input v-model="email" type="email" class="form-control" placeholder="Email" required>
   
-      <input v-model="data.password" type="password" class="form-control" placeholder="Heslo" required>
+      <input v-model="password" type="password" class="form-control" placeholder="Heslo" required>
   
       <ButtonComp text="Registrovať" type="submit" fontSize="1rem" />
-
     </form>
   </div>
 </template>
   
 <script lang="ts">
-  import {reactive} from 'vue';
-  import {useRouter} from "vue-router";
+  import { ref } from 'vue';
+  import { useRouter } from "vue-router";
   import ButtonComp from '@/components/ButtonComp.vue';
-  
+
   export default {
     components: {
       ButtonComp
     },
     name: "RegisterView",
     setup() {
-      const data = reactive({
-        name: '',
-        email: '',
-        password: ''
-      });
+      const name = ref('');
+      const email = ref('');
+      const password = ref('');
       const router = useRouter();
-  
+
       const submit = async () => {
         const response = await fetch('http://localhost:8000/api/register/', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(data)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name.value,  
+            email: email.value,
+            password: password.value
+          })
         });
-        if(response.ok){
+        
+        if (response.ok) {
           await router.push('/login');
-        }else{
+        } else {
           const errorData = await response.json();
           alert("Registrácia zlyhala: " + JSON.stringify(errorData));
         }
-      }
-  
+      };
+
       return {
-        data,
+        name,     
+        email,
+        password,
         submit
-      }
+      };
     }
-  }
+  };
 </script>
+
 
 <style scoped>
   .registration-container {

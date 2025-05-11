@@ -19,11 +19,11 @@ export default {
     },
     type: {
       type: String,
-      default: 'button' // Predvolený typ tlačidla
+      default: 'button'  
     },
     fontSize: {
       type: String,
-      default: '1.5rem' // Predvolená veľkosť písma
+      default: '1.5rem'  
     }
   }
 };
@@ -50,7 +50,7 @@ export default {
 
 @media (max-width: 768px) {
   .custom-button {
-    padding: 8px 16px; /* Zmenšenie paddingu pre mobilné zariadenia */
+    padding: 8px 16px; 
   }
 }
 </style>

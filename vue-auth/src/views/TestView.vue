@@ -1,7 +1,6 @@
 
 <template>
   <div class="all">
-    <!-- Načítavanie a chybové hlásenia -->
     <div v-if="loading" class="loading">
       <p>Načítavam údaje...</p>
     </div>
@@ -15,7 +14,6 @@
       <ButtonComp text="Vytvoriť test" fontSize="1rem" @click="createTest" />
     </div>
 
-  <!-- som prihlaseny -->
     <div v-if="testId && !loading && !error" class="test">
       <h2 class="test-name" @click="enableEditing">
         <span v-if="!isEditing" >{{ testName }}</span>
@@ -28,8 +26,6 @@
       </h2>
       <h3 class="test-code">Kód testu : {{testCode}}</h3>
       
-      <!-- <div v-if="questions.length > 0" class="questions-container"> -->
-       
         <ul class="questions-container">
           <li v-for="(question, index) in questions" :key="question.id">
             <div v-if="!isEditingQuestion(question)" class="question-card" @click="enableEditingQuestion(question)">
@@ -64,7 +60,6 @@
               </div>
             </div>
 
-            <!-- Formulár na úpravu otázky -->
             <div v-else class="question-form">
               <input v-model="question.text" placeholder="Zadajte novú otázku" class="input-field question-input"/>
 
@@ -75,8 +70,7 @@
                 <option value="drawing">Kreslenie</option>
               </select>
 
-              <!-- Ak je otázka typu "choice", zobraz možnosti -->
-              <div v-if="question.type === 'choice'" class="options-section">
+              <div v-if="question.type==='choice'" class="options-section">
                 <div v-for="(option, optIndex) in question.options" :key="optIndex" class="choice-item">
                   <input v-model="option.text" placeholder="Upravte možnosť" class="input-field option-input"/>
                   <label class="checkbox-label">
@@ -96,7 +90,6 @@
         </ul>
       <!-- </div> -->
       
-      <!-- pridávanie nových otázok -->
 
       <div class="question-form">
         <input
@@ -132,7 +125,6 @@
         </div>
 
         <div class="buttons-container">
-          <!-- <input type="file" @change="handleImageUpload" /> -->
           <label for="file-upload" class="custom-file-upload">
             <i class="bi bi-image"></i> Nahrať obrázok
           </label>
@@ -193,9 +185,7 @@ export default {
   },
   name: 'SkuskaOpica',
   setup() {
-    const store = useStore();
-
-    // Reaktívne premenné
+    const store=useStore();
     const testName = ref('');
     const editedName = ref('');
     const isEditing = ref(false);
@@ -204,302 +194,312 @@ export default {
     const questionType = ref('choice');
     const options = ref([]);
     const newOption = ref('');
-    const loading = ref(false);
+    const loading=ref(false);
     const error = ref(null);
-    const questions = ref([]); 
+    const questions=ref([]); 
     const scales = ref([]);
     const testCode = ref([]);
     const questionCategory= ref('');
-    const defaultTests = ref([]);
+    const defaultTests=ref([]);
     const isTestOpen = ref(false);
-    const editingQuestion = ref(null);
+    const editingQuestion=ref(null);
     const showScaling = ref(false);
     const selectedImage = ref(null);
     const imageUrl = ref("");
-    const added = ref(false);
-
-    const handleImageUpload = (event) => {
-      const file = event.target.files[0];
-      const formData = new FormData();
+    const added=ref(false);
+ 
+    const handleImageUpload=async(event)=>{
+      const file=event.target.files[0];
+      const formData=new FormData();
       formData.append("image", file);
-
-      // Pošleme súbor na server a získame URL
-      fetch("http://localhost:8000/api/upload-image/", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Server response:', data);
-          console.log('URL obrázka:', data.image_url);
-          imageUrl.value = data.image_url; // URL obrázka získame zo servera
-        })
-        .catch(console.error);
+      try{
+        const response = await fetch("http://localhost:8000/api/upload-image/",{
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        if(!response.ok){
+          throw new Error(`Chyba pri nahrávaní obrázka: ${response.status}`);
+        }
+        const data=await response.json();
+        console.log('Server response:', data);
+        console.log('URL obrázka:', data.image_url);
+        imageUrl.value = data.image_url; 
+      }catch(error){
+        console.error('Chyba pri nahrávaní obrázka:', error);
+      }
     };
 
-
-    const addQuestion = () => {
-      if (questionType.value !== "choice") {
-        options.value = [];
+ 
+    const addQuestion =async()=>{
+      if(questionType.value!=="choice"){
+        options.value=[];
       }
-
-      // Pridaj URL obrázka do objektu otázky, ak existuje
-      const newQuestion = {
+      const newQuestion={
         text: questionText.value,
-        question_type: questionType.value,
+        question_type:questionType.value,
         options: options.value,
         category: questionCategory.value || 'Nezaradená',
-        image_url: imageUrl.value || null // Pridaj URL obrázka
+        image_url: imageUrl.value|| null, 
       };
 
-      fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newQuestion),
-        credentials: 'include',
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log('Response data:', data);
-          questions.value.push(data);
-          questionText.value = '';
-          questionType.value = 'choice';
-          options.value = [];
-          questionCategory.value = '';
-          imageUrl.value = ''; // Resetovať URL obrázka
-          addOption();
-        })
-        .catch(console.error);
-    };
+      try{
+        const response=await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`,{
+          method: 'POST',
+          headers:{
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newQuestion),
+          credentials:'include',
+        });
 
-    // Overenie prihlásenia
-    const checkAuth = async () => {
-      loading.value = true;
-      try {
-        await store.dispatch('checkAuth');
-      } catch (err) {
-        error.value = 'Chyba pri overovaní prihlásenia.';
-      } finally {
-        loading.value = false;
+        if(!response.ok){
+          throw new Error(`chyba pri ukladani: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // console.log('Response data:', data);
+
+        questions.value.push(data);
+        questionText.value ='';
+        questionType.value ='choice';
+        options.value =[];
+        questionCategory.value= '';
+        imageUrl.value='';  
+        addOption();
+
+      }catch(error){
+        console.error('chyba pri ukladani:', error);
       }
     };
 
-    // Vytvorenie testu
-    const createTest = () => {
-      // addScale();
-      if (!store.getters.isAuthenticated) {
+
+    const checkAuth=async()=>{
+      loading.value=true;
+      try{
+        await store.dispatch('checkAuth');
+      }catch(err){
+        error.value='Chyba pri overovaní prihlásenia.';
+      }finally{
+        loading.value= false;
+      }
+    };
+
+    const createTest=async()=>{
+      if(!store.getters.isAuthenticated){
         error.value = 'Nie ste prihlásený. Prihláste sa, aby ste mohli vytvoriť test.';
         return;
       }
 
-      const newTest = { name: testName.value };
-      fetch('http://localhost:8000/api/tests/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTest),
-        credentials: 'include',
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          testId.value = data.id;
-          testName.value = newTest.name;
-          editedName.value = newTest.name;
-          return fetch(`http://localhost:8000/api/tests/${data.id}/`, {
-          method: 'GET',
+      const newTest={name: testName.value};
+
+      try{
+        const createResponse=await fetch('http://localhost:8000/api/tests/', {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify(newTest),
           credentials: 'include',
         });
-      })
-      .then((response) => response.json())
-      .then((testDetails) => {
-        // Tu môžete spracovať detaily testu vrátane kódu
-        console.log('Test details:', testDetails);
-        testCode.value = testDetails.test_code; // Príklad - ak je vrátený "code"
-        console.log('Test code', testCode)
-        addOption();
-      })
-      .catch(console.error);
+
+        if(!createResponse.ok){
+          throw new Error(`chyba pri vytvoreni testu: ${createResponse.status}`);
+        }
+
+        const data=await createResponse.json();
+
+        testId.value=data.id;
+        testName.value = newTest.name;
+        editedName.value = newTest.name;
+
+        const detailsResponse= await fetch(`http://localhost:8000/api/tests/${data.id}/`,{
+          method:'GET',
+          // headers: {
+          //   'Content-Type': 'application/json',
+          // },
+          credentials: 'include',
+        });
+
+        if(!detailsResponse.ok){
+          throw new Error(`Chyba - detail testu: ${detailsResponse.status}`);
+        }
+
+        const testDetails=await detailsResponse.json();
+        // console.log('Test details:', testDetails);
+
+        testCode.value = testDetails.test_code;  
+        // console.log('Test code', testCode);
+
+        addOption();  
+
+      }catch(err){
+        console.error('Chyba pri vytváraní testu:', err);
+      }
     };
 
-    // Povoliť režim úprav
-    const enableEditing = () => {
-      isEditing.value = true;
+ 
+    const enableEditing=()=>{
+      isEditing.value=true;
       editedName.value = testName.value;
     };
-    const enableEditingQuestion = (question) => {
-      editingQuestion.value = question; // Nastavíme otázku, ktorú upravujeme
+    const enableEditingQuestion=(question)=>{
+      editingQuestion.value = question;  
     };
-    const isEditingQuestion = (question) => {
-      return editingQuestion.value === question;
+    const isEditingQuestion=(question)=>{
+      return editingQuestion.value===question;
     };
-    const disableEditingQuestion =async(question) => {
-      // Ak nie je typ otázky "choice", odstránime možnosti
+    const disableEditingQuestion =async(question)=>{
       console.log('disableEditingQuestion',question)
       console.log('disableType',question.type)
-      if (question.type !== "choice") {
-        question.options = [];
+      if(question.type!== "choice"){
+        question.options =[];
       }
-      try {
-        // Príprava dát na aktualizáciu
-        const updatedData = {
+      try{
+        const updatedData={
           text: question.text,
           question_type: question.type,
           options: question.options,
           category: question.category,
         };
 
-        // Volanie funkcie na aktualizáciu otázky na serveri
-        const updatedQuestion = await updateQuestion(question.id, updatedData);
+        const updatedQuestion=await updateQuestion(question.id, updatedData);
 
-        // Po úspešnej aktualizácii môžeme nastaviť otázku ako neaktívnu pre editáciu
-        editingQuestion.value = null; // Ukončíme úpravy
-        console.log('Otázka bola aktualizovaná:', updatedQuestion);
+        editingQuestion.value = null;  
+        // console.log('Otázka bola aktualizovaná:', updatedQuestion);
       } catch (error) {
-        console.error('Chyba pri aktualizácii otázky:', error);
+        // console.error('Chyba pri aktualizácii otázky:', error);
       }
-      editingQuestion.value = null; // Ukončíme úpravy
+      editingQuestion.value = null; 
     };
 
-    // Uložiť upravený názov testu
-    const saveTestName = () => {
-      if (editedName.value.trim() === testName.value) {
+    const saveTestName=async()=>{
+      if(editedName.value.trim() === testName.value){
         isEditing.value = false;
         return;
       }
 
-      fetch(`http://localhost:8000/api/tests/${testId.value}/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: editedName.value }),
-        credentials: 'include',
-      })
-        .then((response) => {
-          if (response.ok) {
-            testName.value = editedName.value;
-          } else {
-            throw new Error('Nepodarilo sa uložiť názov testu.');
-          }
-        })
-        .catch((err) => {
-          error.value = err.message;
-        })
-        .finally(() => {
-          isEditing.value = false;
+      try{
+        const response=await fetch(`http://localhost:8000/api/tests/${testId.value}/`,{
+          method: 'PUT',
+          headers:{
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: editedName.value }),
+          credentials: 'include',
         });
+
+        if (!response.ok){
+          throw new Error('Nepodarilo sa uložiť názov testu.');
+        }
+
+        testName.value = editedName.value;
+      }catch (err){
+        error.value = err.message;
+      }finally{
+        isEditing.value = false;
+      }
     };
 
-  const addOption = () => {
-    options.value.push({ text: '', hasValue: false, value: null }); // Predvolene nemá hodnotenie
+  const addOption=()=>{
+    options.value.push({ text: '', hasValue: false, value: null });  
   };
-  const addOptionUpdate = (question)=> {
+  const addOptionUpdate=(question)=>{
     question.options.push({ text: "", hasValue: false, value: null });
   };
 
-  const removeOption = (index) => {
+  const removeOption=(index)=>{
     options.value.splice(index, 1);
   };
-  const removeOptionUpdate = (question, optIndex)=> {
+  const removeOptionUpdate=(question,optIndex)=>{
     question.options.splice(optIndex, 1);
   };
 
-  const chooseDefaultTest = () =>{
+  const chooseDefaultTest=()=>{
     isTestOpen.value = !isTestOpen.value
     return null
   }
 
-  const fetchDefaultTests = async () => {
-    try {
+  const fetchDefaultTests=async()=>{
+    try{
       const response = await fetch(`http://localhost:8000/api/tests/default/`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        // headers: { 'Content-Type': 'application/json' },
         credentials: 'include', 
       });
-      console.log('response',response)
+      // console.log('response',response)
 
       if (!response.ok) {
         throw new Error(`HTTP chyba! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('data',data)
+      // console.log('data',data)
       defaultTests.value = data.tests;
-    } catch (err) {
+    }catch(err){
       error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
-      console.error('Error:', err);
-    } finally {
+      // console.error('Error:', err);
+    }finally{
       loading.value = false;
     }
   };
 
-  const selectTest = async (test) => {
-    try {
-      const response = await fetch(`http://localhost:8000/api/tests/${test.id}/`, {
+ 
+  const selectTest=async(test)=>{
+    try{
+      const response = await fetch(`http://localhost:8000/api/tests/${test.id}/`,{
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        // headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
 
-      if (!response.ok) {
+      if(!response.ok){
         throw new Error(`HTTP chyba! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('Questions from selected test:', data);
-      // questions.value.push(...data.questions.sort((a, b) => a.id - b.id));
+      const data=await response.json();
+      // console.log('Questions from selected test:', data);
 
-      // Iterácia cez otázky a ich uloženie k aktuálnemu testu
       for (const question of data.questions) {
         const newQuestion = {
           text: question.text,
           question_type: question.question_type,
-          options: question.options || [],
-          category: question.category || 'Nezaradená',
+          options: question.options||[],
+          category: question.category||'Nezaradená',
         };
 
-        // Voláme API na pridanie otázky
-        await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
-          method: 'POST',
+        const saveResponse = await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`,{
+          method:'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(newQuestion),
           credentials: 'include',
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Chyba pri ukladaní otázky: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((savedQuestion) => {
-            questions.value.push(savedQuestion);
-          })
-          .catch((err) => {
-            console.error('Chyba pri ukladaní otázky:', err);
-          });
+        });
+
+        if(!saveResponse.ok){
+          throw new Error(`Chyba pri ukladaní otázky: ${saveResponse.status}`);
+        }
+
+        const savedQuestion = await saveResponse.json();
+        questions.value.push(savedQuestion);
       }
-      console.log(data)
-      const scale_response = await fetch(`http://localhost:8000/api/tests/${test.id}/scales/`, {
+
+      // Získanie škál
+      const scaleResponse =await fetch(`http://localhost:8000/api/tests/${test.id}/scales/`,{
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        // headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-      if (!response.ok) {
-        throw new Error(`HTTP chyba! Status: ${response.status}`);
-      }
-      const temp_scales = await scale_response.json();
-      console.log('Scales from selected test:', temp_scales);
 
-      for (const scale of temp_scales) {
+      if(!scaleResponse.ok){
+        throw new Error(`HTTP chyba! Status: ${scaleResponse.status}`);
+      }
+
+      const tempScales = await scaleResponse.json();
+      // console.log('Scales from selected test:', tempScales);
+
+      for (const scale of tempScales){
         scales.value.push({
           min: scale.min_points,
           max: scale.max_points,
@@ -508,224 +508,201 @@ export default {
         });
       }
 
-      await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
-        method: 'POST',
+      const saveScalesResponse = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`,{
+        method:'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(temp_scales),
+        body: JSON.stringify(tempScales),
         credentials: 'include',
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Chyba pri ukladaní škál: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((savedScales) => {
-          console.log('Uložené škály:', savedScales);
-        })
-        .catch((err) => {
-          console.error('Chyba pri ukladaní škál:', err);
-        });
+      });
 
-      
-      isTestOpen.value = false; 
-    } catch (err) {
+      if(!saveScalesResponse.ok){
+        throw new Error(`Chyba pri ukladaní škál: ${saveScalesResponse.status}`);
+      }
+
+      const savedScales = await saveScalesResponse.json();
+      // console.log('Uložené škály:', savedScales);
+
+      isTestOpen.value = false;
+    }catch(err){
       error.value = 'Chyba pri načítavaní otázok z vybraného testu.';
-      console.error('Error:', err);
+      // console.error('Error:', err);
     }
   };
 
-  const copyQuestion = (question, index)=> {
-    console.log('Kopírujem otázku:', question);
-    const newQuestion = {
+
+  const copyQuestion=async(question,index)=>{
+    // console.log('Kopírujem otázku:', question);
+
+    const newQuestion={
       text: question.text,
       question_type: question.type,
       options: question.options,
-      category: question.category
+      category: question.category,
     };
-    console.log('Kopírujem otázku:', newQuestion);
-    fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newQuestion),
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('Response data:', data); 
-        questions.value.push(data);
-      })
-      .catch(console.error);
-  }
-  
 
-    // Odstránenie otázky
-  const deleteQuestion = (questionId, index) => {
-    fetch(`http://localhost:8000/api/questions/${questionId}/`, {
-      method: 'DELETE',
-      credentials: 'include',
-    })
-      .then((response) => {
-        if (response.ok) {
-          // Odstrániť otázku z lokálneho zoznamu
-          console.log("no co je toto")
-          questions.value.splice(index, 1);
-        } else {
-          throw new Error('Nepodarilo sa odstrániť otázku.');
-        }
-      })
-      .catch((err) => {
-        error.value = err.message;
-      });
-  };
-
-  const updateQuestion = async (questionId, updatedData) => {
-    console.log('Aktualizujem otázku:', questionId, updatedData);
-    try {
-      const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`, {
-        method: 'PUT', 
-        headers: {
-          'Content-Type': 'application/json', // Označenie, že telo požiadavky je JSON
+    try{
+      const response=await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`,{
+        method: 'POST',
+        headers:{
+          'Content-Type': 'application/json',
         },
-        credentials: 'include', // Zabezpečenie, že cookies (napr. JWT) budú odoslané
-        body: JSON.stringify(updatedData), // Serializácia dát na JSON
+        body: JSON.stringify(newQuestion),
+        credentials: 'include',
       });
 
-      if (!response.ok) {
-        throw new Error(`Chyba pri aktualizácii: ${response.statusText}`);
+      if(!response.ok){
+        throw new Error(`chyba pri kopírovaní: ${response.status}`);
       }
 
-      const responseData = await response.json(); // Parsovanie odpovede na JSON
-      // console.log('Otázka bola aktualizovaná:', responseData);
-      return responseData;
-    } catch (error) {
-      console.error('Chyba pri aktualizácii otázky:', error);
-      throw error; // Re-throw, ak potrebuješ chybu ošetriť vyššie
+      const data = await response.json();
+      questions.value.push(data);
+    } catch (err) {
+      console.error('chyba pri kopírovaní', err);
     }
   };
 
-    const addScale = () => {
-      scales.value.push({ min: 0, max: 0, response: '' });
+  const deleteQuestion=async(questionId,index)=>{
+    try{
+      const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`,{
+        method:'DELETE',
+        credentials:'include',
+      });
+
+      if(!response.ok){
+        throw new Error('Nepodarilo sa odstrániť otázku.');
+      }
+
+      // console.log("otazka bola odstranena");
+      questions.value.splice(index, 1);
+
+    }catch(err){
+      error.value = err.message;
+      console.error('chyba pri odstraneni otazky', err);
+    }
+  };
+
+
+  const updateQuestion=async(questionId, updatedData)=>{
+    // console.log('aktualizujem otázku-', questionId, updatedData);
+    try{
+      const response = await fetch(`http://localhost:8000/api/questions/${questionId}/`,{
+        method: 'PUT', 
+        headers: {
+          'Content-Type': 'application/json',  
+        },
+        credentials: 'include',  
+        body: JSON.stringify(updatedData),  
+      });
+
+      if(!response.ok){
+        throw new Error(`Chyba pri aktualizácii:${response.statusText}`);
+      }
+
+      const responseData = await response.json(); 
+      return responseData;
+    }catch(error){
+      console.error('chyba pri aktualizácii:',error);
+      throw error;  
+    }
+  };
+
+    const addScale=()=>{
+      scales.value.push({min:0,max:0,response:'' });
     };
 
-    const removeScale = (index) => {
+    const removeScale=(index)=>{
       scales.value.splice(index, 1);
     };
 
-    const saveScales = () => {
-      const formattedScales = scales.value.map((scale) => ({
-          min_points: scale.min,
-          max_points: scale.max,
-          response: scale.response,
-          category: scale.category,
+    const saveScales=async()=>{
+      const formattedScales = scales.value.map((scale)=>({
+        min_points: scale.min,
+        max_points: scale.max,
+        response: scale.response,
+        category: scale.category,
       }));
 
-      fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
-        method: 'POST',
-        headers: {
+      try{
+        const response=await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`,{
+          method:'POST',
+          headers:{
             'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formattedScales),
-        credentials: 'include',
-      })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((err) => {
-                    console.error('Backendová chyba (plná odpoveď):', err);
-                    throw new Error(
-                        err.detail || JSON.stringify(err) || 'Neznáma chyba'
-                    );
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            console.log('Scales uložené:', data);
-            // alert('Škálovanie bolo úspešne uložené!');
-        })
-        .catch((err) => {
-            console.error('Chyba pri ukladaní:', err.message || err);
-            // alert(`Chyba: ${err.message || 'Neznáma chyba pri ukladaní škál'}`);
-        });
-      };
-  // const actualizeScales = async () => {
-  //   try {
-  //       const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
-  //           method: 'DELETE',
-  //           headers: {
-  //               'Content-Type': 'application/json',
-  //           },
-  //       });
-
-  //       if (!response.ok) {
-  //           const error = await response.json();
-  //           console.error('Chyba pri odstránení škál:', error);
-  //           throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
-  //       }
-  //       saveScales();
-  //   } catch (error) {
-  //       console.error('Chyba pri aktualizácii škál:', error.message || error);
-  //   }
-  //   alert('Škálovanie bolo úspešne aktualizované!');
-  // };
-  const actualizeScales = async () => {
-    try {
-        const response = await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+          },
+          body:JSON.stringify(formattedScales),
+          credentials: 'include',
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('Chyba pri odstránení škál:', error);
-            throw new Error(error.detail || 'Chyba pri odstraňovaní škál');
+        if(!response.ok){
+          const err = await response.json();
+          console.error('Backendová chyba (plná odpoveď):', err);
+          throw new Error(err.detail || JSON.stringify(err) || 'Neznáma chyba');
         }
 
-        await saveScales(); // Po úspešnom DELETE voláme saveScales
-    } catch (error) {
-        console.error('Chyba pri aktualizácii škál:', error.message || error);
+        const data=await response.json();
+        console.log('Scales uložené:', data);
+        // alert('Škálovanie bolo úspešne uložené!');
+      } catch (err) {
+        // console.error('chyba pri ukladani',err.message);
+        // alert(`Chyba: ${err.message || 'Neznáma chyba pri ukladaní škál'}`);
+      }
+    };
+
+  const actualizeScales=async()=>{
+    try{
+        const response=await fetch(`http://localhost:8000/api/tests/${testId.value}/scales/`,{
+            method:'DELETE',
+        });
+
+        if(!response.ok){
+            const error = await response.json();
+            // console.error('chyba- delete 3kaly:', error);
+            throw new Error(error.detail);
+        }
+        await saveScales(); 
+    }catch(error){
+        // console.error('Chyba pri aktualizácii škál:', error.message);
     }
   };
 
-  const toggleCategoryInput = (index) => {
-    const question = questions.value[index];
+  const toggleCategoryInput=(index)=>{
+    const question=questions.value[index];
     question.showCategoryInput = !question.showCategoryInput;
   };
-  const saveCategory = (index) => {
-    const question = questions.value[index];
-    if (question.newCategory) {
 
-      question.category = question.newCategory;
-      console.log(question.category)
-      question.newCategory = ''; // Resetovať textové pole
-    }
-    question.showCategoryInput = false; // Skryť input po uložení
-    updateQuestion(question.id, { 
-      category: question.category, // Aktualizovaná kategória
-      text: question.text, // Nezabudni na text otázky (ak je povinný)
-      question_type: question.question_type // Ak je potrebný aj typ otázky
-    })
-    .then(response => {
-      console.log('Kategória bola úspešne aktualizovaná:', response);
-    })
-    .catch(error => {
-      console.error('Chyba pri aktualizácii kategórie:', error);
-    });
+  const saveCategory=async(index)=>{
+    const question=questions.value[index];
     
+    if(question.newCategory){
+      question.category = question.newCategory;
+      console.log(question.category);
+      question.newCategory = ''; 
+    }
+
+    question.showCategoryInput = false;  
+
+    try{
+      const updatedQuestion={
+        category: question.category, 
+        text: question.text,  
+        question_type: question.question_type, 
+      };
+
+      const response=await updateQuestion(question.id, updatedQuestion);
+      // console.log('kategória bola aktualizovana', response);
+    }catch(error){
+      console.error('Chyba pri aktualizacii:', error);
+    }
   };
-  const handleImportComplete = async (data,scalesData) => {
-      console.log("Import bol úspešne dokončený!");
-      for (const question of data) {
-          try {
+
+  const handleImportComplete=async(data,scalesData)=>{
+      // console.log("Import bol uspesny");
+      for(const question of data){
+          try{
               questions.value.push(question);
-          } catch (error) {
-              console.error("Chyba pri pridávaní otázky:", error);
+          }catch(error){
+              // console.error("chyba pri pridavani otazky:", error);
           }
       }
       for (const scale of scalesData) {
@@ -737,27 +714,27 @@ export default {
               category: scale.category
           });
             // scales.value.push({ scale.min_points, scale.max_points, scale.response, scale.category });
-          } catch (error) {
-              console.error("Chyba pri pridávaní scale:", error);
+          }catch(error){
+              // console.error("Chyba pri pridavani scale", error);
           }
       }
   };
-  const toggleScaling = () => {
-    if(added.value === false){
+  const toggleScaling=()=>{
+    if(added.value===false){
       addScale();
-      added.value = true
+      added.value=true
     }
-    showScaling.value = !showScaling.value;
+    showScaling.value=!showScaling.value;
     console.log(showScaling.value)
     actualizeScales();
   };
    
-  onMounted(() => {
+  onMounted(()=>{
     checkAuth();
     fetchDefaultTests();
   });
 
-  onUnmounted(() => {
+  onUnmounted(()=>{
     // document.removeEventListener('click', handleClickOutside);
   });
     return {
@@ -771,14 +748,14 @@ export default {
       newOption,
       loading,
       error,
-      questions, // Zoznam otázok
+      questions,  
       createTest,
       enableEditing,
       saveTestName,
       addOption,
       removeOption,
       addQuestion,
-      deleteQuestion, // Funkcia na odstránenie otázky
+      deleteQuestion,  
       scales,
       addScale,
       removeScale,
@@ -912,7 +889,7 @@ h3 {
 .question-image {
   width: 90%;  
   height: auto;  
-  display: block; /* Zabezpečí správne vykreslenie */
+  display: block; 
   margin: 10px auto;
 }
 
@@ -1048,7 +1025,7 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px; /* Medzera medzi ikonou a textom */
+  gap: 10px;  
   cursor: pointer;
   color: var(--color-h1);
   background-color: var(--color-lightblue);
@@ -1069,7 +1046,7 @@ h3 {
 }
 
 #file-upload {
-  display: none; /* Skrytie inputu */
+  display: none;  
 }
  
 
@@ -1087,7 +1064,7 @@ h3 {
 .button-group {
   display: flex;
   flex-wrap: wrap; /* Povolenie zalomenia */
-  gap: 10px; /* Rozostup medzi tlačidlami */
+  gap: 10px;  
   align-items: center;
   justify-content: center;
   max-width: 800px;
@@ -1103,7 +1080,6 @@ h3 {
   }
 }
 
-/* skaly */
 .scaling-container {
     background: white;
     padding: 20px;
@@ -1220,7 +1196,6 @@ h3 {
   margin: 0;
 }
 
-/* Kontajner pre tooltip */
 .tooltip-container {
     position: relative;
     display: inline-block;
@@ -1229,7 +1204,6 @@ h3 {
     justify-content: center;
 }
 
-/* Štýl tooltipu */
 .tooltip-container .tooltip-text {
     position: absolute;
     top: 100%;  

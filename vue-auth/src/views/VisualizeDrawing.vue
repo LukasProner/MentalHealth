@@ -30,74 +30,59 @@ export default {
         ButtonComp,
     },
     setup() {
-        const base64Image = ref('');
-        const videoUrl = ref('');
-        const loading = ref(true);
+        const base64Image=ref('');
+        const videoUrl=ref('');
+        const loading=ref(true);
         const error = ref('');
         const route = useRoute();
 
-        const fetchData = async () => {
-            // try {
-            //     // Fetch obrázok
-            //     const imageResponse = await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
-            //     if (!imageResponse.ok) {
-            //         throw new Error('Obrázok sa nepodarilo načítať.');
-            //     }
-            //     const imageData = await imageResponse.json();
-            //     base64Image.value = imageData.drawing;
-            // } catch (err) {
-            //     error.value = 'Chyba pri načítaní obrázka: ' + err.message;
-            // }
-            try {
-                const response = await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
-
-                if (!response.ok) {
-                throw new Error('Obrázok sa nepodarilo načítať.');
+        const fetchData=async()=>{
+            try{
+                const response=await fetch(`http://localhost:8000/api/save_drawing/${route.params.id}/`);
+                if(!response.ok){
+                    throw new Error('obrazok sa nepodarilo nacitat');
                 }
-
                 const data = await response.json();
 
-                // Tu už dostávaš URL
-                base64Image.value = data.image_url;  // URL, nie base64
-            } catch (err) {
-                error.value = 'Chyba pri načítaní obrázka: ' + err.message;
+                base64Image.value = data.image_url; 
+            }catch(err){
+                error.value='Chyba pri načítaní obrázka: '+ err.message;
             }
 
-            try {
-                // Fetch video (nezastaví načítanie obrázka pri chybe)
-                const videoResponse = await fetch(`http://localhost:8000/api/save_video/${route.params.id}/`);
-                if (!videoResponse.ok) {
+            try{
+                const videoResponse=await fetch(`http://localhost:8000/api/save_video/${route.params.id}/`);
+                if(!videoResponse.ok){
                     throw new Error('Video sa nepodarilo načítať.');
                 }
                 const videoData = await videoResponse.json();
                 videoUrl.value = `http://localhost:8000${videoData.video_url}`;
-            } catch (err) {
-                console.warn('Chyba pri načítaní videa:', err.message);
-            } finally {
+            }catch(err){
+                // console.warn('Chyba pri načítaní videa:', err.message);
+            }finally{
                 loading.value = false;
             }
         };
-        const downloadVideo = async () => {
-            try {
-                const response = await fetch(videoUrl.value, {
-                mode: 'cors',
+        const downloadVideo=async()=>{
+            try{
+                const response = await fetch(videoUrl.value,{ //načíta video z danej URL
+                    mode: 'cors',
                 });
                 if (!response.ok) {
-                throw new Error('Chyba pri sťahovaní videa.');
+                    throw new Error('Chyba pri sťahovaní videa.');
                 }
 
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
+                const blob = await response.blob(); //vytvori blob
+                const url = URL.createObjectURL(blob); 
 
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = 'moje_video.mp4';  
                 document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                link.click(); // programovo simuluje kliknutie, čím sa video stiahne
+                document.body.removeChild(link); //– odstráni link z DOMu.
+                URL.revokeObjectURL(url); // zruší dočasnú URL, aby sa uvoľnila pamäť.
             } catch (err) {
-                console.error('Chyba pri stiahnutí videa:', err);
+                console.error('chyba pri stiahnuti videa:', err);
             }
         };
 

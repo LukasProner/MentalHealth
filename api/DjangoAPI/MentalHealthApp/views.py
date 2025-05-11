@@ -390,7 +390,7 @@ class SubmitTestView(APIView):
 
         return Response({"message": "Test submission saved successfully"}, status=status.HTTP_201_CREATED)
 
-
+import ast
 class TestResponsesView(APIView):
     def get(self, request, test_id):
         test = get_object_or_404(Test, id=test_id)
@@ -408,7 +408,7 @@ class TestResponsesView(APIView):
                     {   
                         "question_id": answer.question.id,
                         "question": answer.question.text, 
-                        "answer": answer.answer, 
+                        "answer": self.extract_answer_text(answer.answer),
                         "answer_id": answer.id  
                     }
                     for answer in answers
@@ -416,6 +416,16 @@ class TestResponsesView(APIView):
             })
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+    def extract_answer_text(self,  answer):
+        try:
+            parsed = ast.literal_eval( answer) #Premení textový reťazec, ktorý vyzerá ako Python objekt, na skutočný objekt. - cize odsstani vonkajsie uvodzovky
+            if isinstance(parsed, dict) and 'text' in parsed:
+                return parsed['text']
+        except (ValueError, SyntaxError):
+            # Ak odpoveď nie je validný Python objekt, vrátime pôvodný reťazec
+            return answer
+ 
     
     
 class PublicTestView(APIView):

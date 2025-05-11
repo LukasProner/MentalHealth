@@ -29,16 +29,8 @@
         <router-link to="/default">Zoznam testov</router-link>
         <span class="tooltip-text">Dostupne vopred prirpavené testy</span>
       </div>
-      <!-- <div class="separator"></div>
-      <router-link to="/documentation" >Dokumentácia</router-link>
-      <div class="separator"></div>
-      <router-link to="/choosetest" title="Vytvorte nový test" >Moje testy</router-link>
-      <div class="separator"></div>
-      <router-link to="/default" >Zoznam testov</router-link>
-       -->
       <router-link v-if="!auth" to="/login" class="btn">Prihlásiť</router-link>
       <router-link v-if="!auth" to="/register" class="btn register">Registrovať</router-link>
-    
       <router-link v-if="auth" to="/login" class="btn" @click="logout">Odhlásiť</router-link>
     </nav>
   </header>
@@ -52,27 +44,37 @@ export default {
   name: "NavBar",
   setup() {
     const store = useStore();
-    const loading = ref(true);  // Stav pre overovanie
+    const loading = ref(true);   
     const auth = computed(() => store.state.authenticated);
-    const isActive = ref(false); // Stav pre aktívny hamburger
+    const isActive = ref(false);  
 
+    // const checkAuth = async () => {
+    //   try {
+    //     const response = await fetch('http://localhost:8000/api/user/', {
+    //       method: 'GET',
+    //       // headers: { 'Content-Type': 'application/json' },
+    //       credentials: 'include',
+    //     });
+    //     if (response.ok) {
+    //       store.commit('SET_AUTH', true);   
+    //     } else {
+    //       store.commit('SET_AUTH', false);
+    //     }
+    //   } catch (error) {
+    //     store.commit('SET_AUTH', false);
+    //     store.dispatch('setAuth', false); 
+    //   } finally {
+    //     loading.value = false;  
+    //   }
+    // };
     const checkAuth = async () => {
+      loading.value = true;
       try {
-        const response = await fetch('http://localhost:8000/api/user/', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (response.ok) {
-          store.commit('SET_AUTHENTICATED', true);  // Nastaví stav používateľa na prihlásený
-        } else {
-          store.commit('SET_AUTHENTICATED', false);
-        }
-      } catch (error) {
-        store.commit('SET_AUTHENTICATED', false);
-        store.dispatch('setAuth', false); 
+        await store.dispatch('checkAuth');
+      } catch (err) {
+        // error.value = 'Chyba pri overovaní prihlásenia.';
       } finally {
-        loading.value = false;  // Nastaví `loading` na false po overení
+        // loading.value = false;
       }
     };
 
@@ -87,24 +89,21 @@ export default {
     };
 
     const toggleHamburger = () => {
-      isActive.value = !isActive.value; // Prepnúť stav zobrazenia navigácie
+      isActive.value = !isActive.value;  
     };
 
-    // Zavrie navigáciu pri kliknutí mimo
-    const closeNavigationOnClickOutside = (event: MouseEvent) => {
+    const closeNavigationOnClickOutside = (event: MouseEvent)=> {
       const nav = document.querySelector('.navigation');
       const hamburger = document.querySelector('.hamburger');
       if (nav && !nav.contains(event.target as Node) && !hamburger?.contains(event.target as Node)) {
-        isActive.value = false; // Skryje navigáciu
+        isActive.value = false;  
       }
     };
 
-    // Pridá event listener pri načítaní komponentu
     onMounted(() => {
       document.addEventListener('click', closeNavigationOnClickOutside);
     });
 
-    // Odstráni event listener pri unmountovaní komponentu
     onBeforeUnmount(() => {
       document.removeEventListener('click', closeNavigationOnClickOutside);
     });
@@ -123,7 +122,6 @@ export default {
 
 <style scoped>
 
-/* Kontajner pre tooltip */
 .tooltip-container {
     position: relative;
     display: inline-block;
@@ -132,7 +130,6 @@ export default {
     justify-content: center;
 }
 
-/* Štýl tooltipu */
 .tooltip-container .tooltip-text {
     position: absolute;
     top: 100%;  
@@ -167,7 +164,7 @@ header {
     padding: 10px 20px;
     text-align: center;
     display: flex;
-    align-items: center; /* Vertikálne zarovnanie */
+    align-items: center; 
     justify-content: space-between;
 }
 
@@ -215,9 +212,9 @@ header .logo h1 {
     font-size: 1rem;
     transition: background-color 0.3s;
     border-radius: 10px;
-    text-align: center; /* Zarovnanie textu na stred */
-    min-width: 109px; /* Minimálna šírka */
-    max-width: 200px; /* Maximálna šírka */
+    text-align: center;  
+    min-width: 109px;  
+    max-width: 200px;  
 }
 
 .navigation a:hover {

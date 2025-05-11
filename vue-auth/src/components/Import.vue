@@ -3,7 +3,6 @@
     <div class="import">
         <ButtonComp text="Import otázok" @click="openModal" fontSize="1rem"/>
 
-        <!-- Modálne okno -->
         <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
             <div class="modal-content">
                 <h2>Importovanie otázok</h2>
@@ -12,7 +11,6 @@
                 </div>
                 <button class="close-button" @click="closeModal">✖</button>
                 <ButtonComp text="Importovať" @click="importData" fontSize="1rem"/>
-
             </div>
         </div>
     </div>
@@ -33,32 +31,32 @@ export default {
             required: true,
         },
     },
-    setup(props, { emit }) {
+    setup(props, { emit }){
         const file = ref(null);
         const scales = [];
         const openImport = ref(false);
         const showModal = ref(false);
 
-        const openModal = () => {
+        const openModal =()=> {
             showModal.value = true;
         };
 
-        const closeModal = () => {
+        const closeModal=()=>{
             showModal.value = false;
         };
 
-        const handleOpenImport = () => {
-            openImport.value = !openImport.value; 
-            console.log('openImport:', openImport.value);
-        };
+        // const handleOpenImport=()=>{
+        //     openImport.value=!openImport.value; 
+        //     // console.log('openImport:', openImport.value);
+        // };
 
-        const handleClickOutside = (event) => {
-            if (!event.target.closest('.import')) {
-                openImport.value = false;
-            }
-        };
+        // const handleClickOutside=(event) =>{
+        //     if(!event.target.closest('.import')){
+        //         openImport.value = false;
+        //     }
+        // };
 
-        document.addEventListener("click", handleClickOutside);
+        // document.addEventListener("click", handleClickOutside);
         
         const handleFileImport = (event) => {
             file.value = event.target.files[0];
@@ -66,31 +64,31 @@ export default {
 
         const importData = async () => {
             if (!file.value) {
-                alert("Vyberte súbor na import!");
+                alert("Vyberte súbor pre vloženie.");
                 return;
             }
 
-            const fileContent = await file.value.text(); 
-            const rows = fileContent.split("\n").map(row => row.split(";"));
+            const fileContent=await file.value.text(); 
+            const rows = fileContent.split("\n").map(row=> row.split(";"));
             const [header, ...dataRows] = rows;
-            console.log('Header:', header);
+            // console.log('Header:', header);
 
             const formattedData = [];
             for (const row of dataRows) {
-                console.log('Row:', row);
-                console.log('Row length:', row.length);
+                // console.log('Row:', row);
+                // console.log('Row length:', row.length);
                 if (row.length < 2) continue;
-                console.log('Row0:', row[0]);
+                // console.log('Row0:', row[0]);
                 // if (isNaN(row[0])) {
-                if (row[1]!=="" && (row[1]==="choice" || row[1] === 'boolean')) {
-                    console.log('Otázka:', row);
+                if (row[1]!=="" && (row[1]==="choice" || row[1] === 'boolean' || row[1] === 'text')) {
+                    // console.log('Otázka:', row);
                     const rawOptions = row[2] ? row[2].split(",") : [];
-                    const options = rawOptions.map(option => {
+                    const options = rawOptions.map(option=>{
                         const [text, value] = option.split("-");
                         return {
                             text: text.trim(),
                             value: value ? parseInt(value.trim(),10) : null,
-                            hasValue: !!value,
+                            hasValue:!!value,
                         };
                     });
 
@@ -102,7 +100,7 @@ export default {
                     };
 
                     try {
-                        console.log("Posielam otázku:", newQuestion);
+                        // console.log("Posielam otázku:", newQuestion);
                         const response = await fetch(`http://localhost:8000/api/tests/${props.testId}/questions/`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -111,12 +109,12 @@ export default {
                         });
 
                         if (!response.ok) {
-                            throw new Error(`Chyba pri ukladaní otázky: ${response.status}`);
+                            throw new Error(`chyba pri ukladani otázky- ${response.status}`);
                         }
 
                         const savedQuestion = await response.json();
                         formattedData.push(savedQuestion);
-                        console.log("Otázka uložená:", savedQuestion);
+                        // console.log("Otázka uložená:", savedQuestion);
                     } catch (error) {
                         console.error("Chyba pri spracovaní otázky:", error);
                     }
@@ -130,7 +128,7 @@ export default {
                 }
             }
 
-            if (scales.length !== 0) {
+            if (scales.length!==0) {
                 try {
                     await fetch(`http://localhost:8000/api/tests/${props.testId}/scales/`, {
                         method: 'POST',
@@ -139,11 +137,11 @@ export default {
                         credentials: 'include',
                     });
                 } catch (error) {
-                    console.error('Chyba pri ukladaní škál:', error);
+                    console.error('nastala chyba pri ukladani škál-', error);
                 }
             }
 
-            console.log("Scales", scales);
+            // console.log("Scales", scales);
 
             alert("Import dokončený!");
             emit('import-complete', formattedData, scales);
@@ -154,7 +152,7 @@ export default {
             file,
             openImport,
             handleFileImport,
-            handleOpenImport,
+            // handleOpenImport,
             importData,
             openModal,
             showModal,
@@ -192,12 +190,10 @@ export default {
     position: relative;
 }
 
-/* Nadpisy sekcií */
 .modal-section h3 {
     margin-bottom: 10px;
 }
 
-/* Štýl zatváracieho tlačidla */
 .close-button {
     position: absolute;
     top: 10px;

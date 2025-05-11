@@ -34,11 +34,11 @@ import ButtonComp from './ButtonComp.vue';
         return {
             showModal: false
         };
-    },//zistit ci treeba computed
+    }, 
     computed: {
         testLink() {
-            console.log(this.testId);
-            console.log(this.testCode);
+            // console.log(this.testId);
+            // console.log(this.testCode);
             return `http://localhost:8081/tests/${this.testId}/public`;
         }
     },

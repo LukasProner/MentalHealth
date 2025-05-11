@@ -16,23 +16,25 @@
     </div>
     <div v-else class = "form-container">
       <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
-        <div v-if="question.question_type !== 'drawing'" class="answers-list">
-          <h2>{{ question.text }} </h2>
+        <div v-if="question.question_type!=='drawing'" class="answers-list">
+          <h3>{{ question.text }} </h3>
           <div v-if="question.image_url!==null">
             <img :src="question.image_url" alt="Question Image" class="question-image" />
           </div>
           <ul>
             <li v-for="response in responses" :key="response.submitted_at" class="response-item">
               <div v-for="answer in response.answers" :key="answer.answer_id">
-                  <div v-if="(answer.question_id) == (question.id)" class="answer">
-                    {{ answer.answer }}
-                  </div>
+                <div v-if="(answer.question_id) == (question.id)" class="answer">
+                  <!-- <div v-if="(answer.question_type) == 'choice'" > -->
+                    {{ answer.answer }} 
+                  <!-- </div> -->
+                </div>
               </div>
             </li>
           </ul>
         </div>
         <div v-else class="drawing-section">
-          <h2>{{ question.text }}</h2>
+          <h3>{{ question.text }}</h3>
           <p>Táto otázka vyžaduje vizualizáciu.</p>
           <ButtonComp text="Vizualizovať obrázok" @click="redirectToDrawing(question.id)" fontSize="1rem" />
         </div>
@@ -60,7 +62,7 @@
       const route = useRoute();
       const router = useRouter();
 
-      const checkAuth = async () => {
+      const checkAuth=async()=>{
         try {
           await store.dispatch('checkAuth');
         } catch (err) {
@@ -69,70 +71,66 @@
       };
 
 
-      const fetchResponses = async () => {
-        try {
-          // Fetch odpovede
-          const response = await fetch(
-            `http://localhost:8000/api/tests/${route.params.id}/responses/`,
+      const fetchResponses=async()=>{
+        try{
+          const response=await fetch(`http://localhost:8000/api/tests/${route.params.id}/responses/`,
             {
-              headers: { 'Content-Type': 'application/json' },
+              // headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
             }
           );
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+          if(!response.ok){
+            throw new Error(`responses error: ${response.status}`);
           }
-          responses.value = await response.json();
-          console.log("No toto som este nevudel",responses.value);
-        } catch (err) {
-          error.value = 'Odpovede sa nepodarilo načítať. Skontrolujte, či máte oprávnenie.';
+          responses.value =await response.json();
+        }catch (err){
+          error.value ='Odpovede sa nepodarilo načítať. Skontrolujte, či máte oprávnenie.';
           console.error('Error:', err);
         }
       };
   
-      const fetchTest = async (testId) => {
-        try {
+      const fetchTest=async(testId)=>{
+        try{
           // Fetch test vrátane otázok
-          const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+          const response=await fetch(`http://localhost:8000/api/tests/${testId}/`, {
+            // headers:{'Content-Type': 'application/json' },
+            credentials:'include',
           });
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+          if(!response.ok){
+            throw new Error(`fetch test error: ${response.status}`);
           }
-          test.value = await response.json();
-        } catch (err) {
+          test.value =await response.json();
+        }catch (err){
           error.value = 'Test sa nepodarilo načítať. Skontrolujte, či existuje alebo máte oprávnenie.';
           console.error('Error:', err);
         }
       };
   
-      const redirectToDrawing = (question_id) => {
+      const redirectToDrawing=(question_id)=>{
         console.log("id otazky",question_id);
         router.push(`/draw/${question_id}/`);
       };
       
-      const redirectToQuestions = () => {
+      const redirectToQuestions=()=>{
         router.push(`/tests/${route.params.id}/`);
       };
 
-      const goToResponses = () =>{
+      const goToResponses=()=>{
         router.push(`/tests/${route.params.id}/responses`)
       };
-      const sortedQuestions = (questions) => {
+      const sortedQuestions=(questions)=>{
         return [...questions].sort((a,b)=>a.id-b.id);
       } 
-      const initializeData = async () => {
-        loading.value = true;
+      const initializeData=async()=>{
+        loading.value=true;
         await Promise.all([fetchTest(route.params.id), fetchResponses()]);
-        loading.value = false;
+        loading.value=false;
       };
   
-      // onMounted(initializeData,checkAuth);
       onMounted(async () => {
         loading.value = true;
-        await checkAuth();  // Počkať na dokončenie overenia prihlásenia
-        await initializeData(); // Až potom načítať dáta
+        await checkAuth();  
+        await initializeData(); 
         loading.value = false;
       });
   
@@ -167,7 +165,7 @@
     height: 4px;
     background-color: black;
     border: none;
-    border-radius: 2px; /* Zaoblené okraje */
+    border-radius: 2px; 
     width: 100%;
     margin-top: 10px;
   }
@@ -217,8 +215,10 @@
     text-align: center;
     padding: 10px;
   }
-  .drawing-section h2 {
+  h3 {
     text-align: left;
+    color: var(--color-h1);
+    font-size: 1.3rem;
   }
   .drawing-section p {
     font-style: italic;

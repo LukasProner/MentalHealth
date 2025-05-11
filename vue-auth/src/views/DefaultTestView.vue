@@ -5,15 +5,15 @@
       <form class="form-container">
         <div v-for="question in sortedQuestions(test.questions)" :key="question.id" class="question-card">
           <p>{{ question.text }}</p>
-          <input v-if="question.question_type === 'text'" v-model="answers[question.id]" type="text" />
+          <input v-if="question.question_type==='text'" v-model="answers[question.id]" type="text" />
   
-            <div v-if="question.question_type === 'choice'">
+            <div v-if="question.question_type==='choice'">
                 <label v-for="option in question.options" :key="option">
                     <input type="radio" :value="option" v-model="answers[question.id]" /> {{option.text}}
                 </label>
             </div>
   
-            <div v-if="question.question_type === 'boolean'">
+            <div v-if="question.question_type==='boolean'">
                 <label>
                     <input type="radio" value="Yes" v-model="answers[question.id]" /> Yes
                 </label>
@@ -30,12 +30,12 @@
         </div>
         <div v-if="showModal" class="modal" @click.self="closeModal">
             <div class="modal-content">
-              <button class="close-btn" @click="closeModal">×</button>
+              <!-- <button class="close-btn" @click="closeModal">×</button> -->
               <h2>Výsledok testu</h2>
               <div v-for="result in evaluationResult" :key="result.category">
                 <p> {{ result.response }}</p>
               </div>
-              <button @click="closeModal">Zatvoriť</button>
+              <!-- <button @click="closeModal">Zatvoriť</button> -->
             </div>
         </div>
     </div>
@@ -48,9 +48,9 @@
   </template>
   
 <script>
-  import { ref, onMounted } from 'vue';
-  import { useStore } from 'vuex';
-  import { useRoute, useRouter } from 'vue-router';
+  import{ref,onMounted} from 'vue';
+  import{useStore} from 'vuex';
+  import{useRoute, useRouter } from 'vue-router';
   import ExportData from '@/components/Export.vue';
   import ButtonComp from '@/components/ButtonComp.vue';
   
@@ -71,14 +71,14 @@
       const evaluationResult = ref(null);
       const showModal = ref(false);
 
-      const evaluateTest = async () => {
-        try {
-            console.log(answers)
-            const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/evaluate/`, {
-                method: 'POST',
+      const evaluateTest=async()=>{
+        try{
+            // console.log(answers)
+            const response=await fetch(`http://localhost:8000/api/tests/${test.value.id}/evaluate/`,{
+                method:'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    test_code: testCode.value, // Pridáme testový kód
+                    test_code: testCode.value,
                     answers: Object.entries(answers.value).map(([question_id, answer]) => ({
                         question_id,
                         answer,
@@ -86,94 +86,48 @@
                 }),
                 credentials: 'include',
             });
-  
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || 'Chyba pri vyhodnocovaní');
-            }
-  
             const data = await response.json();
             console.log('Výsledok testu:', data);
             evaluationResult.value = data.total_score; 
             showModal.value = true;
   
         } catch (err) {
-            console.error('Chyba pri vyhodnocovaní:', err.message || err);
+            console.error('Chyba pri vyhodnocovaní:',err);
         }
       };
 
-      const closeModal = () => {
+      const closeModal=()=>{
         showModal.value = false;
       };
-  
-      // const fetchTest = async (testId) => {
-      //   try {
-      //     const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
-      //       headers: { 'Content-Type': 'application/json' },
-      //       credentials: 'include',
-      //     });
-  
-      //     if (!response.ok) {
-      //       throw new Error(`HTTP error! Status: ${response.status}`);
-      //     }
-  
-      //     test.value = await response.json();
-      //     console.log(test.value)
-      //   } catch (err) {
-      //     error.value = 'Test sa nepodarilo načítať. Skontrolujte, či existuje alebo máte oprávnenie.';
-      //     console.error('Error:', err);
-      //   } finally {
-      //     loading.value = false;
-      //   }
-      // };
-  
-      // const init = async () => {
-      //   await store.dispatch('checkAuth');
-      //   if (store.getters.isAuthenticated) {
-      //     const testId = route.params.id; 
-      //     await fetchTest(testId);
-      //   } else {
-      //     error.value = 'Nie ste prihlásený. Prihláste sa na prístup k testu.';
-      //     loading.value = false;
-      //   }
-      // };
-      // init();
       
-      onMounted(async () => {
-        try {
+      onMounted(async()=>{
+        try{
           const testId = route.params.id;  
-          console.log(testId)
+          // console.log(testId)
           const response = await fetch(`http://localhost:8000/api/tests/${testId}/`);
           
-          if (response.ok) {
-            const data = await response.json();
+          if (response.ok){
+            const data=await response.json();
             test.value = data;  
             console.log(test.value)
           } 
-          // } else if (response.status === 401) {
-          //   error.value = 'Test nie je dostupný. Prihláste sa na prístup.';
-          // } else if (response.status === 403) {
-          //   error.value = 'Nemáte oprávnenie na zobrazenie tohto testu.';
-          // } else if (response.status === 404) {
-          //   error.value = 'Test neexistuje.';
-          // }
-        } catch (err) {
-          error.value = 'Došlo k chybe pri načítaní testu.';
-        } finally {
-          loading.value = false;
+        }catch(err){
+          error.value='chyba pri načítaní testu';
+        } finally{
+          loading.value=false;
         }
       });
   
-      const sortedQuestions = (questions) => {
-          return [...questions].sort((a, b) => a.id - b.id);
+      const sortedQuestions=(questions)=>{
+          return [...questions].sort((a, b) => a.id - b.id); //spread operator (...), ktorý vytvorí kópiu poľa questions.
       };
     
   
   
-      const goToResponses = () =>{
+      const goToResponses=()=>{
         router.push(`/tests/${route.params.id}/responses`)
       };
-      const redirectToQuestions = () => {
+      const redirectToQuestions=()=>{
         router.push(`/tests/${route.params.id}/`);
       };
   
@@ -293,6 +247,7 @@
 
   .modal-content h2 {
     margin-bottom: 10px;
+    color: var(--color-h1);
   }
 
   .modal-content button {

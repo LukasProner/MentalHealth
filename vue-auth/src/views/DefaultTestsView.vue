@@ -21,33 +21,33 @@
   
   export default {
     setup() {
-      const tests = ref([]); // Reactive premenná pre testy
-      const loading = ref(true); // Stav načítavania
-      const error = ref(null); // Stav pre chyby
+      const tests=ref([]);  
+      const loading = ref(true); 
+      const error = ref(null);  
   
-      const fetchTests = async () => {
-        try {
-          const response = await fetch(`http://localhost:8000/api/tests/default/`, {
+      const fetchTests=async()=>{
+        try{
+          const response = await fetch(`http://localhost:8000/api/tests/default/`,{
             method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
+            // headers: { 'Content-Type': 'application/json' },
             credentials: 'include', 
           });
-          console.log('response',response)
+          // console.log('response',response)
   
-          if (!response.ok) {
+          if(!response.ok){
             throw new Error(`HTTP chyba! Status: ${response.status}`);
           }
   
           const data = await response.json();
-          tests.value = data.tests; // Uloženie testov do premennej
-        } catch (err) {
-          error.value = 'Chyba pri načítavaní testov. Skontrolujte autentifikáciu.';
-        } finally {
-          loading.value = false; // Ukončenie načítavania
+          tests.value = data.tests;  
+        }catch(err){
+          error.value = 'chyba pri načítavaní testov';
+        }finally{
+          loading.value = false;  
         }
       };
   
-      onMounted(fetchTests); // Spustenie fetchTests pri načítaní komponentu
+      onMounted(fetchTests); 
   
       return {
         tests,

@@ -1,5 +1,5 @@
 <template>
-    <div class="hero"> <!-- Použi class namiesto className -->
+    <div class="hero"> 
         <h2>Inšpirujte sa</h2>
         <h2>existujúcimi testami</h2>
         <h2>Vytvorte testy so</h2>
@@ -56,7 +56,7 @@ export default {
     }
 
     .hero h2 {
-        font-size: 2rem; /* Zmenšiť písmo pre menšie obrazovky */
+        font-size: 2rem;  
     }
 }
 </style>
