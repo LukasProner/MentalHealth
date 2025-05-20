@@ -67,19 +67,19 @@ export default {
     //     loading.value = false;  
     //   }
     // };
-    const checkAuth = async () => {
-      loading.value = true;
-      try {
+    const checkAuth=async()=>{
+      loading.value=true;
+      try{
         await store.dispatch('checkAuth');
-      } catch (err) {
+      }catch(err){
         // error.value = 'Chyba pri overovaní prihlásenia.';
-      } finally {
+      }finally{
         // loading.value = false;
       }
     };
 
-    const logout = async () => {
-      await fetch('http://localhost:8000/api/logout/', {
+    const logout=async()=>{
+      await fetch('http://localhost:8000/api/logout/',{
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -88,29 +88,29 @@ export default {
       store.dispatch('setAuth', false); 
     };
 
-    const toggleHamburger = () => {
-      isActive.value = !isActive.value;  
+    const toggleHamburger=()=>{
+      isActive.value=!isActive.value;  
     };
 
-    const closeNavigationOnClickOutside = (event: MouseEvent)=> {
-      const nav = document.querySelector('.navigation');
-      const hamburger = document.querySelector('.hamburger');
-      if (nav && !nav.contains(event.target as Node) && !hamburger?.contains(event.target as Node)) {
+    const closeNavigationOnClickOutside=(event: MouseEvent)=>{
+      const nav=document.querySelector('.navigation');
+      const hamburger=document.querySelector('.hamburger');
+      if (nav && !nav.contains(event.target as Node) && !hamburger?.contains(event.target as Node)){
         isActive.value = false;  
       }
     };
 
-    onMounted(() => {
+    onMounted(()=>{
       document.addEventListener('click', closeNavigationOnClickOutside);
     });
 
-    onBeforeUnmount(() => {
+    onBeforeUnmount(()=>{
       document.removeEventListener('click', closeNavigationOnClickOutside);
     });
 
     checkAuth();
 
-    return {
+    return{
       auth,
       logout,
       isActive,

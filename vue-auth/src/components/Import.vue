@@ -58,7 +58,7 @@ export default {
 
         // document.addEventListener("click", handleClickOutside);
         
-        const handleFileImport = (event) => {
+        const handleFileImport=(event)=>{
             file.value = event.target.files[0];
         };
 
@@ -80,7 +80,7 @@ export default {
                 if (row.length < 2) continue;
                 // console.log('Row0:', row[0]);
                 // if (isNaN(row[0])) {
-                if (row[1]!=="" && (row[1]==="choice" || row[1] === 'boolean' || row[1] === 'text')) {
+                if (row[1]!=="" && (row[1]==="choice" || row[1]==='boolean' ||row[1] === 'text' ||row[1] ==='drawing')){
                     // console.log('Otázka:', row);
                     const rawOptions = row[2] ? row[2].split(",") : [];
                     const options = rawOptions.map(option=>{

@@ -15,14 +15,14 @@ urlpatterns = [
     path('questions/', QuestionListView.as_view()), 
     path('questions/<int:question_id>/', QuestionListView.as_view()),
     # path('submissions/<str:test_code>/', TestSubmissionDetailView.as_view()),
-    path('tests/<int:test_id>/public/', PublicTestView.as_view(), name='public-test'),
-    path('tests/<int:test_id>/scales/', ScaleView.as_view(), name='test-scales'),
-    path('tests/<int:test_id>/evaluate/', EvaluateTestView.as_view(), name='evaluate_test'),
-    path('tests/default/', TestListAdmin.as_view(), name='list-tests'),
-    path('save_drawing/',UloadDrawingView.as_view(), name='save_drawing'),
-    path('save_drawing/<int:questionId>/',UloadDrawingView.as_view(), name='save_drawing'),
-    path('save_video/', SaveVideoView.as_view(), name='save_video'),
-    path('save_video/<int:video_id>/', SaveVideoView.as_view(), name='get_video'),
+    path('tests/<int:test_id>/public/', PublicTestView.as_view()),
+    path('tests/<int:test_id>/scales/', ScaleView.as_view()),
+    path('tests/<int:test_id>/evaluate/', EvaluateTestView.as_view()),
+    path('tests/default/', TestListAdmin.as_view()),
+    path('save_drawing/',UloadDrawingView.as_view()),
+    path('save_drawing/<int:questionId>/',UloadDrawingView.as_view()),
+    path('save_video/', SaveVideoView.as_view()),
+    path('save_video/<int:video_id>/', SaveVideoView.as_view()),
 ]
 
 

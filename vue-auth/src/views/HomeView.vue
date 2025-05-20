@@ -23,13 +23,13 @@ export default {
     // const loading = ref(true); 
     const store = useStore();
 
-    onMounted(async () => {
+    onMounted(async()=>{
       // loading.value = true;
-      try {
+      try{
         await store.dispatch('checkAuth');
-      } catch (err) {
+      }catch(err){
         // error.value = 'Chyba pri overovaní prihlásenia.';
-      } finally {
+      }finally{
         // loading.value = false;
       }
     });
@@ -63,7 +63,7 @@ export default {
     //   }
     // });
 
-    return {
+    return{
       // message,
       // loading
     }

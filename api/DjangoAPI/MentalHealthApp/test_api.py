@@ -34,22 +34,22 @@ class CreateUserTest(TestCase):
 
 class PublicTests(TestCase):
     def setUp(self):
-        user = User.objects.create(name="testuser", password="testpassword")
-        self.test = Test.objects.create(id= 1,name="public", created_by=user,  test_code="I12345")
+        user=User.objects.create(name="testuser", password="testpassword")
+        self.test=Test.objects.create(id= 1,name="public", created_by=user,  test_code="I12345")
 
     def test_valid_test_code(self):
-        response = self.client.post('/api/tests/1/public/', {'test_code': 'I12345'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], 'public')
+        response=self.client.post('/api/tests/1/public/',{'test_code':'I12345'})
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.data['name'],'public')
 
     def test_invalid_test_code(self):
-        response = self.client.post('/api/tests/1/public/', {'test_code': '5555'})
+        response=self.client.post('/api/tests/1/public/',{'test_code':'5555'})
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_non_existent_test_code(self):
-        response = self.client.post('/api/tests/999/public/', {'test_code': 'I12345'})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response=self.client.post('/api/tests/999/public/', {'test_code': 'I12345'})
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
 
 class LoginTest(TestCase):
 
@@ -57,7 +57,7 @@ class LoginTest(TestCase):
         self.user = User.objects.create(email="janko@janko.com", name="Test User")
         self.user.set_password("heslo123") 
         self.user.save()  
-        self.client = APIClient()
+        self.client=APIClient()
 
     def test_login_success(self):
         response = self.client.post('/api/login/', {'email': 'janko@janko.com', 'password': 'heslo123'}, format='json')
@@ -269,7 +269,7 @@ class UpdateQuestionTestCase(TestCase):
         url = f'/api/questions/9989/' 
         response = self.client.put(url, data=self.update_data, format='json')
         self.assertEqual(response.status_code, 404)
-        self.assertIn("Question not found", str(response.data))
+        self.assertIn("nenajdena otazka", str(response.data))
 
     
 class TestScaleCreationTestCase(TestCase):
@@ -667,7 +667,7 @@ class UploadImageViewTest(TestCase):
     def test_upload_no_image(self):
         response = self.client.post('/api/upload-image/', {}, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"error": "No image uploaded"})
+        self.assertEqual(response.data, {"error": "nebol poslany obrazok"})
 
 class SpecialTestsForCreatingTests(TestCase):
     def setUp(self):
@@ -697,7 +697,7 @@ class SpecialTestsForCreatingTests(TestCase):
     def test_create_test_missing_token(self):
         response = self.client.post('/api/tests/', {'name': 'Test 2'})
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['detail'], 'Unauthenticated!')
+        self.assertEqual(response.data['detail'], 'neautentifikovany pouzivatel')
 
     def test_create_test_expired_token(self):
         expired_token = jwt.encode(
@@ -710,7 +710,7 @@ class SpecialTestsForCreatingTests(TestCase):
         response = self.client.post('/api/tests/', {'name': 'Test 3'})
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['detail'], 'Token has expired!')
+        self.assertEqual(response.data['detail'], 'token vyprsal')
 
     def test_create_test_user_not_found(self):
         invalid_user_token = jwt.encode(
@@ -721,7 +721,7 @@ class SpecialTestsForCreatingTests(TestCase):
         response = self.client.post('/api/tests/', {'name': 'Test 4'})
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['detail'], 'User not found!')
+        self.assertEqual(response.data['detail'], 'neautentifikovany pouzivatel')
     
 class TestListViewGetTest(TestCase):
     def setUp(self):
@@ -749,7 +749,7 @@ class TestListViewGetTest(TestCase):
         self.client.cookies.pop('jwt', None)
         response = self.client.get('/api/tests/')
         self.assertEqual(response.status_code, 403)
-        self.assertIn("Unauthenticated", str(response.data))
+        self.assertIn("neautentifikovany pouzivatel", str(response.data))
 
     def test_get_tests_expired_token(self):
         expired_payload = {
@@ -760,13 +760,13 @@ class TestListViewGetTest(TestCase):
         self.client.cookies['jwt'] = expired_token
         response = self.client.get('/api/tests/')
         self.assertEqual(response.status_code, 403)
-        self.assertIn("Token has expired", str(response.data))
+        self.assertIn("token vyprsal", str(response.data))
 
     def test_get_tests_user_not_found(self):
         self.user.delete()
         response = self.client.get('/api/tests/')
         self.assertEqual(response.status_code, 403)
-        self.assertIn("User not found", str(response.data))
+        self.assertIn("neautentifikovany pouzivatel", str(response.data))
 
 class UpdateTestNameTestCase(TestCase):
     def setUp(self):
@@ -793,7 +793,7 @@ class UpdateTestNameTestCase(TestCase):
         url = f'/api/tests/{self.test.id}/'
         response = self.client.put(url, data=self.update_data, format='json')
         self.assertEqual(response.status_code, 403)
-        self.assertIn('Unauthenticated', str(response.data))
+        self.assertIn('neautentifikovany pouzivatel', str(response.data))
 
     def test_update_test_expired_token(self):
         expired_token = jwt.encode({
@@ -804,13 +804,13 @@ class UpdateTestNameTestCase(TestCase):
         url = f'/api/tests/{self.test.id}/'
         response = self.client.put(url, data=self.update_data, format='json')
         self.assertEqual(response.status_code, 403)
-        self.assertIn('Token has expired', str(response.data))
+        self.assertIn('token vyprsal', str(response.data))
 
     def test_update_test_not_found(self):
         url = f'/api/tests/9999/'
         response = self.client.put(url, data=self.update_data, format='json')
         self.assertEqual(response.status_code, 404)
-        self.assertIn('Test not found', str(response.data))
+        self.assertIn('chyba test', str(response.data))
 
 class TestResponsesViewTestCase(TestCase):
     def setUp(self):
@@ -952,9 +952,9 @@ class SaveVideoViewTests(TestCase):
         self.assertTrue(RecordedVideo.objects.filter(question_id=self.question.id).exists())
 
     def test_save_video_missing_data(self):
-        response = self.client.post('/api/save_video/', format='multipart')
+        response = self.client.post('/api/save_video/',format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json()['error'], 'Invalid data')
+        self.assertEqual(response.json()['error'],'invalid data')
 
     def test_get_saved_url(self):
         recorded = RecordedVideo.objects.create(

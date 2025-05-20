@@ -63,46 +63,46 @@
       ButtonComp,
     },
     setup() {
-      const route = useRoute(); 
-      const testId = route.params.id;
-      const test = ref(null);
-      const testCode = ref('');
-      const error = ref('');
-      const answers = ref({});
-      const evaluationResult = ref(null);  
-      const showModal = ref(false);
-      const firstTimeOnWebsite = ref(true); 
-      const thereAreResults = ref(false);
+      const route=useRoute(); 
+      const testId=route.params.id;
+      const test=ref(null);
+      const testCode=ref('');
+      const error=ref('');
+      const answers=ref({});
+      const evaluationResult=ref(null);  
+      const showModal=ref(false);
+      const firstTimeOnWebsite=ref(true); 
+      const thereAreResults=ref(false);
 
       const verifyCode=async()=>{
-        try {
+        try{
           // console.log(testCode.value);
-          const response = await fetch(`http://localhost:8000/api/tests/${testId}/public/`, {
+          const response = await fetch(`http://localhost:8000/api/tests/${testId}/public/`,{
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ test_code: testCode.value }),
           });
   
-          if (!response.ok) {
-            const data = await response.json();
+          if(!response.ok){
+            const data=await response.json();
             throw new Error(data.error);
           }
   
-          test.value = await response.json();
+          test.value=await response.json();
           if(localStorage.getItem("testCode")!==testCode.value){
             localStorage.removeItem("answers");
           }
           localStorage.setItem('testCode', testCode.value);
-        } catch (err) {
+        }catch(err){
           error.value = err.message;
         }
       };
 
-      const sortedQuestions = (questions) => {
-        return [...questions].sort((a, b) => a.id - b.id);
+      const sortedQuestions=(questions)=>{
+        return [...questions].sort((a, b)=>a.id-b.id); //lepsie ako nova premenna
       };
   
-      const submitAnswers = async () => {
+      const submitAnswers=async()=>{
         try {
           // alert(JSON.stringify(answers.value, null, 2));
           const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/submit/`, {
@@ -118,21 +118,21 @@
           });
   
           if (!response.ok) {
-            throw new Error('Failed to submit answers');
+            throw new Error('submit failed');
           }
           localStorage.removeItem('answers');
           // thereAreResults.value = false;
           showModal.value = true; 
 
           // alert('Odpovede boli úspešne odoslané!');
-        } catch (err) {
+        }catch(err){
           console.error(err);
-          alert('Nastala chyba pri odosielaní odpovedí.');
+          alert('chyba pri odosielani odpovedi');
         }
       };
   
-      const evaluateTest = async () => {
-        try {
+      const evaluateTest=async()=>{
+        try{
             console.log(answers)
             const response = await fetch(`http://localhost:8000/api/tests/${test.value.id}/evaluate/`, {
                 method: 'POST',
@@ -147,20 +147,20 @@
                 credentials: 'include',
             });
   
-            if (!response.ok) {
-                const data = await response.json();
+            if(!response.ok){
+                const data=await response.json();
                 throw new Error(data.error);
             }
   
-            const data = await response.json();
-            console.log('Výsledok testu:', data);
-            thereAreResults.value = true;
+            const data=await response.json();
+            console.log('vysledok testu:', data);
+            thereAreResults.value=true;
 
-            evaluationResult.value = data.total_score;
+            evaluationResult.value=data.total_score;
             // showModal.value = true; 
   
             // alert(`Dosiahnuté body: ${data.total_score[0].total_points}\nOdpoveď: ${data.total_score[0].response}`);
-        } catch (err) {
+        }catch(err){
             console.error('chyba pri vyhodnocovaní:',err.message);
             thereAreResults.value = false;
         }
@@ -194,7 +194,7 @@
         showModal.value= false;
       };
 
-      const clearLocalStorage = ()=>{
+      const clearLocalStorage=()=>{
         
         if(firstTimeOnWebsite.value===true){
           localStorage.removeItem("answers");
@@ -204,13 +204,13 @@
         }
       }
   
-      onMounted(() => {
+      onMounted(()=>{
         loadAnswersFromLocalStorage();
         loadTestCode();
         // clearLocalStorage();
       });
 
-      watch(answers, () => {
+      watch(answers,()=>{
         saveAnswersToLocalStorage();
       });
 

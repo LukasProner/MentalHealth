@@ -23,9 +23,9 @@
       ButtonComp 
     },
     setup() {
-      const email = ref('');  
-      const password = ref('');   
-      const router = useRouter();
+      const email=ref('');  
+      const password=ref('');   
+      const router=useRouter();
   
       const submit=async()=>{
         const response = await fetch('http://localhost:8000/api/login/',{
@@ -40,7 +40,7 @@
 
         // console.log(response);
 
-        if (response.ok === true) {
+        if (response.ok===true){
           await router.push('/');
         } else {
           alert('Invalid credentials');

@@ -61,19 +61,19 @@ export default {
     SendDataComp
   },
   setup() {
-    const store = useStore();  
-    const route = useRoute(); 
-    const router = useRouter();
+    const store=useStore();  
+    const route=useRoute(); 
+    const router=useRouter();
 
-    const answers = ref({});
-    const test = ref(null);
-    const testCode = ref('');  
-    const error = ref('');
-    const loading = ref(true);
+    const answers=ref({});
+    const test=ref(null);
+    const testCode=ref('');  
+    const error=ref('');
+    const loading=ref(true);
 
-    const fetchTest = async (testId) => {
+    const fetchTest=async(testId)=>{
       try {
-        const response = await fetch(`http://localhost:8000/api/tests/${testId}/`, {
+        const response = await fetch(`http://localhost:8000/api/tests/${testId}/`,{
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
@@ -106,25 +106,25 @@ export default {
     
     onMounted(init);
 
-    const sortedQuestions = (questions) => {
-        return [...questions].sort((a, b) => a.id - b.id);
+    const sortedQuestions=(questions)=>{
+        return [...questions].sort((a, b)=>a.id-b.id);
     };
   
 
 
-    const goToResponses = () =>{
+    const goToResponses=()=>{
       router.push(`/tests/${route.params.id}/responses`)
     };
-    const redirectToQuestions = () => {
+    const redirectToQuestions=()=>{
       router.push(`/tests/${route.params.id}/`);
     };
 
-    return {
+    return{
       answers,
       test,
       error,
       loading,
-      testCode, // Pridávame testový kód
+      testCode,  
       goToResponses,
       sortedQuestions,
       redirectToQuestions

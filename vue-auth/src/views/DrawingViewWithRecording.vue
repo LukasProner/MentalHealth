@@ -112,12 +112,12 @@ export default{
       isRecording: false,
     };
   },
- //Musim cez methods neviem pre4o inak nechce brat canvas ...
+ //Musim cez methods neviem pre4o inak nechce brat canvas this.$refs.canvas;...
   methods: {
     toggleRecording(){
-      if (this.isRecording) {
+      if (this.isRecording){
         this.stopRecording();
-      } else {
+      }else{
         this.startRecording();
       }
       this.isRecording = !this.isRecording;   
@@ -131,7 +131,7 @@ export default{
       }
     },
     undo(){
-      if(this.history.length === 0) return;
+      if(this.history.length===0) return;
       
       const canvas=this.$refs.canvas;
       const ctx=canvas.getContext('2d');
@@ -148,7 +148,7 @@ export default{
       this.isErasing=!this.isErasing;  
     },
     hasBackgroundImage(){
-      return this.question.image_url!== null;
+      return this.question.image_url!==null;
     },
     startDrawing(event){
       this.saveState();
@@ -160,12 +160,10 @@ export default{
 
     draw(event){
       if (!this.drawing) return;
-
       this.ctx.lineCap='round';
       this.ctx.lineJoin='round';
       this.ctx.strokeStyle = this.isErasing ? '#FFFFFF' :this.lineColor;
       this.ctx.lineWidth=this.lineWidth;
-
       this.ctx.lineTo(event.offsetX, event.offsetY);
       this.ctx.stroke();
     },
@@ -239,27 +237,6 @@ export default{
         }
       }, 'image/png');
     },
-
-    // startRecording(){
-    //   navigator.mediaDevices.getDisplayMedia({ video: true })
-    //     .then(stream=>{
-    //       this.mediaRecorder = new MediaRecorder(stream);
-    //       this.chunks=[];
-
-    //       this.mediaRecorder.ondataavailable=event=>{
-    //         if(event.data.size > 0){
-    //           this.chunks.push(event.data);
-    //         }
-    //       };
-
-    //       this.mediaRecorder.onstop = this.saveRecording;
-
-    //       this.mediaRecorder.start();
-    //     })
-    //     .catch(err=>{
-    //       console.error("Error accessing display media:", err);
-    //     });
-    // },
     async startRecording(){
       try{
         const stream=await navigator.mediaDevices.getDisplayMedia({ video: true });
@@ -285,25 +262,6 @@ export default{
       }
     },
 
-    // saveRecording(){
-    //   const blob = new Blob(this.chunks,{type: 'video/webm' });
-    //   const formData = new FormData();
-    //   formData.append('video', blob);
-    //   formData.append('question_id', this.questionId);
-    //   fetch('http://localhost:8000/api/save_video/',{
-    //     method: 'POST',
-    //     body: formData,
-    //   })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     // console.log('Video uložené:', data);
-    //   })
-    //   .catch(error => {
-    //     console.error('Chyba pri ukladaní videa:', error);
-    //   });
-    // },
-
-
     async saveRecording(){
       const blob=new Blob(this.chunks,{type: 'video/webm' });
       const formData=new FormData();
@@ -323,22 +281,22 @@ export default{
       }
     },
 
-    async fetchQuestion() {
-      try {
+    async fetchQuestion(){
+      try{
         // console.log("ide fetchQuestion");
         const response = await fetch(`http://localhost:8000/api/questions/${this.questionId}/`);
-        if (!response.ok) {
+        if(!response.ok){
           throw new Error('Chyba pri nacitani dat');
         }
         const data = await response.json();
         this.question = data;
         // console.log("preslo v fetch");
 
-        if (this.hasBackgroundImage) {
+        if(this.hasBackgroundImage){
           this.loadBackgroundImage();
           // console.log("preslo v fetch2");
         }
-      } catch (error) {
+      }catch(error){
         // console.error('Chyba pri nacitani otazky:', error);
       }
     },
@@ -350,7 +308,7 @@ export default{
       
       this.ctx = canvas.getContext('2d');
       const img =new Image();
-      img.crossOrigin="anonymous";  
+      img.crossOrigin="anonymous";  //umožnil načítať obrázok z iného pôvodu (domény) bez toho, aby sa porušili pravidlá CORS
 
       // console.log("Obrázok URL:", this.question.image_url);
       

@@ -119,7 +119,7 @@
       });
   
       const sortedQuestions=(questions)=>{
-          return [...questions].sort((a, b) => a.id - b.id); //spread operator (...), ktorý vytvorí kópiu poľa questions.
+          return [...questions].sort((a,b)=>a.id-b.id); //spread operator (...), vytvorí kópiu poľa questions.
       };
     
   
@@ -166,7 +166,7 @@
     height: 4px;
     background-color: black;
     border: none;
-    border-radius: 2px; /* Zaoblené okraje */
+    border-radius: 2px;
     width: 100%;
     margin-top: 10px;
   }

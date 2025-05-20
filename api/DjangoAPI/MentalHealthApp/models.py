@@ -99,30 +99,15 @@ class Scale(models.Model):
     response = models.TextField()
     category = models.CharField(max_length=100, default='Nezaradená')
 
-    # def clean(self):
-    #     # Validácia rozpätí bodov
-    #     if self.min_points >= self.max_points:
-    #         raise ValidationError("Minimálne body musia byť menšie ako maximálne body.")
-
-        # # Overenie, že rozsahy bodov sa neprekrývajú pre tento test
-        # overlapping_scales = Scale.objects.filter(
-        #     test=self.test,
-        #     max_points__gte=self.min_points,
-        #     min_points__lte=self.max_points,
-        # ).exclude(pk=self.pk)
-        # if overlapping_scales.exists():
-        #     raise ValidationError("Rozpätia bodov sa prekrývajú s existujúcim škálovaním.")
-
-    # def __str__(self):
-    #     return f"{self.min_points} - {self.max_points}: {self.response}"
     
-# class Drawing(models.Model):
-#     question = models.ForeignKey(Question, related_name = 'drawing_answears', on_delete=models.CASCADE)
-#     image = models.TextField()
 
 class RecordedVideo(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE)
     video_file = models.FileField(upload_to='videos/')
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Documentation(models.Model):
+    name = models.CharField(max_length=255)
+    testId = models.ForeignKey(Test, on_delete=models.CASCADE)
+    content = models.TextField()
     

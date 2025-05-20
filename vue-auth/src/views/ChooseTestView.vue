@@ -80,11 +80,11 @@ export default{
           credentials: 'include', 
         });
 
-        if (!response.ok) {
+        if (!response.ok){
           throw new Error(`Chyba pri odstraňovaní testu. Status: ${response.status}`);
         }
 
-        tests.value = tests.value.filter(test => test.id !== testId);
+        tests.value=tests.value.filter(test => test.id!==testId);
       }catch(err){
         console.error('Error:',err);
       }
@@ -102,8 +102,8 @@ export default{
       //   loading.value = false;
       // }
     });
-    const sortedTests = (tests) => {
-      return [...tests].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const sortedTests=(tests)=>{
+      return [...tests].sort((a, b)=>new Date(b.created_at)-new Date(a.created_at)); //vytvori kopiu lepsie ako nova premenna
     };
 
     return {

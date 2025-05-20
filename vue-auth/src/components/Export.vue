@@ -78,7 +78,7 @@ export default {
                 }
 
                 const test = await questionsResponse.json();
-                questions.value = test.questions.map((q) => ({
+                questions.value = test.questions.map((q)=>({
                     id: q.id, 
                     type: "question",
                     text: q.text,
@@ -91,7 +91,7 @@ export default {
                     answer: "",  
                 }));
 
-                const scalesResponse = await fetch(`http://localhost:8000/api/tests/${props.testId}/scales/`, {
+                const scalesResponse = await fetch(`http://localhost:8000/api/tests/${props.testId}/scales/`,{
                     method: "GET",
                     credentials: "include",
                 });
@@ -147,7 +147,7 @@ export default {
                 ];
 
 
-                const headers = [
+                const headers=[
                     "type",
                     "text",
                     "question_type",
@@ -159,8 +159,8 @@ export default {
                     "answer",  
                 ];
 
-                const csvContent = generateCSV(combinedData, headers);
-                downloadCSV(csvContent, "exported_data.csv");
+                const csvContent=generateCSV(combinedData, headers);
+                downloadCSV(csvContent,"exported_data.csv");
 
                 alert("Dáta boli úspešne exportované!");
             } catch (error) {

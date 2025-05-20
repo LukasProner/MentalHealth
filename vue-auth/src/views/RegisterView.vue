@@ -20,17 +20,17 @@
   import ButtonComp from '@/components/ButtonComp.vue';
 
   export default {
-    components: {
+    components:{
       ButtonComp
     },
     name: "RegisterView",
-    setup() {
-      const name = ref('');
-      const email = ref('');
-      const password = ref('');
-      const router = useRouter();
+    setup(){
+      const name=ref('');
+      const email=ref('');
+      const password=ref('');
+      const router=useRouter();
 
-      const submit = async () => {
+      const submit=async()=>{
         const response = await fetch('http://localhost:8000/api/register/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -41,15 +41,15 @@
           })
         });
         
-        if (response.ok) {
+        if(response.ok){
           await router.push('/login');
-        } else {
+        }else{
           const errorData = await response.json();
-          alert("Registrácia zlyhala: " + JSON.stringify(errorData));
+          alert("registracia zlyhala: " + JSON.stringify(errorData));
         }
       };
 
-      return {
+      return{
         name,     
         email,
         password,

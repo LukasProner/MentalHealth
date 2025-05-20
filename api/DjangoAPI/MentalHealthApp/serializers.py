@@ -63,9 +63,9 @@ class ScaleSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Validácia rozpätí bodov na strane API
-        if data['min_points'] >= data['max_points']:
+        if data['min_points']>=data['max_points']:
             raise serializers.ValidationError(
-                "Minimálne body musia byť menšie ako maximálne body."
+                "min body musia byť menšie ako max"
             )
         return data
     

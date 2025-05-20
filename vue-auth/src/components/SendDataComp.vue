@@ -17,10 +17,10 @@
 import ButtonComp from './ButtonComp.vue';
 
   export default {
-    components: {
+    components:{
         ButtonComp,
     },
-    props: {
+    props:{
         testId: {
             type: Number,
             required: true
@@ -30,23 +30,23 @@ import ButtonComp from './ButtonComp.vue';
             required: true
         }
     },
-    data() {
-        return {
-            showModal: false
+    data(){
+        return{
+            showModal:false
         };
     }, 
-    computed: {
-        testLink() {
+    computed:{
+        testLink(){
             // console.log(this.testId);
             // console.log(this.testCode);
             return `http://localhost:8081/tests/${this.testId}/public`;
         }
     },
-    methods: {
-        closeModal() {
-            this.showModal = false;
+    methods:{
+        closeModal(){
+            this.showModal=false;
         },
-        copyToClipboard() {
+        copyToClipboard(){
             navigator.clipboard.writeText(this.testLink)
         }
     }

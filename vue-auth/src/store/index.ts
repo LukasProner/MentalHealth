@@ -13,7 +13,7 @@ export default createStore({
 
     async checkAuth({ commit }: { commit: Commit }) {
       try {
-        const response = await fetch('http://localhost:8000/api/user/', {
+        const response = await fetch('http://localhost:8000/api/user/',{
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',  
         });

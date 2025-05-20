@@ -294,13 +294,13 @@ export default {
       const newTest={name: testName.value};
 
       try{
-        const createResponse=await fetch('http://localhost:8000/api/tests/', {
-          method: 'POST',
-          headers: {
+        const createResponse=await fetch('http://localhost:8000/api/tests/',{
+          method:'POST',
+          headers:{
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(newTest),
-          credentials: 'include',
+          body:JSON.stringify(newTest),
+          credentials:'include',
         });
 
         if(!createResponse.ok){
@@ -310,8 +310,8 @@ export default {
         const data=await createResponse.json();
 
         testId.value=data.id;
-        testName.value = newTest.name;
-        editedName.value = newTest.name;
+        testName.value=newTest.name;
+        editedName.value=newTest.name;
 
         const detailsResponse= await fetch(`http://localhost:8000/api/tests/${data.id}/`,{
           method:'GET',
@@ -328,7 +328,7 @@ export default {
         const testDetails=await detailsResponse.json();
         // console.log('Test details:', testDetails);
 
-        testCode.value = testDetails.test_code;  
+        testCode.value=testDetails.test_code;  
         // console.log('Test code', testCode);
 
         addOption();  
@@ -350,10 +350,10 @@ export default {
       return editingQuestion.value===question;
     };
     const disableEditingQuestion =async(question)=>{
-      console.log('disableEditingQuestion',question)
-      console.log('disableType',question.type)
-      if(question.type!== "choice"){
-        question.options =[];
+      // console.log('disableEditingQuestion',question)
+      // console.log('disableType',question.type)
+      if(question.type!=="choice"){
+        question.options=[];
       }
       try{
         const updatedData={
@@ -367,15 +367,15 @@ export default {
 
         editingQuestion.value = null;  
         // console.log('Otázka bola aktualizovaná:', updatedQuestion);
-      } catch (error) {
+      }catch(error){
         // console.error('Chyba pri aktualizácii otázky:', error);
       }
-      editingQuestion.value = null; 
+      editingQuestion.value=null; 
     };
 
     const saveTestName=async()=>{
-      if(editedName.value.trim() === testName.value){
-        isEditing.value = false;
+      if(editedName.value.trim()===testName.value){
+        isEditing.value=false;
         return;
       }
 
@@ -395,17 +395,17 @@ export default {
 
         testName.value = editedName.value;
       }catch (err){
-        error.value = err.message;
+        error.value =err.message;
       }finally{
-        isEditing.value = false;
+        isEditing.value=false;
       }
     };
 
   const addOption=()=>{
-    options.value.push({ text: '', hasValue: false, value: null });  
+    options.value.push({text: '', hasValue:false, value:null });  
   };
   const addOptionUpdate=(question)=>{
-    question.options.push({ text: "", hasValue: false, value: null });
+    question.options.push({ text:"", hasValue:false, value:null });
   };
 
   const removeOption=(index)=>{
@@ -430,7 +430,7 @@ export default {
       // console.log('response',response)
 
       if (!response.ok) {
-        throw new Error(`HTTP chyba! Status: ${response.status}`);
+        throw new Error(`chyba: ${response.status}`);
       }
 
       const data = await response.json();
@@ -454,13 +454,13 @@ export default {
       });
 
       if(!response.ok){
-        throw new Error(`HTTP chyba! Status: ${response.status}`);
+        throw new Error(`chyba ${response.status}`);
       }
 
       const data=await response.json();
       // console.log('Questions from selected test:', data);
 
-      for (const question of data.questions) {
+      for(const question of data.questions){
         const newQuestion = {
           text: question.text,
           question_type: question.question_type,
@@ -468,7 +468,7 @@ export default {
           category: question.category||'Nezaradená',
         };
 
-        const saveResponse = await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`,{
+        const saveResponse=await fetch(`http://localhost:8000/api/tests/${testId.value}/questions/`,{
           method:'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -481,12 +481,12 @@ export default {
           throw new Error(`Chyba pri ukladaní otázky: ${saveResponse.status}`);
         }
 
-        const savedQuestion = await saveResponse.json();
+        const savedQuestion=await saveResponse.json();
         questions.value.push(savedQuestion);
       }
 
       // Získanie škál
-      const scaleResponse =await fetch(`http://localhost:8000/api/tests/${test.id}/scales/`,{
+      const scaleResponse= await fetch(`http://localhost:8000/api/tests/${test.id}/scales/`,{
         method: 'GET',
         // headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -496,7 +496,7 @@ export default {
         throw new Error(`HTTP chyba! Status: ${scaleResponse.status}`);
       }
 
-      const tempScales = await scaleResponse.json();
+      const tempScales= await scaleResponse.json();
       // console.log('Scales from selected test:', tempScales);
 
       for (const scale of tempScales){
@@ -524,7 +524,7 @@ export default {
       const savedScales = await saveScalesResponse.json();
       // console.log('Uložené škály:', savedScales);
 
-      isTestOpen.value = false;
+      isTestOpen.value= false;
     }catch(err){
       error.value = 'Chyba pri načítavaní otázok z vybraného testu.';
       // console.error('Error:', err);
@@ -559,7 +559,7 @@ export default {
       const data = await response.json();
       questions.value.push(data);
     } catch (err) {
-      console.error('chyba pri kopírovaní', err);
+      console.error('chyba pri kopirovani', err);
     }
   };
 
@@ -636,7 +636,7 @@ export default {
 
         if(!response.ok){
           const err = await response.json();
-          console.error('Backendová chyba (plná odpoveď):', err);
+          console.error(' savescales chyba:', err);
           throw new Error(err.detail || JSON.stringify(err) || 'Neznáma chyba');
         }
 
@@ -677,10 +677,10 @@ export default {
     if(question.newCategory){
       question.category = question.newCategory;
       console.log(question.category);
-      question.newCategory = ''; 
+      question.newCategory= ''; 
     }
 
-    question.showCategoryInput = false;  
+    question.showCategoryInput=false;  
 
     try{
       const updatedQuestion={
@@ -718,6 +718,7 @@ export default {
               // console.error("Chyba pri pridavani scale", error);
           }
       }
+      actualizeScales();
   };
   const toggleScaling=()=>{
     if(added.value===false){

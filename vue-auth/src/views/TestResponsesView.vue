@@ -63,10 +63,10 @@
       const router = useRouter();
 
       const checkAuth=async()=>{
-        try {
+        try{
           await store.dispatch('checkAuth');
-        } catch (err) {
-          error.value = 'Chyba pri overovaní prihlásenia.';
+        }catch(err){
+          error.value='Chyba pri overovani prihlasenia.';
         } 
       };
 
@@ -127,14 +127,14 @@
         loading.value=false;
       };
   
-      onMounted(async () => {
-        loading.value = true;
+      onMounted(async()=>{
+        loading.value=true;
         await checkAuth();  
         await initializeData(); 
         loading.value = false;
       });
   
-      return {
+      return{
         error,
         responses,
         test,
@@ -250,7 +250,7 @@
   .question-image {
     width: 90%;  
     height: auto;  
-    display: block; /* Zabezpečí správne vykreslenie */
+    display: block;  
     margin: 10px auto;
   }
 

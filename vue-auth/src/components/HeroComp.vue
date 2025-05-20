@@ -16,7 +16,7 @@ export default {
     components: {
         ButtonComp 
     },
-    setup() {
+    setup(){
         const router = useRouter();
         const makeTest = () => {
             router.push(`/tests`);
