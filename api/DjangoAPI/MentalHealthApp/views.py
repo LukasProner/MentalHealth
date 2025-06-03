@@ -1,6 +1,6 @@
 from django.http.response import JsonResponse
 from rest_framework.response import Response
-from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer,  Scale, Test,  RecordedVideo
+from MentalHealthApp.models import User, TestSubmission, Question, QuestionAnswer,  Scale, Test,  RecordedVideo, Documentation
 from MentalHealthApp.serializers import UserSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
@@ -610,3 +610,24 @@ class SaveVideoView(APIView):
         video=get_object_or_404(RecordedVideo, question_id=video_id)
         print("video", video)
         return JsonResponse({'video_url': video.video_file.url})
+
+
+
+class DocumentationView(APIView):
+    def get(self,request,test_id):
+        try:
+            testDoc = Documentation.objects.get(testId = test_id)
+            print("content = ", testDoc.content)
+            return JsonResponse({'content':testDoc.content, "title":testDoc.name})
+        except:
+            return JsonResponse({'error':'documentations error'}, status= status.HTTP_400_BAD_REQUEST)
+        
+    def post(self,request,test_id):
+        content = request.data.get('content')
+        name = request.data.get('name')
+        test = Test.objects.get(pk=test_id)
+
+        Documentation.objects.create(name = name, content = content, testId = test)
+        return Response({"message": "submit correct"}, status=status.HTTP_201_CREATED)
+
+

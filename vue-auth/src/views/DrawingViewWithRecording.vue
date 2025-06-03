@@ -2,64 +2,64 @@
   <div>
     <h1>{{ question.text }}</h1>
     <div class="toolbar">
-  <div class="tooltip-container">
-    <label>
-      Farba pera:
-      <input type="color" v-model="lineColor" />
-    </label>
-    <span class="tooltip-text">Vyberte farbu pera</span>
-  </div>
+      <div class="tooltip-container">
+        <label>
+          Farba pera:
+          <input type="color" v-model="lineColor" />
+        </label>
+        <span class="tooltip-text">Vyberte farbu pera</span>
+      </div>
 
-  <div class="tooltip-container">
-    <label>
-      Hrúbka pera:
-      <input type="range" v-model="lineWidth" min="1" max="20" />
-      <span>{{ lineWidth }} px</span>
-    </label>
-    <span class="tooltip-text">Vyberte hrúbku pera</span>
-  </div>
+      <div class="tooltip-container">
+        <label>
+          Hrúbka pera:
+          <input type="range" v-model="lineWidth" min="1" max="20" />
+          <span>{{ lineWidth }} px</span>
+        </label>
+        <span class="tooltip-text">Vyberte hrúbku pera</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="toggleEraser">
-      <i :class="isErasing ? 'bi bi-eraser-fill' : 'bi bi-brush'"></i>
-    </button>
-    <span class="tooltip-text">Prepínať medzi guma a pero</span>
-  </div>
+      <div class="tooltip-container">
+        <button @click="toggleEraser">
+          <i :class="isErasing ? 'bi bi-eraser-fill' : 'bi bi-brush'"></i>
+        </button>
+        <span class="tooltip-text">Prepínať medzi guma a pero</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="undo">
-      <i class="bi bi-arrow-counterclockwise"></i>
-    </button>
-    <span class="tooltip-text">Krok späť</span>
-  </div>
+      <div class="tooltip-container">
+        <button @click="undo">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+        <span class="tooltip-text">Krok späť</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="clearCanvas">
-      <i class="bi bi-trash3"></i>
-    </button>
-    <span class="tooltip-text">Vymazať co ste doposial nakreslili</span>
-  </div>
+      <div class="tooltip-container">
+        <button @click="clearCanvas">
+          <i class="bi bi-trash3"></i>
+        </button>
+        <span class="tooltip-text">Vymazať co ste doposial nakreslili</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="downloadImage">
-      <i class="bi bi-download"></i>
-    </button>
-    <span class="tooltip-text">Stiahnuť obrázok</span>
-  </div>
+      <div class="tooltip-container">
+        <button @click="downloadImage">
+          <i class="bi bi-download"></i>
+        </button>
+        <span class="tooltip-text">Stiahnuť obrázok</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="saveDrawing">Dokončiť</button>
-    <span class="tooltip-text">Uložiť kresbu</span>
-  </div>
+      <div class="tooltip-container">
+        <button @click="saveDrawing">Dokončiť</button>
+        <span class="tooltip-text">Uložiť kresbu</span>
+      </div>
 
-  <div class="tooltip-container">
-    <button @click="toggleRecording">
-      <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
-      {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
-    </button>
-    <span class="tooltip-text">{{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}</span>
-  </div>
-</div>
+      <div class="tooltip-container">
+        <button @click="toggleRecording">
+          <i :class="isRecording ? 'bi bi-stop-circle' : 'bi bi-record-circle'"></i>
+          {{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}
+        </button>
+        <span class="tooltip-text">{{ isRecording ? 'Ukončiť nahrávanie' : 'Začať nahrávanie' }}</span>
+      </div>
+    </div>
 
     <!-- Kresliace plátno -->
     <canvas 

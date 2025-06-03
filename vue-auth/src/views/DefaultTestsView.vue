@@ -108,7 +108,7 @@
     text-align: center;
   }
 
-  a {
+  /* a {
     text-decoration: none;
     color: #007bff;
     font-weight: bold;
@@ -117,7 +117,7 @@
 
   a:hover {
     color: #0056b3;
-  }
+  } */
 
   li:hover {
     background: #e2e6ea;

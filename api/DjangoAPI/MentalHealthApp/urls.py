@@ -1,6 +1,6 @@
 
 from django.urls import path
-from .views import EvaluateTestView, SaveVideoView,RegisterView, LoginView, ScaleView, TestListAdmin, UserView, LogoutView, UploadImageView,  TestListView, UloadDrawingView,QuestionListView, TestDetailView, SubmitTestView, TestResponsesView, PublicTestView
+from .views import DocumentationView, EvaluateTestView, SaveVideoView,RegisterView, LoginView, ScaleView, TestListAdmin, UserView, LogoutView, UploadImageView,  TestListView, UloadDrawingView,QuestionListView, TestDetailView, SubmitTestView, TestResponsesView, PublicTestView
 urlpatterns = [
     path('register/', RegisterView.as_view()),
     path('login/', LoginView.as_view()),
@@ -23,6 +23,7 @@ urlpatterns = [
     path('save_drawing/<int:questionId>/',UloadDrawingView.as_view()),
     path('save_video/', SaveVideoView.as_view()),
     path('save_video/<int:video_id>/', SaveVideoView.as_view()),
+    path('documentation/<int:test_id>/', DocumentationView.as_view())
 ]
 
 
