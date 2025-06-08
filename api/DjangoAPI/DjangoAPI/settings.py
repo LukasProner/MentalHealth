@@ -101,7 +101,12 @@ WSGI_APPLICATION = 'DjangoAPI.wsgi.application'
 
 DATABASES = {
     'default': {
-        
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mentalhealthdb',
+        'USER':'Lukas',
+        'PASSWORD':'Postgres1',
+        'HOST':'mystudentdb.postgres.database.azure.com',
+        'PORT':'5432'
     }
 }
 
